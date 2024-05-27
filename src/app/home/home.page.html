@@ -1,0 +1,51 @@
+<ion-content [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-card-content>
+      <ion-card-header class="ion-text-center">
+        <ion-card-title >INICIA SESIÓN</ion-card-title>
+      </ion-card-header>
+      <form [formGroup]="loginForm" (ngSubmit)="iniciarUsuario()">
+        <ion-list>
+          <ion-item>
+            <ion-input label="Correo:" formControlName="email" placeholder="Ingresa tu Correo"><ion-icon name="person-outline" slot="end" style="font-size: 25px;"></ion-icon></ion-input>
+          </ion-item>
+
+          <div style="color: red; margin-left: 10px;"
+            *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
+            <div>Ingrese un usuario (email). </div>
+          </div>
+          <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
+            <div> Debe ser un correo válido.</div>
+          </div>
+
+          <ion-item>
+            <ion-input label="Contraseña:" formControlName="password" placeholder="Ingresa tu Contraseña"><ion-icon name="lock-closed-outline" slot="end" style="font-size: 25px;"></ion-icon></ion-input>
+          </ion-item>
+          <div style="color: red; margin-left: 10px;"
+            *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
+            Ingrese una contraseña.
+          </div>
+          <div class="ion-text-center">
+            <ion-text style="color: red;" name="mensajeError">{{ mensajeError }}</ion-text>
+          </div>
+          <br>
+          <ion-button expand="block" type="submit" [disabled]="!loginForm.valid" (click)="iniciarUsuario()">Iniciar Sesión</ion-button>
+          <ion-button expand="block" fill="outline" [routerLink]="['/registro']">Registrarse</ion-button>
+        </ion-list>
+      </form>
+      
+      <br>
+      
+    </ion-card-content>
+
+  </ion-card>
+
+</ion-content>

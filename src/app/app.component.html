@@ -1,0 +1,60 @@
+<ion-app>
+  <ion-header id="main-content" [translucent]="true">
+    <ion-toolbar style="color: rgb(194, 129, 255); --background: rgb(34,0,67);">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>BLOODSHOP</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-menu contentId="main-content">
+    <ion-header style="color: rgb(34, 0, 67);">
+      <ion-toolbar style="color: rgb(194, 129, 255); --background: rgb(34,0,67);">
+        <ion-title>we ACT first</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-row> 
+        <ion-col>
+          <ion-menu-toggle>
+            <ion-button expand="full" [routerLink]="['/home']">Iniciar Sesión <ion-icon
+                name="person-outline"></ion-icon></ion-button>
+          </ion-menu-toggle>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-menu-toggle>
+            <ion-button expand="full" [routerLink]="['/home']">Cerrar Sesión <ion-icon
+                name="person-outline"></ion-icon></ion-button>
+          </ion-menu-toggle>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-menu-toggle>
+            <ion-button expand="full" [routerLink]="['/perfil']">Perfil <ion-icon
+                name="person-outline"></ion-icon></ion-button>
+          </ion-menu-toggle>
+        </ion-col>
+      </ion-row>
+      <br>
+      <ion-row>
+        <ion-col>
+          <ion-menu-toggle>
+            <ion-button expand="full" [routerLink]="['/inicio']">Inicio</ion-button>
+          </ion-menu-toggle>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-menu-toggle auto-hide="false">
+            <ion-button expand="full">Cerrar menú</ion-button>
+          </ion-menu-toggle>
+        </ion-col>
+      </ion-row>
+    </ion-content>
+  </ion-menu>
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-app>
