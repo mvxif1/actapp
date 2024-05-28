@@ -15,7 +15,8 @@
       <form [formGroup]="loginForm" (ngSubmit)="iniciarUsuario()">
         <ion-list>
           <ion-item>
-            <ion-input label="Correo:" formControlName="email" placeholder="Ingresa tu Correo"><ion-icon name="person-outline" slot="end" style="font-size: 25px;"></ion-icon></ion-input>
+            <ion-label position="floating">Usuario <ion-icon name="person-outline" slot="end"></ion-icon></ion-label>
+            <ion-input label="Correo:" formControlName="email" placeholder="Ingresa tu Correo"></ion-input>
           </ion-item>
 
           <div style="color: red; margin-left: 10px;"
@@ -27,7 +28,9 @@
           </div>
 
           <ion-item>
-            <ion-input label="Contraseña:" formControlName="password" placeholder="Ingresa tu Contraseña"><ion-icon name="lock-closed-outline" slot="end" style="font-size: 25px;"></ion-icon></ion-input>
+            <ion-label position="floating">Contraseña <ion-icon name="lock-closed-outline" slot="end"></ion-icon></ion-label>
+            <ion-input label="Contraseña:" formControlName="password" placeholder="Ingresa tu Contraseña"></ion-input>
+            
           </ion-item>
           <div style="color: red; margin-left: 10px;"
             *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">

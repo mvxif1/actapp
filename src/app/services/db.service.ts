@@ -8,8 +8,9 @@ import { Rol } from './rol';
   providedIn: 'root'
 })
 export class DbService {
-  
+  private rolActual: number = 0;
   public database!: SQLiteObject;
+  private logueado: number = 0;
   
   tablaUsuario: string = "CREATE TABLE IF NOT EXISTS usuario (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(100) NOT NULL, apellido VARCHAR(100) NOT NULL, rut VARCHAR(12) NOT NULL, correo VARCHAR(100) NOT NULL UNIQUE, clave VARCHAR(256) NOT NULL, id_rol INTEGER, FOREIGN KEY (id_rol) REFERENCES rol (id_rol));";
   tablaRol: string= "CREATE TABLE IF NOT EXISTS rol(id_rol INTEGER PRIMARY KEY autoincrement, nombre VARCHAR(50) NOT NULL);";
@@ -99,7 +100,7 @@ export class DbService {
     
     async iniciarSesion(correo: string, clave: string): Promise<Usuario | false> {
       try {
-        const res = await this.database.executeSql('SELECT * FROM usuarios WHERE correo = ? AND clave = ?', [correo, clave]);
+        const res = await this.database.executeSql('SELECT * FROM usuario WHERE correo = ? AND clave = ?', [correo, clave]);
         if (res.rows.length > 0) {
           const usuario: Usuario = {
             id: res.rows.item(0).id,
@@ -119,6 +120,14 @@ export class DbService {
         return false;
       }
     }
+
+  setRolActual(rol: number): void {
+    this.rolActual = rol;
+  }
+  getRolActual(): number {
+    return this.rolActual;
+  }
+  
 
   async presentAlertN(msj: string) {
     const alert = await this.alertController.create({

@@ -1,37 +1,53 @@
 <ion-app>
   <ion-header id="main-content" [translucent]="true">
-    <ion-toolbar style="color: rgb(194, 129, 255); --background: rgb(34,0,67);">
+    <ion-toolbar style="color: rgb(255, 255, 255); --background: rgb(25, 100, 255);">
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>BLOODSHOP</ion-title>
+      <ion-title>We ACT first</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-menu contentId="main-content">
-    <ion-header style="color: rgb(34, 0, 67);">
-      <ion-toolbar style="color: rgb(194, 129, 255); --background: rgb(34,0,67);">
+    <ion-header style="color: rgb(255, 255, 255);">
+      <ion-toolbar style="color: rgb(255, 255, 255); --background: rgb(25, 100, 255);">
         <ion-title>we ACT first</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-row> 
+        <ion-row>
+          <ion-col>
+            <ion-menu-toggle>
+              <ion-button expand="full" [routerLink]="['/inicio']">Inicio</ion-button>
+            </ion-menu-toggle>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="!estaLogueado()">
+          <ion-col>
+            <ion-menu-toggle>
+              <ion-button expand="full" [routerLink]="['/home']">Iniciar Sesión <ion-icon
+                  name="person-outline"></ion-icon>
+              </ion-button>
+            </ion-menu-toggle>
+          </ion-col>
+        </ion-row>
+      <ion-row *ngIf="estaLogueado()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/home']">Iniciar Sesión <ion-icon
+            <ion-button expand="full" (click)="cerrarsesion()">Cerrar Sesión <ion-icon
                 name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
-      <ion-row>
+      <ion-row *ngIf="esUsuario()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/home']">Cerrar Sesión <ion-icon
+            <ion-button expand="full" [routerLink]="['/perfil']">Perfil <ion-icon
                 name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
-      <ion-row>
+      <ion-row *ngIf="esAdmin()">
         <ion-col>
           <ion-menu-toggle>
             <ion-button expand="full" [routerLink]="['/perfil']">Perfil <ion-icon
@@ -40,13 +56,6 @@
         </ion-col>
       </ion-row>
       <br>
-      <ion-row>
-        <ion-col>
-          <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/inicio']">Inicio</ion-button>
-          </ion-menu-toggle>
-        </ion-col>
-      </ion-row>
       <ion-row>
         <ion-col>
           <ion-menu-toggle auto-hide="false">
