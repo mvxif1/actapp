@@ -21,28 +21,23 @@ export class HomePage {
 
   ngOnInit() {
   }
+  
   async iniciarUsuario(){
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
-
-    const usuario = await this.dbservice.iniciarSesion(email, password);
-    if (email === 'admin@admin.cl' && password === 'admin'){
-      this.dbservice.setRolActual(2);
-      this.loginForm.reset();
-      this.navCtrl.navigateForward('/inicio');
-      this.dbservice.presentAlertP("Iniciaste sesión correctamente!")
-    }else{
-      if(usuario){
+    
+    let usuario = await this.dbservice.iniciarSesion(email, password);
+    if (usuario) {
         this.dbservice.setRolActual(1);
         this.loginForm.reset();
         this.navCtrl.navigateForward('/inicio')
-      }else{
+        this.dbservice.presentAlertP("Has ingresado al usuario");
+      } else {
         this.loginForm.reset()
         this.dbservice.presentAlertN("Usuario ingresado incorrecto")
       }
     }
-
-
-    
   }
-}
+
+
+

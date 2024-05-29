@@ -1,6 +1,6 @@
 <ion-app>
   <ion-header id="main-content" [translucent]="true">
-    <ion-toolbar style="color: rgb(255, 255, 255); --background: rgb(25, 100, 255);">
+    <ion-toolbar style="color: rgb(255, 255, 255); --background: #000e76;">
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
@@ -10,7 +10,7 @@
 
   <ion-menu contentId="main-content">
     <ion-header style="color: rgb(255, 255, 255);">
-      <ion-toolbar style="color: rgb(255, 255, 255); --background: rgb(25, 100, 255);">
+      <ion-toolbar style="color: rgb(255, 255, 255); --background: #000e76;">
         <ion-title>we ACT first</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -42,7 +42,7 @@
       <ion-row *ngIf="esUsuario()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/perfil']">Perfil <ion-icon
+            <ion-button expand="full" [routerLink]="['/perfil']">Perfil<ion-icon
                 name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
@@ -50,11 +50,12 @@
       <ion-row *ngIf="esAdmin()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/perfil']">Perfil <ion-icon
+            <ion-button expand="full" [routerLink]="['/perfil']">Administrador<ion-icon
                 name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
+      
       <br>
       <ion-row>
         <ion-col>

@@ -98,28 +98,30 @@ export class DbService {
       });
     }
     
-    async iniciarSesion(correo: string, clave: string): Promise<Usuario | false> {
-      try {
-        const res = await this.database.executeSql('SELECT * FROM usuario WHERE correo = ? AND clave = ?', [correo, clave]);
-        if (res.rows.length > 0) {
-          const usuario: Usuario = {
-            id: res.rows.item(0).id,
-            nombre: res.rows.item(0).nombre,
-            apellido: res.rows.item(0).apellido,
-            rut: res.rows.item(0).rut,
-            correo: res.rows.item(0).correo,
-            clave: res.rows.item(0).clave,
-            id_rol: res.rows.item(0).id_rol,
-          };
-          return usuario;
-        } else {
+    iniciarSesion(correo: string, clave: string): Promise<Usuario | boolean> {
+      return this.database.executeSql('SELECT * FROM usuario WHERE correo = ? AND clave = ?', [correo, clave])
+        .then(res => {
+          if (res.rows.length > 0) {
+            const usuario: Usuario = {
+              id: res.rows.item(0).id,
+              nombre: res.rows.item(0).nombre,
+              apellido: res.rows.item(0).apellido,
+              rut: res.rows.item(0).rut,
+              correo: res.rows.item(0).correo,
+              clave: res.rows.item(0).clave,
+              id_rol: res.rows.item(0).id_rol,
+            };
+            return usuario;
+          } else {
+            return false;
+          }
+        })
+        .catch(e => {
+          this.presentAlertN('Error al iniciar sesión: ' + e);
           return false;
-        }
-      } catch (e) {
-        this.presentAlertN('Error al iniciar sesión: ' + e);
-        return false;
-      }
+        });
     }
+    
 
   setRolActual(rol: number): void {
     this.rolActual = rol;
