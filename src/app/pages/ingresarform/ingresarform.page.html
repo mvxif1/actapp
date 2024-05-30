@@ -8,166 +8,161 @@
   </ion-header>
   
   <ion-card id="form">
-      <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
+    <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
   
     <ion-card-title style="font-size: 13px;">ORDEN DE SERVICIO</ion-card-title>
     <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Evento Cliente</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Evento Cliente</ion-label>
+        <ion-input id="eventoCliente"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label style="font-size: 12px;">Incidente</ion-label>
-          <ion-radio-group slot="end" value="no">
-            <ion-item>
-              <ion-text>Si</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
-              <ion-text>No</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
-            </ion-item>
-          </ion-radio-group>
-        </ion-item>
+      <ion-item>
+        <ion-label style="font-size: 12px;">Incidente</ion-label>
+        <ion-radio-group id="incidente" slot="end" value="no">
+          <ion-item>
+            <ion-text>Si</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
+            <ion-text>No</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
         
-        <ion-item>
-          <ion-label style="font-size: 12px;">Requerimiento</ion-label>
-          <ion-radio-group slot="end" value="no">
-            <ion-item>
-              <ion-text>Si</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
-              <ion-text>No</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
-            </ion-item>
-          </ion-radio-group>
-        </ion-item>
+      <ion-item>
+        <ion-label style="font-size: 12px;">Requerimiento</ion-label>
+        <ion-radio-group id="requerimiento" slot="end" value="no">
+          <ion-item>
+            <ion-text>Si</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
+            <ion-text>No</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Tiempo Traslado</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Tiempo Traslado</ion-label>
+        <ion-input id="tiempoTraslado"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Kilometros Recorridos</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Kilometros Recorridos</ion-label>
+        <ion-input id="kilometrosRecorridos"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Evento ACT S.A</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Evento ACT S.A</ion-label>
+        <ion-input id="eventoACT"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Cliente</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Cliente</ion-label>
+        <ion-input id="cliente"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-text style="font-size: 12px;">Fecha</ion-text>
-          <ion-datetime size="cover" presentation="date"></ion-datetime>
-        </ion-item>
+      <ion-item>
+        <ion-text style="font-size: 12px;">Fecha</ion-text>
+        <ion-datetime id="fecha" size="cover" presentation="date"></ion-datetime>
+      </ion-item>
         
-        <ion-item>
-          <ion-text style="font-size: 12px;">Hora de Inicio</ion-text>
-          <ion-datetime class="custom-datetime" size="cover" presentation="time"></ion-datetime>
-        </ion-item>
+      <ion-item>
+        <ion-text style="font-size: 12px;">Hora de Inicio</ion-text>
+        <ion-datetime id="horaInicio" class="custom-datetime" size="cover" presentation="time"></ion-datetime>
+      </ion-item>
 
-        <ion-item>
-          <ion-text style="font-size: 12px;">Hora de Termino</ion-text>
-          <ion-datetime class="custom-datetime" size="cover" presentation="time"></ion-datetime>
-        </ion-item>
+      <ion-item>
+        <ion-text style="font-size: 12px;">Hora de Termino</ion-text>
+        <ion-datetime id="horaTermino" class="custom-datetime" size="cover" presentation="time"></ion-datetime>
+      </ion-item>
     </ion-list>
-
 
     <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL CLIENTE</ion-card-title>
     <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Cliente - Site</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Cliente - Site</ion-label>
+        <ion-input id="clienteSite"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Contacto</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Contacto</ion-label>
+        <ion-input id="contacto"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Teléfono de contacto</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Teléfono de contacto</ion-label>
+        <ion-input id="telefonoContacto"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Dirección</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Dirección</ion-label>
+        <ion-input id="direccion"></ion-input>
+      </ion-item>
     </ion-list>
 
     <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL HARDWARE REPORTADO</ion-card-title>
     <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Marca</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Marca</ion-label>
+        <ion-input id="marca"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Equipo</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Equipo</ion-label>
+        <ion-input id="equipo"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Modelo</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Modelo</ion-label>
+        <ion-input id="modelo"></ion-input>
+      </ion-item>
         
-        <ion-item>
-          <ion-label position="stacked">Part Number</ion-label>
-          <ion-input></ion-input>
-        </ion-item>    
+      <ion-item>
+        <ion-label position="stacked">Part Number</ion-label>
+        <ion-input id="partNumber"></ion-input>
+      </ion-item>    
 
-        <ion-item>
-          <ion-label position="stacked">Serie</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Serie</ion-label>
+        <ion-input id="serie"></ion-input>
+      </ion-item>
 
-        <ion-item>
-          <ion-label position="stacked">IP</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">IP</ion-label>
+        <ion-input id="ip"></ion-input>
+      </ion-item>
                 
-        <ion-item>
-          <ion-label position="stacked">Version SO - FW - ETC</ion-label>
-          <ion-input></ion-input>
-        </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Version SO - FW - ETC</ion-label>
+        <ion-input id="versionSO"></ion-input>
+      </ion-item>
 
-        <ion-item>
-          <ion-text style="font-size: 13px;">Contador de Páginas</ion-text>
-          <ion-input style="border: 5px;"></ion-input>
-          <ion-radio-group slot="end" value="no">
-            <ion-item>
-              <ion-text style="font-size: 8px;">No Disponible</ion-text>
-              <ion-radio value="si"></ion-radio>
-              <ion-text style="font-size: 8px;">No Aplica</ion-text>
-              <ion-radio value="no"></ion-radio>
-            </ion-item>
-          </ion-radio-group>
-        </ion-item>
+      <ion-item>
+        <ion-text style="font-size: 13px;">Contador de Páginas</ion-text>
+        <ion-input style="border: 5px;" id="contadorPaginas"></ion-input>
+        <ion-radio-group id="contadorPaginasRadio" slot="end" value="no">
+          <ion-item>
+            <ion-text style="font-size: 8px;">No Disponible</ion-text>
+            <ion-radio value="si"></ion-radio>
+            <ion-text style="font-size: 8px;">No Aplica</ion-text>
+            <ion-radio value="no"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
         
-        <ion-item>
-          <ion-label style="font-size: 12px;">% Kit Mantenimiento</ion-label>
-          <ion-radio-group slot="end" value="no">
-            <ion-item>
-              <ion-text>Si</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
-              <ion-text>No</ion-text>
-              <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
-            </ion-item>
-          </ion-radio-group>
-        </ion-item>
-
-
+      <ion-item>
+        <ion-label style="font-size: 12px;">% Kit Mantenimiento</ion-label>
+        <ion-radio-group id="kitMantenimiento" slot="end" value="no">
+          <ion-item>
+            <ion-text>Si</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
+            <ion-text>No</ion-text>
+            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-item>
     </ion-list>
+
     <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
   </ion-card>
-  
-  <script src="/src/app/services/jspdf.min.js"></script>
-  <script src="/src/app/services/app.js"></script>
 </ion-content>
