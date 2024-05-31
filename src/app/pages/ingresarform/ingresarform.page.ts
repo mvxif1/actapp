@@ -1,5 +1,7 @@
 import { Component, ViewChild} from '@angular/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import jsPDF from 'jspdf';
+
 @Component({
   selector: 'app-ingresarform',
   templateUrl: './ingresarform.page.html',
@@ -9,7 +11,7 @@ export class IngresarformPage {
 
   constructor() { }
 
-  async loadImage(url: string): Promise<string> {
+  async fotoPdf(url: string): Promise<string> {
     const response = await fetch(url);
     const blob = await response.blob();
     return new Promise((resolve) => {
@@ -17,9 +19,13 @@ export class IngresarformPage {
       reader.onloadend = () => resolve(reader.result as string);
       reader.readAsDataURL(blob);
     });
+
   }
 
+
+
   async generarPDF() {
+
     const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
     const incidente = (document.getElementById('incidente') as HTMLIonRadioGroupElement)?.value || '';
     const requerimiento = (document.getElementById('requerimiento') as HTMLIonRadioGroupElement)?.value || '';
@@ -45,41 +51,55 @@ export class IngresarformPage {
     const contadorPaginasRadio = (document.getElementById('contadorPaginasRadio') as HTMLIonRadioGroupElement)?.value || '';
     const kitMantenimiento = (document.getElementById('kitMantenimiento') as HTMLIonRadioGroupElement)?.value || '';
 
-    const image = await this.loadImage('assets/ticket.jpg');
+    const image = await this.fotoPdf('assets/ticket.jpg');
     const pdf = new jsPDF('p', 'pt', 'letter');
 
     pdf.addImage(image, 'JPEG', 0, 0, 565, 792);
+    pdf.setFontSize(8),
+    pdf.text(eventoCliente, 161, 80),
+    pdf.text(incidente, 260, 140),
+    pdf.text(requerimiento, 260, 155),
+    pdf.text(tiempoTraslado, 195, 115),
+    pdf.text(kilometrosRecorridos, 195, 124),
+    pdf.text(eventoACT, 260, 200),
+    pdf.text(cliente, 260, 215),
+    pdf.text(fecha, 260, 230),
+    pdf.text(horaInicio, 260, 245),
+    pdf.text(horaTermino, 260, 260),
+  
+    pdf.text(clienteSite, 260, 275),
+    pdf.text(contacto, 260, 290),
+    pdf.text(telefonoContacto, 260, 305),
+    pdf.text(direccion, 260, 320),
+  
+    pdf.text(marca, 260, 335),
+    pdf.text(equipo, 260, 350),
+    pdf.text(modelo, 260, 365),
+    pdf.text(partNumber, 260, 380),
+    pdf.text(serie, 260, 395),
+    pdf.text(ip, 260, 410),
+    pdf.text(versionSO, 260, 425),
+    pdf.text(contadorPaginas, 260, 440),
+    pdf.text(contadorPaginasRadio, 260, 455),
+    pdf.text(kitMantenimiento, 260, 470)
 
-    pdf.setFontSize(8);
-    pdf.text(eventoCliente, 161, 80);
-    pdf.text(incidente, 260, 140);
-    pdf.text(requerimiento, 260, 155);
-    pdf.text(tiempoTraslado, 195, 115);
-    pdf.text(kilometrosRecorridos, 195, 124);
-    pdf.text(eventoACT, 260, 200);
-    pdf.text(cliente, 260, 215);
-    pdf.text(fecha, 260, 230);
-    pdf.text(horaInicio, 260, 245);
-    pdf.text(horaTermino, 260, 260);
 
-    pdf.text(clienteSite, 260, 275);
-    pdf.text(contacto, 260, 290);
-    pdf.text(telefonoContacto, 260, 305);
-    pdf.text(direccion, 260, 320);
+    const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
+    const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
+   try {
+      const fileName = 'orden_de_servicio.pdf';
+      const archivoGuardado = await Filesystem.writeFile({
+        path: fileName, // Ruta completa del archivo en la carpeta de descargas
+        data: pdfData,
+        directory: Directory.External, // Puedes usar cualquier directorio en este caso
+      });
 
-    pdf.text(marca, 260, 335);
-    pdf.text(equipo, 260, 350);
-    pdf.text(modelo, 260, 365);
-    pdf.text(partNumber, 260, 380);
-    pdf.text(serie, 260, 395);
-    pdf.text(ip, 260, 410);
-    pdf.text(versionSO, 260, 425);
-    pdf.text(contadorPaginas, 260, 440);
-    pdf.text(contadorPaginasRadio, 260, 455);
-    pdf.text(kitMantenimiento, 260, 470);
-
-    pdf.save('orden_de_servicio.pdf');
+      console.log('Archivo guardado en descargas:', archivoGuardado.uri);
+    } catch (error) {
+      console.error('Error al guardar el archivo:', error);
+    }
   }
-
-
 }
+
+
+
