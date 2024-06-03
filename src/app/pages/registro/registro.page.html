@@ -15,6 +15,7 @@
       <form [formGroup]="registroForm" (ngSubmit)="registrarUsuario()">
         <ion-list>
           <ion-item>
+            <ion-label position="floating">Rut</ion-label>
             <ion-input label="Rut" formControlName="rut" placeholder="Ingresa tu RUT"></ion-input>
           </ion-item>
           <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="registroForm.get('rut')?.invalid && (registroForm.get('rut')?.dirty || registroForm.get('rut')?.touched)">
@@ -23,6 +24,7 @@
           </div>
 
           <ion-item>
+            <ion-label position="floating">Nombre</ion-label>
             <ion-input label="Nombre" formControlName="nombre" placeholder="Ingresa tu nombre"></ion-input>
           </ion-item>
           <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="registroForm.get('nombre')?.invalid && (registroForm.get('nombre')?.dirty || registroForm.get('nombre')?.touched)">
@@ -30,6 +32,7 @@
           </div>
 
           <ion-item>
+            <ion-label position="floating">Apellido</ion-label>
             <ion-input label="Apellido" formControlName="apellido" placeholder="Ingresa tu apellido"></ion-input>
           </ion-item>
           <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="registroForm.get('apellido')?.invalid && (registroForm.get('apellido')?.dirty || registroForm.get('apellido')?.touched)">
@@ -37,6 +40,7 @@
           </div>
 
           <ion-item>
+            <ion-label position="floating">Correo</ion-label>
             <ion-input label="Correo" formControlName="correo" placeholder="Ingresa tu correo"></ion-input>
           </ion-item>
           <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="registroForm.get('correo')?.invalid && (registroForm.get('correo')?.dirty || registroForm.get('correo')?.touched)">
@@ -44,6 +48,7 @@
           </div>
 
           <ion-item>
+            <ion-label position="floating">Contraseña</ion-label>
             <ion-input label="Contraseña" formControlName="clave" placeholder="Ingresa tu contraseña" type="password" pattern="(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@$!%*?&.]).*">
               
             </ion-input>
@@ -70,26 +75,9 @@
         </ion-list>
         <br>
         <ion-button expand="block" type="submit" [disabled]="!registroForm.valid">Registrarse</ion-button>
-        <ion-button expand="block" fill="outline" [routerLink]="['/login']">Volver</ion-button>
+        <ion-button expand="block" fill="outline" [routerLink]="['/home']">Volver</ion-button>
         
       </form>
-    </ion-card-content>
-  </ion-card>
-
-
-  <ion-card>
-    <ion-card-content>
-      <ion-card-header class="ion-text-center">
-        <ion-card-title>Usuarios Registrados</ion-card-title>
-      </ion-card-header>
-      <ion-list>
-        <ion-item *ngFor="let usuario of usuarios">
-          <ion-label>
-            <h2>{{ usuario.nombre }} {{ usuario.apellido }}</h2>
-            <p>{{ usuario.correo }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
     </ion-card-content>
   </ion-card>
 

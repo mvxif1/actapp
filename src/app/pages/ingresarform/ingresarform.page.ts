@@ -1,6 +1,9 @@
-import { Component, ViewChild} from '@angular/core';
+import { Component, ViewChild, ElementRef} from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import  SignaturePad  from 'signature_pad';
 import jsPDF from 'jspdf';
+import { DbService } from 'src/app/services/db.service';
+
 
 @Component({
   selector: 'app-ingresarform',
@@ -8,8 +11,26 @@ import jsPDF from 'jspdf';
   styleUrls: ['./ingresarform.page.scss'],
 })
 export class IngresarformPage {
+  @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
+  signaturePad: any;
+  constructor(private db: DbService, private elementRef: ElementRef) { }
 
-  constructor() { }
+  ngOnInit(){
+    const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height= window.innerHeight -140;
+    console.log(canvas.width, ' - ', canvas.height);
+    if (this.signaturePad){
+      this.signaturePad.clear();
+    }
+  }
+  public ngAfterViewInit(): void{
+    this.signaturePad = new SignaturePad(this.signaturePadElement.nativeElement,{
+      penColor: 'rgb(0.0.0)',
+      backgroundColor: 'rgb(255,255,255)',
+    });
+    this.signaturePad.clear();
+  }
 
   async fotoPdf(url: string): Promise<string> {
     const response = await fetch(url);
@@ -21,11 +42,19 @@ export class IngresarformPage {
     });
 
   }
+  isCanvasBlank(): boolean {
+    return this.signaturePad.isEmpty();
+  }
+  guardar(){
+
+  }
+  limpiar(){
+
+  }
 
 
 
   async generarPDF() {
-
     const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
     const incidente = (document.getElementById('incidente') as HTMLIonRadioGroupElement)?.value || '';
     const requerimiento = (document.getElementById('requerimiento') as HTMLIonRadioGroupElement)?.value || '';
@@ -83,17 +112,18 @@ export class IngresarformPage {
     pdf.text(contadorPaginasRadio, 260, 455),
     pdf.text(kitMantenimiento, 260, 470)
 
+    pdf.save(eventoCliente + ".pdf");
 
     const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
     const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
    try {
-      const fileName = 'orden_de_servicio.pdf';
+      const fileName = eventoCliente + ".pdf";
       const archivoGuardado = await Filesystem.writeFile({
         path: fileName, // Ruta completa del archivo en la carpeta de descargas
         data: pdfData,
         directory: Directory.External, // Puedes usar cualquier directorio en este caso
       });
-
+      this.db.presentAlertP("Archivo guardado correctamente");
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
     } catch (error) {
       console.error('Error al guardar el archivo:', error);

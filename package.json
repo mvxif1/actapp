@@ -35,6 +35,7 @@
     "@ionic-native/file-opener": "^5.36.0",
     "@ionic-native/sqlite": "^5.36.0",
     "@ionic/angular": "^6.5.0",
+    "angular2-signaturepad": "^4.0.2",
     "canvas": "^2.11.2",
     "cordova-sqlite-storage": "^6.1.0",
     "glob": "^10.4.1",
@@ -48,6 +49,7 @@
     "read-package-json": "^7.0.1",
     "rimraf": "^5.0.7",
     "rxjs": "^6.6.7",
+    "signature_pad": "^5.0.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },

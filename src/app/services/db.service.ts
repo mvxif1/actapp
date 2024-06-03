@@ -9,6 +9,7 @@ import { Rol } from './rol';
 })
 export class DbService {
   private rolActual: number = 0;
+  private usuarioActual: Usuario | null = null;
   public database!: SQLiteObject;
   private logueado: number = 0;
   
@@ -111,6 +112,7 @@ export class DbService {
               clave: res.rows.item(0).clave,
               id_rol: res.rows.item(0).id_rol,
             };
+            this.usuarioActual = usuario;
             return usuario;
           } else {
             return false;
@@ -122,6 +124,9 @@ export class DbService {
         });
     }
     
+  getUsuarioActual(): Usuario | null {
+    return this.usuarioActual;
+  }
 
   setRolActual(rol: number): void {
     this.rolActual = rol;
