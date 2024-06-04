@@ -27,7 +27,7 @@ export class IngresarformPage {
   }
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
-    canvas.width = 420;
+    canvas.width = 300;
     canvas.height = 200;
     this.signaturePad = new SignaturePad(canvas, {
       penColor: 'rgb(0, 0, 0)',

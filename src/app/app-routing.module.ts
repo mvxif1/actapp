@@ -26,7 +26,15 @@ const routes: Routes = [
   {
     path: 'ingresarform',
     loadChildren: () => import('./pages/ingresarform/ingresarform.module').then( m => m.IngresarformPageModule)
+  },  {
+    path: 'perfil',
+    loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
+  {
+    path: 'editarperfil',
+    loadChildren: () => import('./pages/editarperfil/editarperfil.module').then( m => m.EditarperfilPageModule)
+  },
+
 
 ];
 

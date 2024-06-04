@@ -9,7 +9,7 @@ import { Rol } from './rol';
 })
 export class DbService {
   private rolActual: number = 0;
-  private usuarioActual: Usuario | null = null;
+  private usuarioActual: BehaviorSubject<Usuario | null> = new BehaviorSubject<Usuario | null>(null);
   public database!: SQLiteObject;
   private logueado: number = 0;
   
@@ -82,6 +82,7 @@ export class DbService {
         }
         this.fetchUsuarios();
         this.listaUsuarios.next(items as any);
+        this.usuarioActual.next(items.length > 0 ? items[0] : null);
       });
     }
     
@@ -99,7 +100,7 @@ export class DbService {
       });
     }
     
-    iniciarSesion(correo: string, clave: string): Promise<Usuario | boolean> {
+    iniciarSesion(correo: string, clave: string): Promise<Usuario | false> {
       return this.database.executeSql('SELECT * FROM usuario WHERE correo = ? AND clave = ?', [correo, clave])
         .then(res => {
           if (res.rows.length > 0) {
@@ -112,7 +113,7 @@ export class DbService {
               clave: res.rows.item(0).clave,
               id_rol: res.rows.item(0).id_rol,
             };
-            this.usuarioActual = usuario;
+            
             return usuario;
           } else {
             return false;
@@ -124,9 +125,9 @@ export class DbService {
         });
     }
     
-  getUsuarioActual(): Usuario | null {
-    return this.usuarioActual;
-  }
+    getUsuarioActual(): Observable<Usuario | null> {
+      return this.usuarioActual.asObservable();
+    }
 
   setRolActual(rol: number): void {
     this.rolActual = rol;
