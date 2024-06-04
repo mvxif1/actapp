@@ -13,6 +13,7 @@ import { DbService } from 'src/app/services/db.service';
 export class IngresarformPage {
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   signaturePad: any;
+  signatureImage: any;
   constructor(private db: DbService, private elementRef: ElementRef) { }
 
   ngOnInit(){
@@ -24,13 +25,16 @@ export class IngresarformPage {
       this.signaturePad.clear();
     }
   }
-  public ngAfterViewInit(): void{
-    this.signaturePad = new SignaturePad(this.signaturePadElement.nativeElement,{
-      penColor: 'rgb(0.0.0)',
-      backgroundColor: 'rgb(255,255,255)',
+  ngAfterViewInit() {
+    const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
+    canvas.width = 420;
+    canvas.height = 200;
+    this.signaturePad = new SignaturePad(canvas, {
+      penColor: 'rgb(0, 0, 0)',
+      backgroundColor: 'rgb(255, 255, 255)',
     });
-    this.signaturePad.clear();
   }
+  
 
   async fotoPdf(url: string): Promise<string> {
     const response = await fetch(url);
@@ -43,13 +47,15 @@ export class IngresarformPage {
 
   }
   isCanvasBlank(): boolean {
-    return this.signaturePad.isEmpty();
+    return this.signaturePad ? this.signaturePad.isEmpty() : true;
   }
-  guardar(){
 
+  guardar(){
+    this.signatureImage = this.signaturePad.toDataURL();
+    console.log(this.signatureImage);
   }
   limpiar(){
-
+    this.signaturePad.clear();
   }
 
 
@@ -110,7 +116,10 @@ export class IngresarformPage {
     pdf.text(versionSO, 260, 425),
     pdf.text(contadorPaginas, 260, 440),
     pdf.text(contadorPaginasRadio, 260, 455),
-    pdf.text(kitMantenimiento, 260, 470)
+    pdf.text(kitMantenimiento, 260, 470);
+    if (this.signatureImage) {
+      pdf.addImage(this.signatureImage, 'PNG', 100, 500, 200, 100); // Ajusta las coordenadas y el tamaño según sea necesario
+    }
 
     pdf.save(eventoCliente + ".pdf");
 
