@@ -14,66 +14,33 @@
     <ion-list>
       <ion-item>
         <ion-label position="stacked">Evento Cliente</ion-label>
-        <ion-input id="eventoCliente"></ion-input>
+        <ion-input type="number" id="eventoCliente"></ion-input>
+      </ion-item>
+        
+      <ion-list>
+        <ion-item>
+          <ion-label position="stacked">Tipo de servicio</ion-label>
+          <ion-select id="tipoServicio" placeholder="Selecciona el tipo de servicio" >
+            <ion-select-option value="incidente">Incidente</ion-select-option>
+            <ion-select-option value="requerimiento">Solicitud</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+        
+      <ion-item>
+        <ion-text style="font-size: 12px;">Fecha: </ion-text>
+        <ion-input id="fecha" [value]="fechaHoy()" readonly style="margin-left: 10px;"></ion-input>
       </ion-item>
         
       <ion-item>
-        <ion-label style="font-size: 12px;">Incidente</ion-label>
-        <ion-radio-group id="incidente" slot="end" value="no">
-          <ion-item>
-            <ion-text>Si</ion-text>
-            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
-            <ion-text>No</ion-text>
-            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-      </ion-item>
-        
-      <ion-item>
-        <ion-label style="font-size: 12px;">Requerimiento</ion-label>
-        <ion-radio-group id="requerimiento" slot="end" value="no">
-          <ion-item>
-            <ion-text>Si</ion-text>
-            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="si"></ion-radio>
-            <ion-text>No</ion-text>
-            <ion-radio style="margin-left: 10px; margin-right: 10px;" value="no"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-      </ion-item>
-        
-      <ion-item>
-        <ion-label position="stacked">Tiempo Traslado</ion-label>
-        <ion-input id="tiempoTraslado"></ion-input>
-      </ion-item>
-        
-      <ion-item>
-        <ion-label position="stacked">Kilometros Recorridos</ion-label>
-        <ion-input id="kilometrosRecorridos"></ion-input>
-      </ion-item>
-        
-      <ion-item>
-        <ion-label position="stacked">Evento ACT S.A</ion-label>
-        <ion-input id="eventoACT"></ion-input>
-      </ion-item>
-        
-      <ion-item>
-        <ion-label position="stacked">Cliente</ion-label>
-        <ion-input id="cliente"></ion-input>
-      </ion-item>
-        
-      <ion-item>
-        <ion-text style="font-size: 12px;">Fecha</ion-text>
-        <ion-datetime id="fecha" size="cover" presentation="date"></ion-datetime>
-      </ion-item>
-        
-      <ion-item>
-        <ion-text style="font-size: 12px;">Hora de Inicio</ion-text>
-        <ion-datetime id="horaInicio" class="custom-datetime" size="cover" presentation="time"></ion-datetime>
+        <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
+        <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
+        <ion-text id="ampm" style="margin-right: 50%;"></ion-text>
       </ion-item>
 
       <ion-item>
         <ion-text style="font-size: 12px;">Hora de Termino</ion-text>
-        <ion-datetime id="horaTermino" class="custom-datetime" size="cover" presentation="time"></ion-datetime>
+        <ion-input id="horaTermino" [value]="horaActual()" style="margin-left: 10px;" readonly></ion-input>
       </ion-item>
     </ion-list>
 
