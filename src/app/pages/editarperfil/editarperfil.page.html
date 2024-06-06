@@ -1,13 +1,57 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>editarperfil</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <ion-header>
     <ion-toolbar>
-      <ion-title size="large">editarperfil</ion-title>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
+
+  <ion-card>
+    <ion-card-content>
+      <ion-card-header class="ion-text-center">
+        <ion-card-title >Datos de registro</ion-card-title>
+      </ion-card-header>
+      <form [formGroup]="editarForm" (ngSubmit)="guardarCambios()">
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Rut</ion-label>
+            <ion-input label="Rut" formControlName="rut" placeholder="Ingresa tu RUT" readonly></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Nombre</ion-label>
+            <ion-input label="Nombre" formControlName="nombre" placeholder="Ingresa tu nombre"></ion-input>
+          </ion-item>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="editarForm.get('nombre')?.invalid && (editarForm.get('nombre')?.dirty || editarForm.get('nombre')?.touched)">
+            <div *ngIf="editarForm.get('nombre')?.hasError('required')">El nombre es obligatorio.</div>
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Apellido</ion-label>
+            <ion-input label="Apellido" formControlName="apellido" placeholder="Ingresa tu apellido"></ion-input>
+          </ion-item>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="editarForm.get('apellido')?.invalid && (editarForm.get('apellido')?.dirty || editarForm.get('apellido')?.touched)">
+            <div *ngIf="editarForm.get('apellido')?.hasError('required')">El apellido es obligatorio.</div>
+          </div>
+
+          <ion-item>
+            <ion-label position="stacked">Correo</ion-label>
+            <ion-input label="Correo" formControlName="correo" placeholder="Ingresa tu correo"></ion-input>
+          </ion-item>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="editarForm.get('correo')?.invalid && (editarForm.get('correo')?.dirty || editarForm.get('correo')?.touched)">
+            <div *ngIf="editarForm.get('correo')?.hasError('required')">El correo es obligatorio.</div>
+          </div>
+        </ion-list>
+        <br>
+        <ion-button expand="block" type="submit" [disabled]="!editarForm.valid">Guardar Cambios</ion-button>
+        <ion-button expand="block" fill="outline" [routerLink]="['/home']">Volver</ion-button>
+        
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+
+
+
 </ion-content>

@@ -19,6 +19,7 @@ export class DbService {
   listaUsuarios = new BehaviorSubject([]);
   listaRoles = new BehaviorSubject([]);
   private DBLista: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  usuario!: Usuario;
   
   constructor(private alertController: AlertController, public sqlite: SQLite, private platform: Platform, private navCtrl: NavController,) {
     this.crearBD();
@@ -85,6 +86,11 @@ export class DbService {
         this.usuarioActual.next(items.length > 0 ? items[0] : null);
       });
     }
+    modificarPerfil(id: any, nombre: any, apellido: any, correo: any) {
+      return this.database.executeSql('UPDATE usuario SET nombre=?, apellido=? correo=? WHERE id=?', [nombre, apellido, correo, id]).then(res => {
+        this.buscarUsuarios();
+      });
+    }
     
     registrarUsuario(nombre: string, apellido: string, rut: string, correo: string, clave: string) {
       const id_rolPredeterminado = 1;
@@ -100,7 +106,7 @@ export class DbService {
       });
     }
     
-    iniciarSesion(correo: string, clave: string): Promise<Usuario | false> {
+    async iniciarSesion(correo: string, clave: string): Promise<Usuario | false> {
       return this.database.executeSql('SELECT * FROM usuario WHERE correo = ? AND clave = ?', [correo, clave])
         .then(res => {
           if (res.rows.length > 0) {
@@ -113,7 +119,6 @@ export class DbService {
               clave: res.rows.item(0).clave,
               id_rol: res.rows.item(0).id_rol,
             };
-            
             return usuario;
           } else {
             return false;
@@ -125,15 +130,18 @@ export class DbService {
         });
     }
     
-    getUsuarioActual(): Observable<Usuario | null> {
-      return this.usuarioActual.asObservable();
-    }
-
+  getUsuarioActual(): Observable<Usuario | null> {
+    return this.usuarioActual.asObservable();
+  }
   setRolActual(rol: number): void {
     this.rolActual = rol;
   }
   getRolActual(): number {
     return this.rolActual;
+  }
+  setUsuario(usuario: Usuario) {
+    this.usuario = usuario;
+    this.buscarUsuarios();
   }
   
 

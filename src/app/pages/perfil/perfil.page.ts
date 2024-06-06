@@ -15,7 +15,6 @@ export class PerfilPage implements OnInit {
   ngOnInit() {
     this.db.getUsuarioActual().subscribe((usuario) => {
       this.usuario = usuario;
-      this.db.presentAlertP("");
     });
   
   }

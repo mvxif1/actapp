@@ -13,28 +13,24 @@
       <ion-card-title class="ion-text-center">PERFIL DE USUARIO</ion-card-title>
       <ion-list lines="full" *ngIf="usuario">
         <ion-item>
-          <ion-label>Nombre: </ion-label>
-          <ion-input type="text" readonly>{{ usuario.nombre }}</ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>Apellido: </ion-label>
-          <ion-input type="text" readonly>{{ usuario.apellido }}</ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label>RUT: </ion-label>
+          <ion-label position="stacked">RUT: </ion-label>
           <ion-input type="text" readonly>{{ usuario.rut }}</ion-input>
         </ion-item>
         <ion-item>
-          <ion-label>Correo Electrónico: </ion-label>
+          <ion-label position="stacked">Nombre: </ion-label>
+          <ion-input type="text" readonly>{{ usuario.nombre }}</ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Apellido: </ion-label>
+          <ion-input type="text" readonly>{{ usuario.apellido }}</ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Correo: </ion-label>
           <ion-input type="text" readonly>{{ usuario.correo }}</ion-input>
         </ion-item>
       </ion-list>
       <div class="ion-text-center">
         <ion-button size="block" [routerLink]="['/editarperfil']">Editar Perfil</ion-button>
-      </div>
-      <div class="ion-text-center">
-        <ion-button size="block" [routerLink]="['/olvidarclave']"
-        style="--background: rgb(102, 102, 102);">¿Olvidaste tu contraseña?</ion-button>
       </div>
     </ion-card-content>
   </ion-card>
