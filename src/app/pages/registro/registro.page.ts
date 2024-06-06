@@ -121,7 +121,7 @@ export class RegistroPage implements OnInit {
       const formulario = this.registroForm.value;
       this.dbService.registrarUsuario(formulario.nombre, formulario.apellido, formulario.rut, formulario.correo, formulario.clave) 
       console.log('Usuario registrado:');
-      this.navCtrl.navigateForward('/login');
+      this.navCtrl.navigateForward('/home');
     }
   }
 }
