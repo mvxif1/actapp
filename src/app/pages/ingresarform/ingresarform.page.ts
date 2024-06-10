@@ -18,9 +18,22 @@ export class IngresarformPage {
   @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
+  //Firma
   signaturePad: any;
   signatureImage: any;
+  //
   ingresarform! : FormGroup;
+
+  //Caracteres restantes
+  maxChars= 200;
+  role= '';
+  chars= 0;
+
+  maxChars1= 200;
+  role1= '';
+  chars1= 0;
+  //
+
   pattern = {
     numeros: /^\d{1,9}$/,
     correo: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -51,13 +64,15 @@ export class IngresarformPage {
       equipoOperativo: ['no', Validators.required],
       equipoBackup: ['no', Validators.required],
 
+      problemareport: ['', Validators.maxLength(200)],
+      solucionreport:['', Validators.maxLength(200)],
       nombrecli: ['', [Validators.required]],
       rutcli: ['', [Validators.required]],
 
     })
    }
-   
-
+  
+  
   ngOnInit(){
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
@@ -67,6 +82,7 @@ export class IngresarformPage {
       this.signaturePad.clear();
     }
   }
+
 
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
@@ -163,7 +179,6 @@ export class IngresarformPage {
     
     input.value = value;
   }
-
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
     canvas.width = 300;
@@ -203,11 +218,14 @@ export class IngresarformPage {
   async generarPDF() {
     //ORDEN DE SERVICIO
     const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
-    const tiposervicio = (document.getElementById('servicio') as HTMLSelectElement)?.value || '';
+    const tiposervicio = (document.getElementById('tipoServicio') as HTMLSelectElement)?.value || '';
     const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
     const horaInicio = (document.getElementById('horaInicio') as HTMLInputElement)?.value || '';
+    const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
+    const ampm = ampmElement ? ampmElement.textContent || '' : '';
     const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
     
+
     //INFORMACION DEL CLIENTE
     const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
     const direccion = (document.getElementById('direccion') as HTMLInputElement)?.value || '';
@@ -240,35 +258,54 @@ export class IngresarformPage {
     const image = await this.fotoPdf('assets/orden_de_servicio.jpeg');
     const pdf = new jsPDF('p', 'pt', 'letter');
 
-    pdf.addImage(image, 'JPEG', 0, 0, 560, 752);
-    pdf.setFontSize(8),
+    pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
+    pdf.setFontSize(16),
+    pdf.getFontList,
+    pdf.getFont,
     //ORDEN DE SERVICIO
-    pdf.text(eventoCliente, 218, 81),
-    pdf.text(tiposervicio, 133, 108),
-    pdf.text(fecha, 465, 81),
-    pdf.text(horaInicio, 471, 95),
-    pdf.text(horaTermino, 483, 108),
-    //INFORMACION DEL CLIENTE
-    pdf.text(cliente, 87, 155),
-    pdf.text(direccion, 101, 169),
-    pdf.text(ciudad, 86, 183),
-    pdf.text(contacto, 292, 155),
-    pdf.text(telefono, 292, 170),
-    pdf.text(correo, 292, 185);
-    //INFORMACION DEL HARDWARE
-    if (tipoEquipo === 'impresion') {
-      pdf.circle(185, 250, 10); // Coordenadas para Opción A
+    pdf.text(eventoCliente, 190, 85),
+
+    pdf.setFontSize(11)
+
+    if (tiposervicio === 'Incidente') {
+      pdf.text(tiposervicio, 121, 110);
     } else {
-      pdf.circle(222, 250, 10); // Coordenadas para Opción B
-    };
-    pdf.text(marca, 79, 270),
-    pdf.text(modelo, 87, 284),
-    pdf.text(nserie, 90, 298),
-    pdf.text(ip, 62, 313),
-    pdf.text(accesorios, 101, 327),
-    //DESCRIPCION DEL CASO
-    pdf.text(problemareport, 146, 357),
-    pdf.text(solucionreport, 92, 404);
+      if(tiposervicio === 'Solicitud')
+      pdf.text(tiposervicio, 121, 110
+      );
+    }
+    pdf.text(fecha, 435, 84),
+    pdf.text(horaInicio, 475, 98),
+    pdf.text(ampm, 515, 98),
+
+    pdf.text(horaTermino, 475, 110),
+    //INFORMACION DEL CLIENTE
+    pdf.text(cliente, 84, 157),
+    pdf.text(direccion, 100, 172),
+    pdf.text(ciudad, 85, 186),
+    pdf.text(contacto, 292, 157),
+    pdf.text(telefono, 292, 172),
+    pdf.text(correo, 292, 189)
+    //INFORMACION DEL HARDWARE
+    pdf.setFillColor(255, 0, 0);
+    if (tipoEquipo === 'impresion') {
+      pdf.circle(183, 252, 7, "F"); // Coordenadas para Opción A
+    } else {
+      pdf.circle(222, 252, 7, "F"
+      ); // Coordenadas para Opción B
+    }
+    pdf.text(marca, 98, 273),
+    pdf.text(modelo, 98, 288),
+    pdf.text(nserie, 98, 302),
+    pdf.text(ip, 60, 316),
+    pdf.text(accesorios, 98, 330);
+//DESCRIPCION DEL CASO
+    const problemareportLines = pdf.splitTextToSize(problemareport, 400); // Ancho máximo de 400 puntos
+    const solucionreportLines = pdf.splitTextToSize(solucionreport, 430); // Ancho máximo de 400 puntos
+
+    pdf.text(problemareportLines, 145, 360); // Cambia las coordenadas según lo necesites
+    pdf.text(solucionreportLines, 88, 408); // Cambia las coordenadas según lo necesites
+
     //STATUS DE SERVICIO
     //pdf.text(equipoEspera, 218, 81),
     //pdf.text(equipoOperativo, 218, 81),
@@ -277,9 +314,8 @@ export class IngresarformPage {
     //pdf.text(nombreRepuesto, 218, 81),
     //pdf.text(nparteRepuesto, 218, 81),
     //pdf.text(estadoRepuesto, 218, 81);
-
     if (this.signatureImage) {
-      pdf.addImage(this.signatureImage, 'PNG', 400, 660, 200, 100); // Ajusta las coordenadas y el tamaño según sea necesario
+      pdf.addImage(this.signatureImage, 'PNG', 310, 680, 150, 80); // Ajusta las coordenadas y el tamaño según sea necesario
     }
 
     pdf.save(eventoCliente + ".pdf");

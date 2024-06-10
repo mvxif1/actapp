@@ -25,8 +25,8 @@
         <ion-item>
           <ion-label position="stacked">Tipo de servicio</ion-label>
           <ion-select id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio" >
-            <ion-select-option value="incidente">Incidente</ion-select-option>
-            <ion-select-option value="requerimiento">Solicitud</ion-select-option>
+            <ion-select-option value="Incidente">Incidente</ion-select-option>
+            <ion-select-option value="Solicitud">Solicitud</ion-select-option>
           </ion-select>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('tiposervicio')?.invalid && (ingresarform.get('tiposervicio')?.dirty || ingresarform.get('tiposervicio')?.touched)">
@@ -172,13 +172,23 @@
       <ion-list>
         <ion-item>
           <ion-label position="stacked">Problema reportado:</ion-label>
-          <ion-textarea id="problemareport" rows="4" placeholder="Escribe el problema reportado..."></ion-textarea>
+          <ion-textarea id="problemareport" formControlName="problemareport" rows="4" [maxlength]="maxChars" [(ngModel)]="role" placeholder="Escribe el problema reportado..."></ion-textarea>
         </ion-item>
+        <ion-text style="float: right; margin-right: 10px;">Caracteres restantes: {{role.length}}/{{maxChars}}</ion-text>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('problemareport')?.invalid && (ingresarform.get('problemareport')?.dirty || ingresarform.get('problemareport')?.touched)">
+          <div *ngIf="ingresarform.get('problemareport')?.hasError('maxlength')">Este campo puede contener un máximo de 200 caracteres.</div>
+        </div>
+      </ion-list>
+
+      <ion-list>
         <ion-item>
           <ion-label position="stacked">Solución:</ion-label>
-          <ion-textarea id="solucionreport" rows="4" placeholder="Escribe la solución..."></ion-textarea>
+          <ion-textarea id="solucionreport" formControlName="solucionreport" rows="4" [maxlength]="maxChars1" [(ngModel)]="role1" placeholder="Escribe la solución..."></ion-textarea>
         </ion-item>
-      
+        <ion-text style="float: right; margin-right: 10px;">Caracteres restantes: {{role1.length}}/{{maxChars1}}</ion-text>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('solucionreport')?.invalid && (ingresarform.get('solucionreport')?.dirty || ingresarform.get('solucionreport')?.touched)">
+          <div *ngIf="ingresarform.get('solucionreport')?.hasError('maxlength')">Este campo puede contener un máximo de 200 caracteres.</div>
+        </div>
       </ion-list>
 
       <ion-card-title style="font-size: 13px;">STATUS DE SERVICIO</ion-card-title>
@@ -296,7 +306,7 @@
       </ion-item>
     </ion-list>
 
-    <ion-button expand="full" [disabled]="!ingresarform.valid" (click)="generarPDF()">Generar PDF</ion-button>
+    <ion-button expand="full"  (click)="generarPDF()">Generar PDF</ion-button>
   </ion-card>
   </form>
 </ion-content>
