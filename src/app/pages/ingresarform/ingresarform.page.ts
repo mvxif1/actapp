@@ -1,9 +1,33 @@
+const RutValidator = {
+  validaRut(rutCompleto: string): boolean {
+    rutCompleto = rutCompleto.replace('‐', '-');
+
+    if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rutCompleto)) {
+      return false;
+    }
+
+    const tmp = rutCompleto.split('-');
+    const digv = tmp[1].toUpperCase();
+    const rut = tmp[0];
+
+    return this.dv(rut) === digv;
+  },
+  
+  dv(T: string): string {
+    let M = 0, S = 1;
+    for (let i = T.length - 1; i >= 0; i--) {
+      S = (S + parseInt(T.charAt(i)) * (9 - M++ % 6)) % 11;
+    }
+    return S ? (S - 1).toString() : 'k';
+  }
+};
+
 import { Component, ViewChild, ElementRef} from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import  SignaturePad  from 'signature_pad';
 import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
 
 
@@ -21,23 +45,27 @@ export class IngresarformPage {
   //Firma
   signaturePad: any;
   signatureImage: any;
-  //
+  firmaIngresada: boolean = false;
+  
+  //Formulario
   ingresarform! : FormGroup;
-
+  repuestosform!: FormGroup;
+  
   //Caracteres restantes
   maxChars= 200;
   role= '';
   chars= 0;
-
   maxChars1= 200;
   role1= '';
   chars1= 0;
-  //
 
   pattern = {
     numeros: /^\d{1,9}$/,
     correo: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    ptsynum: /^[1-9.]+$/
+    ptsynum: /^[1-9.]+$/,
+    letras: /^[a-zA-ZñÑ\s]+$/,
+    mayusnum: /^[A-Z0-9]+$/,
+    letrasynum: /^[a-zA-ZñÑ0-9]+$/
   };
   constructor(private formBuilder: FormBuilder ,private db: DbService, private elementRef: ElementRef) {
     this.ingresarform = this.formBuilder.group({
@@ -56,20 +84,37 @@ export class IngresarformPage {
       tipoequipo: ['', [Validators.required]],
       marca: ['', [Validators.required]],
       modelo: ['', [Validators.required]],
-      nserie: ['', [Validators.required]],
+      nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
       ip: ['', [Validators.required , Validators.pattern(this.pattern.ptsynum)]],
       accesorios: ['', [Validators.required]],
+      
+      //Descripcion del caso
+      problemareport: ['', [Validators.maxLength(200)]],
+      solucionreport:['', [Validators.maxLength(200)]],
+      
+      //Status de servicio
+      equipoEspera: ['no', [Validators.required]],
+      equipoOperativo: ['no', [Validators.required]],
+      equipoBackup: ['no', [Validators.required]],
 
-      equipoEspera: ['no', Validators.required],
-      equipoOperativo: ['no', Validators.required],
-      equipoBackup: ['no', Validators.required],
+      //Datos cliente
+      nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
+      rutcli: ['', [Validators.required, this.validateRutFormat.bind(this)]],
+      
+      //Backup instalado
+      marcabackup: ['', [Validators.required]],
+      modelobackup: ['', [Validators.required]],
+      nseriebackup: ['', [Validators.required]],
+      ipbackup: ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
+      contadorbackup: ['', [Validators.required]]
+    });
 
-      problemareport: ['', Validators.maxLength(200)],
-      solucionreport:['', Validators.maxLength(200)],
-      nombrecli: ['', [Validators.required]],
-      rutcli: ['', [Validators.required]],
-
-    })
+    this.repuestosform = this.formBuilder.group({
+      //Repuestos
+      nombreRepuesto: ['', [Validators.required]],
+      nparteRepuesto: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
+      estadoRepuesto: ['', [Validators.required]],
+    });
    }
   
   
@@ -83,6 +128,24 @@ export class IngresarformPage {
     }
   }
 
+  validateRutFormat(control: FormControl) {
+    const rut = control.value;
+    if (!RutValidator.validaRut(rut)) {
+      return { invalidRut: true };
+    }
+    return null;
+  }
+
+  transformarAMayusculas(event: any) {
+    const inputValue = event.target.value;
+    event.target.value = inputValue.toUpperCase();
+    this.ingresarform.get('nserie')!.setValue(inputValue.toUpperCase());
+}
+  transformarAMayusculas1(event: any) {
+    const inputValue = event.target.value;
+    event.target.value = inputValue.toUpperCase();
+    this.ingresarform.get('nseriebackup')!.setValue(inputValue.toUpperCase());
+  }
 
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
@@ -206,10 +269,12 @@ export class IngresarformPage {
   guardar(){
     this.signatureImage = this.signaturePad.toDataURL();
     this.db.presentAlertP("Se ha guardado correctamente la firma");
+    this.firmaIngresada = true;
     console.log(this.signatureImage);
   }
   limpiar(){
     this.signaturePad.clear();
+    this.firmaIngresada = false;
     this.db.presentAlertP("Se ha limpiado correctamente la firma");
   }
 
@@ -255,6 +320,17 @@ export class IngresarformPage {
     const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
     const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
 
+    //INFORMACION EQUIPO BACKUP
+    const marcabackup = (document.getElementById('marcabackup') as HTMLInputElement)?.value || '';
+    const modelobackup = (document.getElementById('modelobackup') as HTMLInputElement)?.value || '';
+    const nseriebackup = (document.getElementById('nseriebackup') as HTMLInputElement)?.value || '';
+    const ipbackup = (document.getElementById('ipbackup') as HTMLInputElement)?.value || '';
+    const contadorbackup = (document.getElementById('contadorbackup') as HTMLInputElement)?.value || '';
+
+    //DATOS CLIENTE
+    const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
+    const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
+
     const image = await this.fotoPdf('assets/orden_de_servicio.jpeg');
     const pdf = new jsPDF('p', 'pt', 'letter');
 
@@ -299,23 +375,60 @@ export class IngresarformPage {
     pdf.text(nserie, 98, 302),
     pdf.text(ip, 60, 316),
     pdf.text(accesorios, 98, 330);
-//DESCRIPCION DEL CASO
-    const problemareportLines = pdf.splitTextToSize(problemareport, 400); // Ancho máximo de 400 puntos
-    const solucionreportLines = pdf.splitTextToSize(solucionreport, 430); // Ancho máximo de 400 puntos
+  
+    //DESCRIPCION DEL CASO
+    const problemareportLines = pdf.splitTextToSize(problemareport, 400);
+    const solucionreportLines = pdf.splitTextToSize(solucionreport, 430);
 
-    pdf.text(problemareportLines, 145, 360); // Cambia las coordenadas según lo necesites
-    pdf.text(solucionreportLines, 88, 408); // Cambia las coordenadas según lo necesites
+    pdf.text(problemareportLines, 145, 360);
+    pdf.text(solucionreportLines, 88, 408);
+
+    //REPUESTOS
+    pdf.setFontSize(8);
+    const maxRepuestos = Math.min(this.repuestos.length, 3); // Máximo de 3 repuestos o la cantidad de repuestos disponible
+    let yPosition = 480; // Posición vertical inicial para los repuestos
+    for (let i = 0; i < maxRepuestos; i++) {
+        const repuesto = this.repuestos[i];
+        pdf.text(repuesto.nombre, 55, yPosition); // Ajusta las coordenadas según lo necesites
+        pdf.text(repuesto.numeroParte, 200, yPosition); // Ajusta las coordenadas según lo necesites
+        pdf.text(repuesto.estado, 360, yPosition); // Ajusta las coordenadas según lo necesites
+        yPosition += 10; // Incrementa la posición vertical para el siguiente repuesto
+    };
+    
+    //INFORMACION EQUIPO BACKUP
+    pdf.setFontSize(11),
+    pdf.text(marcabackup, 350, 565),
+    pdf.text(modelobackup, 350, 581),
+    pdf.text(nseriebackup, 350, 595),
+    pdf.text(ipbackup, 350, 609),
+    pdf.text(contadorbackup, 350, 624);
 
     //STATUS DE SERVICIO
-    //pdf.text(equipoEspera, 218, 81),
-    //pdf.text(equipoOperativo, 218, 81),
-    //pdf.text(equipoBackup, 218, 81),
-    //REPUESTO
-    //pdf.text(nombreRepuesto, 218, 81),
-    //pdf.text(nparteRepuesto, 218, 81),
-    //pdf.text(estadoRepuesto, 218, 81);
+    if (equipoEspera === 'si') {
+      // Coordenadas para equipoEspera
+      pdf.circle(184, 555, 7, "F");
+      pdf.circle(222, 570, 7, "F");
+      pdf.circle(224, 586, 7, "F");
+    }
+
+    if (equipoOperativo === 'si') {
+      // Coordenadas para equipoEspera
+      pdf.circle(222, 555, 7, "F");
+      pdf.circle(185, 570, 7, "F");
+      pdf.circle(224, 586, 7, "F");
+    }
+
+    if (equipoBackup === 'si') {
+      // Coordenadas para equipoEspera
+      pdf.circle(222, 555, 7, "F");
+      pdf.circle(222, 570, 7, "F");
+      pdf.circle(184, 586, 7, "F");
+    }
+
+    pdf.text(nombrecli, 310, 650),
+    pdf.text(rutcli, 310, 665);
     if (this.signatureImage) {
-      pdf.addImage(this.signatureImage, 'PNG', 310, 680, 150, 80); // Ajusta las coordenadas y el tamaño según sea necesario
+      pdf.addImage(this.signatureImage, 'PNG', 300, 670, 150, 60); // Ajusta las coordenadas y el tamaño según sea necesario
     }
 
     pdf.save(eventoCliente + ".pdf");
