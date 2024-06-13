@@ -2,6 +2,7 @@ import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms'
 import { Component, OnInit } from '@angular/core';
 import { DbService } from 'src/app/services/db.service';
 import { Router } from '@angular/router';
+import { Usuario } from 'src/app/services/usuario';
 
 function correoValido(control: FormControl) {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -18,7 +19,7 @@ function correoValido(control: FormControl) {
 })
 export class EditarperfilPage implements OnInit {
   editarForm!: FormGroup;
-  usuario!: any;
+  usuario!: Usuario | null;
 
   constructor(private db: DbService, private router: Router, private formBuilder: FormBuilder) {
     this.editarForm = this.formBuilder.group({
@@ -43,12 +44,13 @@ export class EditarperfilPage implements OnInit {
     });
   }
   
-  guardarCambios() {
+ guardarCambios() {
     if (this.usuario) {
-      const { id, correo } = this.usuario;
-      const { nombre, apellido } = this.editarForm.value;
-      this.db.modificarPerfil(id, nombre, apellido, correo);
-      this.usuario = { ...this.usuario, nombre, apellido };
+      const { id } = this.usuario;
+      const { nombre, apellido, correo } = this.editarForm.value;
+      
+      this.db.modificarPerfil(id, nombre, apellido, correo)
+      this.usuario = { ...this.usuario, nombre, apellido, correo };
       this.db.setUsuario(this.usuario);
       this.db.presentAlertP('Se han guardado sus datos correctamente');
       this.router.navigate(['/perfil']);

@@ -9,13 +9,12 @@ import { Rol } from './rol';
 })
 export class DbService {
   private rolActual: number = 0;
-  private usuarioActual: BehaviorSubject<Usuario | null> = new BehaviorSubject<Usuario | null>(null);
   public database!: SQLiteObject;
   private logueado: number = 0;
   
   tablaUsuario: string = "CREATE TABLE IF NOT EXISTS usuario (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(100) NOT NULL, apellido VARCHAR(100) NOT NULL, rut VARCHAR(12) NOT NULL, correo VARCHAR(100) NOT NULL UNIQUE, clave VARCHAR(256) NOT NULL, id_rol INTEGER, FOREIGN KEY (id_rol) REFERENCES rol (id_rol));";
   tablaRol: string= "CREATE TABLE IF NOT EXISTS rol(id_rol INTEGER PRIMARY KEY autoincrement, nombre VARCHAR(50) NOT NULL);";
-  
+  private usuarioActual: BehaviorSubject<Usuario | null> = new BehaviorSubject<Usuario | null>(null);
   listaUsuarios = new BehaviorSubject([]);
   listaRoles = new BehaviorSubject([]);
   private DBLista: BehaviorSubject<boolean> = new BehaviorSubject(false);
@@ -86,8 +85,9 @@ export class DbService {
         this.usuarioActual.next(items.length > 0 ? items[0] : null);
       });
     }
+
     modificarPerfil(id: any, nombre: any, apellido: any, correo: any) {
-      return this.database.executeSql('UPDATE usuario SET nombre=?, apellido=? correo=? WHERE id=?', [nombre, apellido, correo, id]).then(res => {
+      return this.database.executeSql('UPDATE usuario SET nombre=?, apellido=?, correo=? WHERE id=?', [nombre, apellido, correo, id]).then(res => {
         this.buscarUsuarios();
       });
     }
@@ -130,9 +130,6 @@ export class DbService {
         });
     }
     
-  getUsuarioActual(): Observable<Usuario | null> {
-    return this.usuarioActual.asObservable();
-  }
   setRolActual(rol: number): void {
     this.rolActual = rol;
   }
@@ -142,6 +139,9 @@ export class DbService {
   setUsuario(usuario: Usuario) {
     this.usuario = usuario;
     this.buscarUsuarios();
+  }
+  getUsuarioActual(): Observable<Usuario | null> {
+    return this.usuarioActual.asObservable();
   }
   
 

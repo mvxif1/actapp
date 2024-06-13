@@ -29,6 +29,7 @@ import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
+import { Usuario } from 'src/app/services/usuario';
 
 
 @Component({
@@ -50,7 +51,11 @@ export class IngresarformPage {
   //Formulario
   ingresarform! : FormGroup;
   repuestosform!: FormGroup;
-  
+  backupform!   : FormGroup;
+
+  repuestosactivado : boolean = false;
+  equipoactivado    : boolean = false;
+  backupactivado    : boolean = false;
   //Caracteres restantes
   maxChars= 200;
   role= '';
@@ -59,6 +64,7 @@ export class IngresarformPage {
   role1= '';
   chars1= 0;
 
+  usuario!: any;
   pattern = {
     numeros: /^\d{1,9}$/,
     correo: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -100,14 +106,16 @@ export class IngresarformPage {
       //Datos cliente
       nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
       rutcli: ['', [Validators.required, this.validateRutFormat.bind(this)]],
-      
+    });
+
+    this.backupform = this.formBuilder.group({
       //Backup instalado
       marcabackup: ['', [Validators.required]],
       modelobackup: ['', [Validators.required]],
       nseriebackup: ['', [Validators.required]],
       ipbackup: ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
       contadorbackup: ['', [Validators.required]]
-    });
+    })
 
     this.repuestosform = this.formBuilder.group({
       //Repuestos
@@ -115,10 +123,14 @@ export class IngresarformPage {
       nparteRepuesto: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
       estadoRepuesto: ['', [Validators.required]],
     });
+
    }
   
   
   ngOnInit(){
+    this.db.getUsuarioActual().subscribe((usuario)=>{
+      this.usuario = usuario;
+    });
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height= window.innerHeight -140;
@@ -127,6 +139,7 @@ export class IngresarformPage {
       this.signaturePad.clear();
     }
   }
+  
 
   validateRutFormat(control: FormControl) {
     const rut = control.value;
@@ -147,6 +160,25 @@ export class IngresarformPage {
     this.ingresarform.get('nseriebackup')!.setValue(inputValue.toUpperCase());
   }
 
+  isGenerarPDFDisabled() {
+    const { equipoEspera, equipoOperativo, equipoBackup } = this.ingresarform.value;
+    // Desactivar botón si todos los valores son 'no'
+    const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no';
+  
+    if (todasNo) return true;
+  
+    // Activar botón si equipoOperativo es 'si'
+    if (equipoOperativo === 'si') return false;
+  
+    // Activar botón si equipoBackup es válido
+    if (this.backupform.valid) return false;
+  
+    // Activar botón si hay repuestos y equipoEspera es 'si'
+    if (equipoEspera === 'si' && this.repuestos.length > 0) return false;
+  
+    return true;
+  }
+
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
@@ -161,35 +193,46 @@ export class IngresarformPage {
     // Verificar si todas las opciones están en "NO"
     const todasNo = Object.values(this.ingresarform.value).every(val => val === 'no');
   
-    if (todasNo) {
-      // Si todas las opciones están en "NO", establecer una de ellas en "SI"
-      if (radioGroup !== this.equipoEspera) {
-        this.equipoEspera.value = 'si';
-      } else if (radioGroup !== this.equipoOperativo) {
-        this.equipoOperativo.value = 'si';
-      } else if (radioGroup !== this.equipoBackup) {
-        this.equipoBackup.value = 'si';
+    if (todasNo) { // Si todas las opciones están en "NO", establecer una de ellas en "SI"
+        if (radioGroup !== this.equipoEspera) {
+          this.equipoEspera.value = 'si';
+        } else if (radioGroup !== this.equipoOperativo) {
+          this.equipoOperativo.value = 'si';
+          this.equipoactivado = true;
+        } else if (radioGroup !== this.equipoBackup) {
+          this.equipoBackup.value = 'si';
+        }
+      } else if (value === 'si') { // Si se selecciona "SI", establecer los otros grupos en "NO"
+        if (radioGroup !== this.equipoEspera) {
+          this.equipoEspera.value = 'no';
+        }
+        if (radioGroup !== this.equipoOperativo) {
+          this.equipoOperativo.value = 'no';
+          this.equipoactivado = false;
+        }
+        if (radioGroup !== this.equipoBackup) {
+          this.equipoBackup.value = 'no';
+        }
       }
-    } else if (value === 'si') {
-      // Si se selecciona "SI", establecer los otros grupos en "NO"
-      if (radioGroup !== this.equipoEspera) {
-        this.equipoEspera.value = 'no';
-      }
-      if (radioGroup !== this.equipoOperativo) {
-        this.equipoOperativo.value = 'no';
-      }
-      if (radioGroup !== this.equipoBackup) {
-        this.equipoBackup.value = 'no';
-      }
+
+    if (this.equipoOperativo.value === 'si') {
+      this.equipoactivado = true;
+    } else {
+      this.equipoactivado = false;
     }
+
   }
 
   agregarRepuesto(nombre: any, numeroParte: any, estado: any) {
     this.repuestos.push({ nombre: nombre, numeroParte: numeroParte, estado: estado });
+    this.repuestosactivado = true;
     this.db.presentAlertP("Repuesta agregado correctamente!");
   }
   borrarRepuesto(index: number){
     this.repuestos.splice(index,1);
+    if (this.repuestos.length === 0) {
+      this.repuestosactivado = false;
+    }
     this.db.presentAlertP("Repuesto borrado correctamente!");
   }
   
@@ -211,7 +254,7 @@ export class IngresarformPage {
       periodo = '    AM';
     }
     return `${hora}:${minutos}${periodo}`;
-}
+  }
 
   formatearhora(event: any) {
     const input = event.target;
@@ -242,6 +285,7 @@ export class IngresarformPage {
     
     input.value = value;
   }
+
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
     canvas.width = 300;
@@ -339,7 +383,7 @@ export class IngresarformPage {
     pdf.getFontList,
     pdf.getFont,
     //ORDEN DE SERVICIO
-    pdf.text(eventoCliente, 190, 85),
+    pdf.text(eventoCliente, 190, 86),
 
     pdf.setFontSize(11)
 
@@ -427,6 +471,10 @@ export class IngresarformPage {
 
     pdf.text(nombrecli, 310, 650),
     pdf.text(rutcli, 310, 665);
+
+    pdf.text(this.usuario.nombre, 85, 650);
+    pdf.text(this.usuario.apellido, 100, 650);
+    pdf.text(this.usuario.rut, 85, 660);
     if (this.signatureImage) {
       pdf.addImage(this.signatureImage, 'PNG', 300, 670, 150, 60); // Ajusta las coordenadas y el tamaño según sea necesario
     }

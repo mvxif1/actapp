@@ -9,7 +9,7 @@ import { Usuario } from 'src/app/services/usuario';
   styleUrls: ['./perfil.page.scss'],
 })
 export class PerfilPage implements OnInit {
-  usuario: any;
+  usuario!: Usuario | null;
   constructor(private navCtrl: NavController, private db: DbService) { }
   
   ngOnInit() {
