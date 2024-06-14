@@ -15,7 +15,7 @@
       <form [formGroup]="registroForm" (ngSubmit)="registrarUsuario()">
         <ion-list>
           <ion-item>
-            <ion-label position="floating">Rut</ion-label>
+            <ion-label position="floating">Rut (Ejemplo: 12345678-9)</ion-label>
             <ion-input label="Rut" formControlName="rut" placeholder="Ingresa tu RUT"></ion-input>
           </ion-item>
           <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="registroForm.get('rut')?.invalid && (registroForm.get('rut')?.dirty || registroForm.get('rut')?.touched)">

@@ -22,14 +22,15 @@ const RutValidator = {
   }
 };
 
+
+
 import { Component, ViewChild, ElementRef} from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import  SignaturePad  from 'signature_pad';
 import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
-import { Usuario } from 'src/app/services/usuario';
 
 
 @Component({
@@ -41,8 +42,12 @@ export class IngresarformPage {
   @ViewChild('equipoEspera') equipoEspera!: IonRadioGroup;
   @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
   @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
+
+  @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
+
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
+  repuestosOperativo: { nombre: any, numeroParte: any, estado: any }[] = [];
   //Firma
   signaturePad: any;
   signatureImage: any;
@@ -52,10 +57,13 @@ export class IngresarformPage {
   ingresarform! : FormGroup;
   repuestosform!: FormGroup;
   backupform!   : FormGroup;
+  utilizoRepuestosform!   : FormGroup;
+  repuestosOperativoform! : FormGroup;
 
   repuestosactivado : boolean = false;
   equipoactivado    : boolean = false;
   backupactivado    : boolean = false;
+  utilizaRepuestosActivo : boolean = false;
   //Caracteres restantes
   maxChars= 200;
   role= '';
@@ -71,14 +79,15 @@ export class IngresarformPage {
     ptsynum: /^[1-9.]+$/,
     letras: /^[a-zA-ZñÑ\s]+$/,
     mayusnum: /^[A-Z0-9]+$/,
-    letrasynum: /^[a-zA-ZñÑ0-9]+$/
+    letrasynum: /^[a-zA-ZñÑ0-9]+$/,
+    
   };
   constructor(private formBuilder: FormBuilder ,private db: DbService, private elementRef: ElementRef) {
     this.ingresarform = this.formBuilder.group({
       //Orden de servicio
       eventocliente: ['', [Validators.required]],
       tiposervicio: ['', [Validators.required]],
-      horainicio: ['', [Validators.required]],
+      horainicio: ['', [Validators.required, this.validarHoras]],
       //Información de cliente
       cliente: ['', [Validators.required]],
       direccion: ['', [Validators.required]],
@@ -92,7 +101,7 @@ export class IngresarformPage {
       modelo: ['', [Validators.required]],
       nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
       ip: ['', [Validators.required , Validators.pattern(this.pattern.ptsynum)]],
-      accesorios: ['', [Validators.required]],
+      accesorios: [''],
       
       //Descripcion del caso
       problemareport: ['', [Validators.maxLength(200)]],
@@ -116,21 +125,30 @@ export class IngresarformPage {
       ipbackup: ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
       contadorbackup: ['', [Validators.required]]
     })
-
+    //Utiliza repuestos
+    this.utilizoRepuestosform = this.formBuilder.group({
+      utilizoRepuestos: ['no', [Validators.required]]
+    })
+    //Repuestos en caso de ser equipo operativo con repuestos
+    this.repuestosOperativoform = this.formBuilder.group({
+      nombreRepuestoOperativo: ['', [Validators.required]],
+      nparteRepuestoOperativo: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
+      estadoRepuestoOperativo: ['INSTALADO'],
+    })
+    //Repuestos en caso de ser equipo espera de partes
     this.repuestosform = this.formBuilder.group({
-      //Repuestos
       nombreRepuesto: ['', [Validators.required]],
       nparteRepuesto: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
-      estadoRepuesto: ['', [Validators.required]],
+      estadoRepuesto: ['SOLICITUD'],
     });
 
    }
   
   
   ngOnInit(){
-    this.db.getUsuarioActual().subscribe((usuario)=>{
-      this.usuario = usuario;
-    });
+    //this.db.getUsuarioActual().subscribe((usuario)=>{
+      //this.usuario = usuario;
+    //});
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height= window.innerHeight -140;
@@ -139,7 +157,76 @@ export class IngresarformPage {
       this.signaturePad.clear();
     }
   }
+
+  fechaHoy(){
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${day}-${month}-${year}`;
+  }
+  horaActual() {
+    const today = new Date();
+    const hora = today.getHours();
+    const minutos = String(today.getMinutes()).padStart(2, '0');
+    let periodo: string;
+    if (hora >= 12) {
+      periodo = '   PM';
+    } else {
+      periodo = '   AM';
+    }
+    return `${hora}:${minutos}${periodo}`;
+  }
+
+  validarHoras(control: AbstractControl): { [key: string]: boolean } | null {
+    const horaInicioValue = control.value;
+    const horaInicio = (horaInicioValue !== null && horaInicioValue !== undefined) ? horaInicioValue.toString().replace(/[^0-9]/g, '') : '';
   
+    const horaTerminoElement = document.getElementById('horaTermino') as HTMLIonInputElement | null;
+  
+    if (horaTerminoElement) {
+      const horaTerminoValue = horaTerminoElement.value;
+      const horaTermino = (horaTerminoValue !== null && horaTerminoValue !== undefined) ? horaTerminoValue.toString().replace(/[^0-9]/g, '') : '';
+  
+      if (parseInt(horaInicio, 10) > parseInt(horaTermino, 10)) {
+        return { 'horaInvalida': true }; // Retorna un error si la hora de inicio es mayor que la de término
+      }
+    }
+  
+    return null; // Si la validación pasa o no hay un elemento 'horaTermino', retorna null
+  }
+  
+  
+  
+  formatearhora(event: any) {
+    const input = event.target;
+    let value = input.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
+    if (value.length > 4) {
+      value = value.slice(0, 4); // Limitar la longitud a 4 caracteres
+    }
+    
+    let dosdigitosprincipales = parseInt(value.slice(0, 2), 10);
+    let dosdigitosfinales = parseInt(value.slice(2), 10);
+    if (dosdigitosprincipales > 23) {
+      value = '23' + value.slice(2);
+      dosdigitosprincipales = 23;
+    }
+    if (dosdigitosfinales > 59){
+      value = value.slice(0, 2) + '59'; // Limitar los minutos a 59
+      dosdigitosfinales = 59;
+    }
+    // Insertar ":" en la tercera posición si hay al menos tres caracteres
+    if (value.length >= 3) {
+      value = value.slice(0, 2) + ':' + value.slice(2);
+    }
+    let ampm = "AM";
+    if (dosdigitosprincipales >= 12) {
+      ampm = "PM";
+    }
+    (document.getElementById('ampm') as HTMLIonTextElement).innerText = ampm;
+  
+    input.value = value;
+  }
 
   validateRutFormat(control: FormControl) {
     const rut = control.value;
@@ -168,7 +255,7 @@ export class IngresarformPage {
     if (todasNo) return true;
   
     // Activar botón si equipoOperativo es 'si'
-    if (equipoOperativo === 'si') return false;
+    if (equipoOperativo === 'si' && this.repuestosOperativo.length > 0) return false;
   
     // Activar botón si equipoBackup es válido
     if (this.backupform.valid) return false;
@@ -217,10 +304,26 @@ export class IngresarformPage {
 
     if (this.equipoOperativo.value === 'si') {
       this.equipoactivado = true;
-    } else {
+    } else if(this.equipoOperativo.value === 'no'){
+      this.utilizaRepuestosActivo = false;
       this.equipoactivado = false;
     }
 
+  }
+  seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string){
+    // Establecer el valor del grupo actual
+    radioGroup.value = value;
+  
+    // Actualizar los valores del formulario
+    this.utilizoRepuestosform.patchValue({
+      utilizoRepuestos: this.utilizoRepuestos.value
+    });
+
+    if (this.utilizoRepuestos.value === 'si'){
+      this.utilizaRepuestosActivo = true;
+    }else{
+      this.utilizaRepuestosActivo = false;
+    }
   }
 
   agregarRepuesto(nombre: any, numeroParte: any, estado: any) {
@@ -235,56 +338,19 @@ export class IngresarformPage {
     }
     this.db.presentAlertP("Repuesto borrado correctamente!");
   }
-  
-  fechaHoy(){
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${day}-${month}-${year}`;
-  }
-  horaActual() {
-    const today = new Date();
-    const hora = today.getHours();
-    const minutos = String(today.getMinutes()).padStart(2, '0');
-    let periodo: string;
-    if (hora >= 12) {
-      periodo = '    PM';
-    } else {
-      periodo = '    AM';
-    }
-    return `${hora}:${minutos}${periodo}`;
-  }
 
-  formatearhora(event: any) {
-    const input = event.target;
-    let value = input.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
-    if (value.length > 4) {
-      value = value.slice(0, 4); // Limitar la longitud a 4 caracteres
-    }
-    
-    let dosdigitosprincipales = parseInt(value.slice(0, 2), 10);
-    let dosdigitosfinales = parseInt(value.slice(2), 10);
-    if (dosdigitosprincipales > 23) {
-      value = '23' + value.slice(2);
-      dosdigitosprincipales = 23;
-    }
-    if (dosdigitosfinales > 59){
-      value = value.slice(0, 2) + '59'; // Limitar los minutos a 59
-      dosdigitosfinales = 59;
-    }
-    // Insertar ":" en la tercera posición si hay al menos tres caracteres
-    if (value.length >= 3) {
-      value = value.slice(0, 2) + ':' + value.slice(2);
-    }
-    let ampm = "AM";
-    if (dosdigitosprincipales >= 12) {
-      ampm = "PM";
-    }
-    (document.getElementById('ampm') as HTMLIonTextElement).innerText = ampm;
-    
-    input.value = value;
+  agregarRepuestoOperativo(nombre: any, numeroParte: any, estado: any) {
+    this.repuestosOperativo.push({ nombre: nombre, numeroParte: numeroParte, estado: estado });
+    this.repuestosactivado = true;
+    this.db.presentAlertP("Repuesta agregado correctamente!");
   }
+  borrarRepuestoOperativo(index: number){
+    this.repuestosOperativo.splice(index,1);
+    if (this.repuestos.length === 0) {
+      this.repuestosactivado = false;
+    }
+    this.db.presentAlertP("Repuesto borrado correctamente!");
+  }  
 
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
@@ -375,7 +441,7 @@ export class IngresarformPage {
     const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
     const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
 
-    const image = await this.fotoPdf('assets/orden_de_servicio.jpeg');
+    const image = await this.fotoPdf('assets/ordenservicio.jpeg');
     const pdf = new jsPDF('p', 'pt', 'letter');
 
     pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
@@ -429,57 +495,64 @@ export class IngresarformPage {
 
     //REPUESTOS
     pdf.setFontSize(8);
-    const maxRepuestos = Math.min(this.repuestos.length, 3); // Máximo de 3 repuestos o la cantidad de repuestos disponible
-    let yPosition = 480; // Posición vertical inicial para los repuestos
-    for (let i = 0; i < maxRepuestos; i++) {
-        const repuesto = this.repuestos[i];
-        pdf.text(repuesto.nombre, 55, yPosition); // Ajusta las coordenadas según lo necesites
-        pdf.text(repuesto.numeroParte, 200, yPosition); // Ajusta las coordenadas según lo necesites
-        pdf.text(repuesto.estado, 360, yPosition); // Ajusta las coordenadas según lo necesites
-        yPosition += 10; // Incrementa la posición vertical para el siguiente repuesto
-    };
+    let repuestosToUse;
+    if (this.repuestos && this.repuestos.length > 0) {
+        repuestosToUse = this.repuestos;
+    } else if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
+        repuestosToUse = this.repuestosOperativo;
+    }
     
+    if (repuestosToUse) {
+        const maxRepuestos = Math.min(repuestosToUse.length, 5); // Máximo de 5 repuestos o la cantidad de repuestos disponible
+        let yPosition = 480; // Posición vertical inicial para los repuestos
+        for (let i = 0; i < maxRepuestos; i++) {
+            const repuesto = repuestosToUse[i];
+            pdf.text(repuesto.nombre, 55, yPosition); // Ajusta las coordenadas según lo necesites
+            pdf.text(repuesto.numeroParte, 200, yPosition); // Ajusta las coordenadas según lo necesites
+            pdf.text(repuesto.estado, 360, yPosition); // Ajusta las coordenadas según lo necesites
+            yPosition += 10; // Incrementa la posición vertical para el siguiente repuesto
+        }
+    }
     //INFORMACION EQUIPO BACKUP
     pdf.setFontSize(11),
-    pdf.text(marcabackup, 350, 565),
-    pdf.text(modelobackup, 350, 581),
-    pdf.text(nseriebackup, 350, 595),
-    pdf.text(ipbackup, 350, 609),
-    pdf.text(contadorbackup, 350, 624);
+    pdf.text(marcabackup, 355, 599),
+    pdf.text(modelobackup, 355, 613),
+    pdf.text(nseriebackup, 355, 627),
+    pdf.text(ipbackup, 355, 642),
+    pdf.text(contadorbackup, 355, 656);
 
     //STATUS DE SERVICIO
     if (equipoEspera === 'si') {
       // Coordenadas para equipoEspera
-      pdf.circle(184, 555, 7, "F");
-      pdf.circle(222, 570, 7, "F");
-      pdf.circle(224, 586, 7, "F");
+      pdf.circle(184, 586, 7, "F");
+      pdf.circle(224, 602, 7, "F");
+      pdf.circle(224, 619, 7, "F");
     }
 
     if (equipoOperativo === 'si') {
       // Coordenadas para equipoEspera
-      pdf.circle(222, 555, 7, "F");
-      pdf.circle(185, 570, 7, "F");
       pdf.circle(224, 586, 7, "F");
+      pdf.circle(184, 602, 7, "F");
+      pdf.circle(224, 619, 7, "F");
     }
 
     if (equipoBackup === 'si') {
       // Coordenadas para equipoEspera
-      pdf.circle(222, 555, 7, "F");
-      pdf.circle(222, 570, 7, "F");
-      pdf.circle(184, 586, 7, "F");
+      pdf.circle(224, 586, 7, "F");
+      pdf.circle(224, 602, 7, "F");
+      pdf.circle(184, 619, 7, "F");
     }
 
-    pdf.text(nombrecli, 310, 650),
-    pdf.text(rutcli, 310, 665);
+    pdf.text(nombrecli, 315, 682),
+    pdf.text(rutcli, 315, 697);
 
-    pdf.text(this.usuario.nombre, 85, 650);
-    pdf.text(this.usuario.apellido, 100, 650);
-    pdf.text(this.usuario.rut, 85, 660);
+    //pdf.text(this.usuario.nombre, 85, 650);
+    //pdf.text(this.usuario.apellido, 100, 650);
+    //pdf.text(this.usuario.rut, 85, 660);
     if (this.signatureImage) {
-      pdf.addImage(this.signatureImage, 'PNG', 300, 670, 150, 60); // Ajusta las coordenadas y el tamaño según sea necesario
+      pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50); // Ajusta las coordenadas y el tamaño según sea necesario
     }
-
-    pdf.save(eventoCliente + ".pdf");
+  
 
     const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
     const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
@@ -490,6 +563,7 @@ export class IngresarformPage {
         data: pdfData,
         directory: Directory.External, // Puedes usar cualquier directorio en este caso
       });
+
       this.db.presentAlertP("Archivo guardado correctamente");
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
     } catch (error) {
