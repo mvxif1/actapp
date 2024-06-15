@@ -31,7 +31,8 @@ import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
-
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { FilesystemDirectory } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-ingresarform',
@@ -556,15 +557,34 @@ export class IngresarformPage {
 
     const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
     const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
-   try {
+    try {
       const fileName = eventoCliente + ".pdf";
+      const path = fileName;
+      
+      // Directorio donde se guardará el archivo (debes crearlo si no existe)
+      const downloadDir = '/Download';
+      
+      // Escribir el archivo en el directorio de descargas
       const archivoGuardado = await Filesystem.writeFile({
-        path: fileName, // Ruta completa del archivo en la carpeta de descargas
+        path: `${downloadDir}/${path}`,
         data: pdfData,
-        directory: Directory.External, // Puedes usar cualquier directorio en este caso
+        directory: Directory.ExternalStorage,
       });
-
+    
       this.db.presentAlertP("Archivo guardado correctamente");
+    
+      // Programar notificación local
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: 'Archivo guardado correctamente.',
+            body: 'Ticket guardado en carpeta de descargas.',
+            id: 1,
+            schedule: { at: new Date(Date.now() + 1000) },
+          },
+        ],
+      });
+    
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
