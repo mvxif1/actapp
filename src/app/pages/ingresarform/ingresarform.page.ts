@@ -32,7 +32,7 @@ import { DbService } from 'src/app/services/db.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { FilesystemDirectory } from '@capacitor/filesystem';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 
 @Component({
   selector: 'app-ingresarform',
@@ -569,10 +569,15 @@ export class IngresarformPage {
         path: `${downloadDir}/${path}`,
         data: pdfData,
         directory: Directory.ExternalStorage,
+        recursive: true //Sobreescribe los archivos
       });
     
       this.db.presentAlertP("Archivo guardado correctamente");
-    
+      
+      await FileOpener.openFile({
+        path: archivoGuardado.uri,
+      });
+      
       // Programar notificación local
       await LocalNotifications.schedule({
         notifications: [
@@ -586,6 +591,7 @@ export class IngresarformPage {
       });
     
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
+
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
     }
