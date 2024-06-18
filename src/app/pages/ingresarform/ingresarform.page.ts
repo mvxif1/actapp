@@ -65,6 +65,7 @@ export class IngresarformPage {
   equipoactivado    : boolean = false;
   backupactivado    : boolean = false;
   utilizaRepuestosActivo : boolean = false;
+  utilizaRepuestosInactivo : boolean = false;
   //Caracteres restantes
   maxChars= 200;
   role= '';
@@ -249,15 +250,15 @@ export class IngresarformPage {
   }
 
   isGenerarPDFDisabled() {
-    const { equipoEspera, equipoOperativo, equipoBackup } = this.ingresarform.value;
+    const { equipoEspera, equipoOperativo, equipoBackup} = this.ingresarform.value;
     // Desactivar botón si todos los valores son 'no'
     const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no';
   
     if (todasNo) return true;
   
     // Activar botón si equipoOperativo es 'si'
-    if (equipoOperativo === 'si' && this.repuestosOperativo.length > 0) return false;
-  
+    if (equipoOperativo === 'si' && this.utilizaRepuestosActivo && this.repuestosOperativo.length > 0) return false;
+    if (equipoOperativo === 'si' && this.utilizaRepuestosInactivo) return false;
     // Activar botón si equipoBackup es válido
     if (this.backupform.valid) return false;
   
@@ -305,8 +306,10 @@ export class IngresarformPage {
 
     if (this.equipoOperativo.value === 'si') {
       this.equipoactivado = true;
+      this.utilizaRepuestosInactivo = false;
     } else if(this.equipoOperativo.value === 'no'){
       this.utilizaRepuestosActivo = false;
+      this.utilizaRepuestosInactivo = true;
       this.equipoactivado = false;
     }
 
@@ -322,8 +325,10 @@ export class IngresarformPage {
 
     if (this.utilizoRepuestos.value === 'si'){
       this.utilizaRepuestosActivo = true;
+      this.utilizaRepuestosInactivo = false;
     }else{
       this.utilizaRepuestosActivo = false;
+      this.utilizaRepuestosInactivo = true;
     }
   }
 
