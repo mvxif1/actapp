@@ -552,9 +552,9 @@ export class IngresarformPage {
     pdf.text(nombrecli, 315, 682),
     pdf.text(rutcli, 315, 697);
 
-    //pdf.text(this.usuario.nombre, 85, 650);
-    //pdf.text(this.usuario.apellido, 100, 650);
-    //pdf.text(this.usuario.rut, 85, 660);
+    pdf.text(this.usuario.nombre, 85, 650);
+    pdf.text(this.usuario.apellido, 100, 650);
+    pdf.text(this.usuario.rut, 85, 660);
     if (this.signatureImage) {
       pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50); // Ajusta las coordenadas y el tamaño según sea necesario
     }
