@@ -408,7 +408,7 @@
       </ion-item>
     </ion-list>
 
-    <ion-button expand="full" [disabled]=" isGenerarPDFDisabled()" (click)="generarPDF()">Generar PDF</ion-button>
+    <ion-button expand="full" [disabled]=" isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>
   </ion-card>
   </form>
 </ion-content>

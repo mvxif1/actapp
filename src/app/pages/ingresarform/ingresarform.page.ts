@@ -567,13 +567,13 @@ export class IngresarformPage {
       const path = fileName;
       
       // Directorio donde se guardará el archivo (debes crearlo si no existe)
-      const downloadDir = '/Download';
+      const downloadDir = '/TK_Descargas';
       
       // Escribir el archivo en el directorio de descargas
       const archivoGuardado = await Filesystem.writeFile({
         path: `${downloadDir}/${path}`,
         data: pdfData,
-        directory: Directory.ExternalStorage,
+        directory: Directory.Documents,
         recursive: true //Sobreescribe los archivos
       });
     
@@ -588,7 +588,7 @@ export class IngresarformPage {
         notifications: [
           {
             title: 'Archivo guardado correctamente.',
-            body: 'Ticket guardado en carpeta de descargas.',
+            body: 'Ticket guardado en documentos.',
             id: 1,
             schedule: { at: new Date(Date.now() + 1000) },
           },
