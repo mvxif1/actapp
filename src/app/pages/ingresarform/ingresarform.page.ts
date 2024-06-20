@@ -148,9 +148,9 @@ export class IngresarformPage {
   
   
   ngOnInit(){
-    //this.db.getUsuarioActual().subscribe((usuario)=>{
-      //this.usuario = usuario;
-    //});
+    this.db.getUsuarioActual().subscribe((usuario)=>{
+      this.usuario = usuario;
+    });
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height= window.innerHeight -140;
