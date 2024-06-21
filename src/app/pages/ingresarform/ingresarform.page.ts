@@ -472,9 +472,9 @@ export class IngresarformPage {
 
     pdf.text(horaTermino, 475, 110),
     //INFORMACION DEL CLIENTE
-    pdf.text(cliente, 84, 157),
+    pdf.text(cliente, 100, 157),
     pdf.text(direccion, 100, 172),
-    pdf.text(ciudad, 85, 186),
+    pdf.text(ciudad, 100, 186),
     pdf.text(contacto, 292, 157),
     pdf.text(telefono, 292, 172),
     pdf.text(correo, 292, 189)
@@ -489,7 +489,7 @@ export class IngresarformPage {
     pdf.text(marca, 98, 273),
     pdf.text(modelo, 98, 288),
     pdf.text(nserie, 98, 302),
-    pdf.text(ip, 60, 316),
+    pdf.text(ip, 98, 316),
     pdf.text(accesorios, 98, 330);
   
     //DESCRIPCION DEL CASO
@@ -552,9 +552,8 @@ export class IngresarformPage {
     pdf.text(nombrecli, 315, 682),
     pdf.text(rutcli, 315, 697);
     
-    pdf.text(this.usuario.nombre, 85, 650);
-    pdf.text(this.usuario.apellido, 100, 650);
-    pdf.text(this.usuario.rut, 85, 660);
+    pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
+    pdf.text(this.usuario.rut, 85, 697);
     if (this.signatureImage) {
       pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50); // Ajusta las coordenadas y el tamaño según sea necesario
     }
