@@ -14,7 +14,7 @@ import { IngresarformPage } from './ingresarform.page';
     FormsModule,
     IonicModule,
     IngresarformPageRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   declarations: [IngresarformPage]
 })

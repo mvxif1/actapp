@@ -33,6 +33,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from
 import { IonRadioGroup } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
+import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 
 @Component({
   selector: 'app-ingresarform',
@@ -40,6 +41,7 @@ import { FileOpener } from '@capawesome-team/capacitor-file-opener';
   styleUrls: ['./ingresarform.page.scss'],
 })
 export class IngresarformPage {
+  photos: string[] = [];
   @ViewChild('equipoEspera') equipoEspera!: IonRadioGroup;
   @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
   @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
@@ -73,18 +75,21 @@ export class IngresarformPage {
   maxChars1= 200;
   role1= '';
   chars1= 0;
+  //Barra de carga
+  loading: boolean = false; // Variable para controlar la visibilidad de la barra de carga
 
   usuario!: any;
   pattern = {
     numeros: /^\d{1,9}$/,
     correo: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    ptsynum: /^[1-9.]+$/,
+    ptsynum: /^[0-9.]+$/,
     letras: /^[a-zA-ZñÑ\s]+$/,
     mayusnum: /^[A-Z0-9]+$/,
     letrasynum: /^[a-zA-ZñÑ0-9]+$/,
     
   };
-  constructor(private formBuilder: FormBuilder ,private db: DbService, private elementRef: ElementRef) {
+  
+  constructor(private formBuilder: FormBuilder ,private db: DbService, private elementRef: ElementRef, private camera: Camera) {
     this.ingresarform = this.formBuilder.group({
       //Orden de servicio
       eventocliente: ['', [Validators.required]],
@@ -92,7 +97,7 @@ export class IngresarformPage {
       horainicio: ['', [Validators.required, this.validarHoras]],
       //Información de cliente
       cliente: ['', [Validators.required]],
-      direccion: ['', [Validators.required]],
+      direccion: ['', [Validators.required, Validators.maxLength(35)]],
       ciudad: ['', [Validators.required]],
       contacto: ['', [Validators.required]],
       telefono: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9), Validators.pattern(this.pattern.numeros)]],
@@ -100,9 +105,10 @@ export class IngresarformPage {
       //Información de hardware
       tipoequipo: ['', [Validators.required]],
       marca: ['', [Validators.required]],
+      otraMarca: ['', [Validators.required]],
       modelo: ['', [Validators.required]],
       nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
-      ip: ['', [Validators.required , Validators.pattern(this.pattern.ptsynum)]],
+      ip: ['', [Validators.pattern(this.pattern.ptsynum)]],
       accesorios: [''],
       
       //Descripcion del caso
@@ -124,7 +130,7 @@ export class IngresarformPage {
       marcabackup: ['', [Validators.required]],
       modelobackup: ['', [Validators.required]],
       nseriebackup: ['', [Validators.required]],
-      ipbackup: ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
+      ipbackup: ['', [Validators.pattern(this.pattern.ptsynum)]],
       contadorbackup: ['', [Validators.required]]
     })
     //Utiliza repuestos
@@ -148,9 +154,9 @@ export class IngresarformPage {
   
   
   ngOnInit(){
-    this.db.getUsuarioActual().subscribe((usuario)=>{
-      this.usuario = usuario;
-    });
+    //this.db.getUsuarioActual().subscribe((usuario)=>{
+      //this.usuario = usuario;
+    //});
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height= window.innerHeight -140;
@@ -242,11 +248,6 @@ export class IngresarformPage {
     const inputValue = event.target.value;
     event.target.value = inputValue.toUpperCase();
     this.ingresarform.get('nserie')!.setValue(inputValue.toUpperCase());
-}
-  transformarAMayusculas1(event: any) {
-    const inputValue = event.target.value;
-    event.target.value = inputValue.toUpperCase();
-    this.ingresarform.get('nseriebackup')!.setValue(inputValue.toUpperCase());
   }
 
   isGenerarPDFDisabled() {
@@ -394,195 +395,229 @@ export class IngresarformPage {
     this.db.presentAlertP("Se ha limpiado correctamente la firma");
   }
 
+  takePhoto() {
+    const options: CameraOptions = {
+      quality: 100,
+      destinationType: this.camera.DestinationType.DATA_URL,
+      encodingType: this.camera.EncodingType.JPEG,
+      mediaType: this.camera.MediaType.PICTURE,
+      saveToPhotoAlbum: false,
+      correctOrientation: true
+    };
 
+    this.camera.getPicture(options).then((imageData) => {
+      // Add the photo to the array
+      this.photos.push('data:image/jpeg;base64,' + imageData);
+
+      // Limit to 10 photos
+      if (this.photos.length > 10) {
+        this.photos.splice(0, 1); // Remove the first (oldest) photo
+      }
+    }, (err) => {
+      console.log('Error taking photo', err);
+    });
+  }
+
+  selectFromGallery() {
+    const options: CameraOptions = {
+      quality: 100,
+      destinationType: this.camera.DestinationType.DATA_URL,
+      sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
+      saveToPhotoAlbum: false
+    };
+
+    this.camera.getPicture(options).then((imageData) => {
+      // Add the photo to the array
+      this.photos.push('data:image/jpeg;base64,' + imageData);
+
+      // ---Limite de 10 fotos máximo---
+      if (this.photos.length > 10) {
+        this.photos.splice(0, 1); // -----Elimina la primera foto si son 10-----
+      }
+    }, (err) => {
+      console.log('Error selecting photo', err);
+    });
+  }
+
+  deletePhoto(index: number) {
+    this.photos.splice(index, 1); 
+  }
 
   async generarPDF() {
-    //ORDEN DE SERVICIO
-    const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
-    const tiposervicio = (document.getElementById('tipoServicio') as HTMLSelectElement)?.value || '';
-    const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
-    const horaInicio = (document.getElementById('horaInicio') as HTMLInputElement)?.value || '';
-    const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
-    const ampm = ampmElement ? ampmElement.textContent || '' : '';
-    const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
-    
-
-    //INFORMACION DEL CLIENTE
-    const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
-    const direccion = (document.getElementById('direccion') as HTMLInputElement)?.value || '';
-    const contacto = (document.getElementById('contacto') as HTMLInputElement)?.value || '';
-    const telefono = (document.getElementById('telefono') as HTMLInputElement)?.value || '';
-    const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
-    const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
-    //INFORMACION DEL HARDWARE
-    const tipoEquipo = (document.getElementById('tipoEquipo') as HTMLSelectElement)?.value || '';
-    const marca = (document.getElementById('marca') as HTMLInputElement)?.value || '';
-    const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
-    const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
-    const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
-    const accesorios = (document.getElementById('accesorios') as HTMLInputElement)?.value || '';
-    
-    //DESCRIPCION DEL CASO
-    const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
-    const solucionreport = (document.getElementById('solucionreport') as HTMLTextAreaElement)?.value || '';
-
-    //STATUS DE SERVICIO
-    const equipoEspera = (document.getElementById('equipoEspera') as HTMLIonRadioGroupElement)?.value || '';
-    const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
-    const equipoBackup = (document.getElementById('equipoBackup') as HTMLIonRadioGroupElement)?.value || '';
-
-    //REPUESTOS
-    const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
-    const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
-    const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
-
-    //INFORMACION EQUIPO BACKUP
-    const marcabackup = (document.getElementById('marcabackup') as HTMLInputElement)?.value || '';
-    const modelobackup = (document.getElementById('modelobackup') as HTMLInputElement)?.value || '';
-    const nseriebackup = (document.getElementById('nseriebackup') as HTMLInputElement)?.value || '';
-    const ipbackup = (document.getElementById('ipbackup') as HTMLInputElement)?.value || '';
-    const contadorbackup = (document.getElementById('contadorbackup') as HTMLInputElement)?.value || '';
-
-    //DATOS CLIENTE
-    const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
-    const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
-
-    const image = await this.fotoPdf('assets/ordenservicio.jpeg');
-    const pdf = new jsPDF('p', 'pt', 'letter');
-
-    pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
-    pdf.setFontSize(16),
-    pdf.getFontList,
-    pdf.getFont,
-    //ORDEN DE SERVICIO
-    pdf.text(eventoCliente, 190, 86),
-
-    pdf.setFontSize(11)
-
-    if (tiposervicio === 'Incidente') {
-      pdf.text(tiposervicio, 121, 110);
-    } else {
-      if(tiposervicio === 'Solicitud')
-      pdf.text(tiposervicio, 121, 110
-      );
-    }
-    pdf.text(fecha, 435, 84),
-    pdf.text(horaInicio, 475, 98),
-    pdf.text(ampm, 515, 98),
-
-    pdf.text(horaTermino, 475, 110),
-    //INFORMACION DEL CLIENTE
-    pdf.text(cliente, 100, 157),
-    pdf.text(direccion, 100, 172),
-    pdf.text(ciudad, 100, 186),
-    pdf.text(contacto, 292, 157),
-    pdf.text(telefono, 292, 172),
-    pdf.text(correo, 292, 189)
-    //INFORMACION DEL HARDWARE
-    pdf.setFillColor(255, 0, 0);
-    if (tipoEquipo === 'impresion') {
-      pdf.circle(183, 252, 7, "F"); // Coordenadas para Opción A
-    } else {
-      pdf.circle(222, 252, 7, "F"
-      ); // Coordenadas para Opción B
-    }
-    pdf.text(marca, 98, 273),
-    pdf.text(modelo, 98, 288),
-    pdf.text(nserie, 98, 302),
-    pdf.text(ip, 98, 316),
-    pdf.text(accesorios, 98, 330);
-  
-    //DESCRIPCION DEL CASO
-    const problemareportLines = pdf.splitTextToSize(problemareport, 400);
-    const solucionreportLines = pdf.splitTextToSize(solucionreport, 430);
-
-    pdf.text(problemareportLines, 145, 360);
-    pdf.text(solucionreportLines, 88, 408);
-
-    //REPUESTOS
-    pdf.setFontSize(8);
-    let repuestosToUse;
-    if (this.repuestos && this.repuestos.length > 0) {
-        repuestosToUse = this.repuestos;
-    } else if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
-        repuestosToUse = this.repuestosOperativo;
-    }
-    
-    if (repuestosToUse) {
-        const maxRepuestos = Math.min(repuestosToUse.length, 5); // Máximo de 5 repuestos o la cantidad de repuestos disponible
-        let yPosition = 480; // Posición vertical inicial para los repuestos
-        for (let i = 0; i < maxRepuestos; i++) {
-            const repuesto = repuestosToUse[i];
-            pdf.text(repuesto.nombre, 55, yPosition); // Ajusta las coordenadas según lo necesites
-            pdf.text(repuesto.numeroParte, 200, yPosition); // Ajusta las coordenadas según lo necesites
-            pdf.text(repuesto.estado, 360, yPosition); // Ajusta las coordenadas según lo necesites
-            yPosition += 10; // Incrementa la posición vertical para el siguiente repuesto
-        }
-    }
-    //INFORMACION EQUIPO BACKUP
-    pdf.setFontSize(11),
-    pdf.text(marcabackup, 355, 599),
-    pdf.text(modelobackup, 355, 613),
-    pdf.text(nseriebackup, 355, 627),
-    pdf.text(ipbackup, 355, 642),
-    pdf.text(contadorbackup, 355, 656);
-
-    //STATUS DE SERVICIO
-    if (equipoEspera === 'si') {
-      // Coordenadas para equipoEspera
-      pdf.circle(184, 586, 7, "F");
-      pdf.circle(224, 602, 7, "F");
-      pdf.circle(224, 619, 7, "F");
-    }
-
-    if (equipoOperativo === 'si') {
-      // Coordenadas para equipoEspera
-      pdf.circle(224, 586, 7, "F");
-      pdf.circle(184, 602, 7, "F");
-      pdf.circle(224, 619, 7, "F");
-    }
-
-    if (equipoBackup === 'si') {
-      // Coordenadas para equipoEspera
-      pdf.circle(224, 586, 7, "F");
-      pdf.circle(224, 602, 7, "F");
-      pdf.circle(184, 619, 7, "F");
-    }
-
-    pdf.text(nombrecli, 315, 682),
-    pdf.text(rutcli, 315, 697);
-    
-    pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
-    pdf.text(this.usuario.rut, 85, 697);
-    if (this.signatureImage) {
-      pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50); // Ajusta las coordenadas y el tamaño según sea necesario
-    }
-    
-
-    const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
-    const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
     try {
+      this.loading = true;
+      const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
+      const tiposervicio = (document.getElementById('tipoServicio') as HTMLSelectElement)?.value || '';
+      const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
+      const horaInicio = (document.getElementById('horaInicio') as HTMLInputElement)?.value || '';
+      const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
+      const ampm = ampmElement ? ampmElement.textContent || '' : '';
+      const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
+  
+      const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
+      const direccion = (document.getElementById('direccion') as HTMLInputElement)?.value || '';
+      const contacto = (document.getElementById('contacto') as HTMLInputElement)?.value || '';
+      const telefono = (document.getElementById('telefono') as HTMLInputElement)?.value || '';
+      const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
+      const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
+  
+      const tipoEquipo = (document.getElementById('tipoEquipo') as HTMLSelectElement)?.value || '';
+      const marca = (document.getElementById('marca') as HTMLSelectElement)?.value || '';
+      const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
+      const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
+      const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
+      const accesorios = (document.getElementById('accesorios') as HTMLInputElement)?.value || '';
+  
+      const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
+      const solucionreport = (document.getElementById('solucionreport') as HTMLTextAreaElement)?.value || '';
+  
+      const equipoEspera = (document.getElementById('equipoEspera') as HTMLIonRadioGroupElement)?.value || '';
+      const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
+      const equipoBackup = (document.getElementById('equipoBackup') as HTMLIonRadioGroupElement)?.value || '';
+  
+      const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
+      const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
+      const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
+  
+      const marcabackup = (document.getElementById('marcabackup') as HTMLInputElement)?.value || '';
+      const modelobackup = (document.getElementById('modelobackup') as HTMLInputElement)?.value || '';
+      const nseriebackup = (document.getElementById('nseriebackup') as HTMLInputElement)?.value || '';
+      const ipbackup = (document.getElementById('ipbackup') as HTMLInputElement)?.value || '';
+      const contadorbackup = (document.getElementById('contadorbackup') as HTMLInputElement)?.value || '';
+  
+      const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
+      const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
+  
+      // Crear el documento PDF
+      const pdf = new jsPDF('p', 'pt', 'letter');
+      
+      // Añadir página de orden de servicio
+      const image = await this.fotoPdf('assets/ordenservicio.jpeg');
+      pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
+      pdf.setFontSize(16);
+      pdf.text(eventoCliente, 190, 86);
+      pdf.setFontSize(11);
+      if (tiposervicio === 'Incidente') {
+        pdf.text(tiposervicio, 121, 110);
+      } else if (tiposervicio === 'Solicitud') {
+        pdf.text(tiposervicio, 121, 110);
+      }
+      pdf.text(fecha, 435, 84);
+      pdf.text(horaInicio, 475, 98);
+      pdf.text(ampm, 515, 98);
+      pdf.text(horaTermino, 475, 110);
+      pdf.text(cliente, 100, 157);
+      pdf.setFontSize(8);
+      pdf.text(direccion, 100, 172);
+      pdf.setFontSize(11);
+      pdf.text(ciudad, 100, 186);
+      pdf.text(contacto, 292, 157);
+      pdf.text(telefono, 292, 172);
+      pdf.text(correo, 292, 189);
+      if (tipoEquipo === 'impresion') {
+        pdf.circle(183, 252, 7, "F");
+      } else {
+        pdf.circle(222, 252, 7, "F");
+      }
+      pdf.text(marca, 98, 273);
+      pdf.text(modelo, 98, 288);
+      pdf.text(nserie, 98, 302);
+      pdf.text(ip, 98, 316);
+      pdf.text(accesorios, 98, 330);
+      const problemareportLines = pdf.splitTextToSize(problemareport, 400);
+      const solucionreportLines = pdf.splitTextToSize(solucionreport, 430);
+      pdf.text(problemareportLines, 145, 360);
+      pdf.text(solucionreportLines, 88, 408);
+      pdf.setFontSize(8);
+      let repuestosToUse;
+      if (this.repuestos && this.repuestos.length > 0) {
+        repuestosToUse = this.repuestos;
+      } else if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
+        repuestosToUse = this.repuestosOperativo;
+      }
+      if (repuestosToUse) {
+        const maxRepuestos = Math.min(repuestosToUse.length, 5);
+        let yPosition = 480;
+        for (let i = 0; i < maxRepuestos; i++) {
+          const repuesto = repuestosToUse[i];
+          pdf.text(repuesto.nombre, 55, yPosition);
+          pdf.text(repuesto.numeroParte, 200, yPosition);
+          pdf.text(repuesto.estado, 360, yPosition);
+          yPosition += 10;
+        }
+      }
+      pdf.setFontSize(11);
+      pdf.text(marcabackup, 355, 599);
+      pdf.text(modelobackup, 355, 613);
+      pdf.text(nseriebackup, 355, 627);
+      pdf.text(ipbackup, 355, 642);
+      pdf.text(contadorbackup, 355, 656);
+      if (equipoEspera === 'si') {
+        pdf.circle(184, 586, 7, "F");
+        pdf.circle(224, 602, 7, "F");
+        pdf.circle(224, 619, 7, "F");
+      }
+      if (equipoOperativo === 'si') {
+        pdf.circle(224, 586, 7, "F");
+        pdf.circle(184, 602, 7, "F");
+        pdf.circle(224, 619, 7, "F");
+      }
+      if (equipoBackup === 'si') {
+        pdf.circle(224, 586, 7, "F");
+        pdf.circle(224, 602, 7, "F");
+        pdf.circle(184, 619, 7, "F");
+      }
+      pdf.text(nombrecli, 315, 682);
+      pdf.text(rutcli, 315, 697);
+      if (this.signatureImage) {
+        pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50);
+      }
+
+      const imgWidth = 565;
+      const imgHeight = 731;
+      
+      for (let i = 0; i < this.photos.length; i++) {
+        if (i > 0 || pdf.internal.pages.length > 1) {
+          pdf.addPage(); // Añadir una nueva página para cada foto, excepto la primera
+        }
+      
+        const imageData = this.photos[i];
+      
+        // Calcular las dimensiones y posición para centrar la imagen horizontalmente
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+      
+        // Calcular la posición para centrar horizontalmente
+        const x = (pageWidth - imgWidth) / 2;
+        const y = 0; // Puedes ajustar el valor de y según necesites
+      
+        pdf.addImage(imageData, 'JPEG', x, y, imgWidth, imgHeight);
+      }
+      
+  
+      // Guardar el PDF y realizar acciones adicionales
+      pdf.save();
+  
+      const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
+      const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
+  
       const fileName = eventoCliente + ".pdf";
-      const path = fileName;
-      
-      // Directorio donde se guardará el archivo (debes crearlo si no existe)
+      const path = `${fileName}`;
       const downloadDir = '/TK_Descargas';
-      
-      // Escribir el archivo en el directorio de descargas
+  
       const archivoGuardado = await Filesystem.writeFile({
         path: `${downloadDir}/${path}`,
         data: pdfData,
         directory: Directory.Documents,
-        recursive: true //Sobreescribe los archivos
+        recursive: true // Sobreescribe los archivos si es necesario
       });
-    
+  
       this.db.presentAlertP("Archivo guardado correctamente");
-      
+  
       await FileOpener.openFile({
         path: archivoGuardado.uri,
       });
-      
-      // Programar notificación local
+  
       await LocalNotifications.schedule({
         notifications: [
           {
@@ -593,13 +628,15 @@ export class IngresarformPage {
           },
         ],
       });
-    
+  
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
-
+      this.loading = false;
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
+      this.loading = false;
     }
   }
+  
 }
 
 

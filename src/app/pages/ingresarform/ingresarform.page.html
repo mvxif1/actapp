@@ -6,271 +6,341 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  
+
   <form [formGroup]="ingresarform">
-  <ion-card id="form">
-    <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
-  
-    <ion-card-title style="font-size: 13px;">ORDEN DE SERVICIO</ion-card-title>
-    <ion-list>
-      <ion-item>
-        <ion-label position="stacked">Evento ACT S.A</ion-label>
-        <ion-input id="eventoCliente" formControlName="eventocliente" type="number"></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('eventocliente')?.invalid && (ingresarform.get('eventocliente')?.dirty || ingresarform.get('eventocliente')?.touched)">
-        <div *ngIf="ingresarform.get('eventocliente')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
-        
+    <ion-card id="form">
+      <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
+
+      <ion-card-title style="font-size: 13px;">ORDEN DE SERVICIO</ion-card-title>
+      <ion-list>
+        <ion-item>
+          <ion-label position="stacked">Evento ACT S.A</ion-label>
+          <ion-input id="eventoCliente" formControlName="eventocliente" type="number"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('eventocliente')?.invalid && (ingresarform.get('eventocliente')?.dirty || ingresarform.get('eventocliente')?.touched)">
+          <div *ngIf="ingresarform.get('eventocliente')?.hasError('required')">Este campo es obligatorio.</div>
+        </div>
+
 
         <ion-item>
           <ion-label position="stacked">Tipo de servicio</ion-label>
-          <ion-select id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio" >
+          <ion-select id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio">
             <ion-select-option value="Incidente">Incidente</ion-select-option>
             <ion-select-option value="Solicitud">Solicitud</ion-select-option>
           </ion-select>
         </ion-item>
-        <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('tiposervicio')?.invalid && (ingresarform.get('tiposervicio')?.dirty || ingresarform.get('tiposervicio')?.touched)">
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('tiposervicio')?.invalid && (ingresarform.get('tiposervicio')?.dirty || ingresarform.get('tiposervicio')?.touched)">
           <div *ngIf="ingresarform.get('tiposervicio')?.hasError('required')">Esta sección es obligatoria.</div>
         </div>
-        
-
-        
-      <ion-item>
-        <ion-text style="font-size: 12px;">Fecha: </ion-text>
-        <ion-input id="fecha" [value]="fechaHoy()" readonly style="margin-left: 10px;"></ion-input>
-      </ion-item>
-        
-      <ion-item>
-        <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
-        <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio" (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
-        <ion-text id="ampm" style="margin-right: 50%;"></ion-text>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
-        <div *ngIf="ingresarform.get('horainicio')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('horainicio')?.hasError('horaInvalida')">La hora de inicio no puede ser mayor que la hora de término.</div>
-      </div>
-
-      <ion-item>
-        <ion-text style="font-size: 12px;">Hora de Termino</ion-text>
-        <ion-input id="horaTermino" [value]="horaActual()" style="margin-left: 10px;" readonly></ion-input>
-      </ion-item>
-    </ion-list>
-
-    <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL CLIENTE</ion-card-title>
-    <ion-list>
-      <ion-item>
-        <ion-label position="stacked">Cliente</ion-label>
-        <ion-input id="cliente" formControlName="cliente" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('cliente')?.invalid && (ingresarform.get('cliente')?.dirty || ingresarform.get('cliente')?.touched)">
-        <div *ngIf="ingresarform.get('cliente')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
 
 
-      <ion-item>
-        <ion-label position="stacked">Dirección</ion-label>
-        <ion-input id="direccion" formControlName="direccion"></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('direccion')?.invalid && (ingresarform.get('direccion')?.dirty || ingresarform.get('direccion')?.touched)">
-        <div *ngIf="ingresarform.get('direccion')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
 
-      <ion-item>
-        <ion-label position="stacked">Ciudad</ion-label>
-        <ion-input id="ciudad" formControlName="ciudad" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('ciudad')?.invalid && (ingresarform.get('ciudad')?.dirty || ingresarform.get('ciudad')?.touched)">
-        <div *ngIf="ingresarform.get('ciudad')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
-        
-      <ion-item>
-        <ion-label position="stacked">Contacto</ion-label>
-        <ion-input id="contacto" formControlName="contacto" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('contacto')?.invalid && (ingresarform.get('contacto')?.dirty || ingresarform.get('contacto')?.touched)">
-        <div *ngIf="ingresarform.get('contacto')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
-        
-      <ion-item>
-        <ion-label position="stacked">Teléfono </ion-label>
-        <ion-input id="telefono" formControlName="telefono" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('telefono')?.invalid && (ingresarform.get('telefono')?.dirty || ingresarform.get('telefono')?.touched)">
-        <div *ngIf="ingresarform.get('telefono')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('telefono')?.hasError('pattern')">El telefono debe contener solo números.</div>
-        <div *ngIf="ingresarform.get('telefono')?.hasError('minlength')">El telefono debe contener minimo 9 digitos.</div>
-        <div *ngIf="ingresarform.get('telefono')?.hasError('maxlength')">El telefono debe contener maximo 9 digitos.</div>
-      </div>
+        <ion-item>
+          <ion-text style="font-size: 12px;">Fecha: </ion-text>
+          <ion-input id="fecha" [value]="fechaHoy()" readonly style="margin-left: 10px;"></ion-input>
+        </ion-item>
 
-      <ion-item>
-        <ion-label position="stacked">Correo </ion-label>
-        <ion-input id="correo" formControlName="correo" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('correo')?.invalid && (ingresarform.get('correo')?.dirty || ingresarform.get('correo')?.touched)">
-        <div *ngIf="ingresarform.get('correo')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('correo')?.hasError('pattern')">Este correo no es valido.</div>
-      </div>
-        
+        <ion-item>
+          <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
+          <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio"
+            (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
+          <ion-text id="ampm" style="margin-right: 50%;"></ion-text>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
+          <div *ngIf="ingresarform.get('horainicio')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('horainicio')?.hasError('horaInvalida')">La hora de inicio no puede ser mayor que
+            la hora de término.</div>
+        </div>
 
-    </ion-list>
+        <ion-item>
+          <ion-text style="font-size: 12px;">Hora de Termino</ion-text>
+          <ion-input id="horaTermino" [value]="horaActual()" style="margin-left: 10px;" readonly></ion-input>
+        </ion-item>
+      </ion-list>
 
-    <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL HARDWARE REPORTADO</ion-card-title>
-    <ion-list>
-      <ion-item>
-        <ion-label position="stacked">Tipo de equipo</ion-label>
-        <ion-select id="tipoEquipo" formControlName="tipoequipo" placeholder="Selecciona el tipo de servicio" >
-          <ion-select-option value="impresion">Impresión</ion-select-option>
-          <ion-select-option value="pc">PC</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('tipoequipo')?.invalid && (ingresarform.get('tipoequipo')?.dirty || ingresarform.get('tipoequipo')?.touched)">
-        <div *ngIf="ingresarform.get('tipoequipo')?.hasError('required')">Esta sección es obligatoria.</div>
-      </div>
-
-      <ion-item>
-        <ion-label position="stacked">Marca</ion-label>
-        <ion-input id="marca" formControlName="marca" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('marca')?.invalid && (ingresarform.get('marca')?.dirty || ingresarform.get('marca')?.touched)">
-        <div *ngIf="ingresarform.get('marca')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
-
-      <ion-item>
-        <ion-label position="stacked">Modelo</ion-label>
-        <ion-input id="modelo" formControlName="modelo" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('modelo')?.invalid && (ingresarform.get('modelo')?.dirty || ingresarform.get('modelo')?.touched)">
-        <div *ngIf="ingresarform.get('modelo')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>
-
-      <ion-item>
-        <ion-label position="stacked">N° Serie</ion-label>
-        <ion-input id="nserie" formControlName="nserie" (input)="transformarAMayusculas($event)" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('nserie')?.invalid && (ingresarform.get('nserie')?.dirty || ingresarform.get('nserie')?.touched)">
-        <div *ngIf="ingresarform.get('nserie')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('nserie')?.hasError('pattern')">Este campo solo puede contener Mayúsculas y Números.</div>
-      </div>
-
-      <ion-item>
-        <ion-label position="stacked">IP</ion-label>
-        <ion-input id="ip" formControlName="ip" required></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('ip')?.invalid && (ingresarform.get('ip')?.dirty || ingresarform.get('ip')?.touched)">
-        <div *ngIf="ingresarform.get('ip')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('ip')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
-      </div>
-
-      <ion-item>
-        <ion-label position="stacked">Accesorios</ion-label>
-        <ion-input id="accesorios" formControlName="accesorios"></ion-input>
-      </ion-item>
-
-
-      <ion-card-title style="font-size: 13px;">DESCRIPCIÓN DEL CASO</ion-card-title>
+      <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL CLIENTE</ion-card-title>
       <ion-list>
         <ion-item>
-          <ion-label position="stacked">Problema reportado:</ion-label>
-          <ion-textarea id="problemareport" formControlName="problemareport" rows="4" [maxlength]="maxChars" [(ngModel)]="role" placeholder="Escribe el problema reportado..."></ion-textarea>
+          <ion-label position="stacked">Cliente</ion-label>
+          <ion-input id="cliente" formControlName="cliente"></ion-input>
         </ion-item>
-        <ion-text style="float: right; margin-right: 10px;">Caracteres restantes: {{role.length}}/{{maxChars}}</ion-text>
-        <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('problemareport')?.invalid && (ingresarform.get('problemareport')?.dirty || ingresarform.get('problemareport')?.touched)">
-          <div *ngIf="ingresarform.get('problemareport')?.hasError('maxlength')">Este campo puede contener un máximo de 200 caracteres.</div>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('cliente')?.invalid && (ingresarform.get('cliente')?.dirty || ingresarform.get('cliente')?.touched)">
+          <div *ngIf="ingresarform.get('cliente')?.hasError('required')">Este campo es obligatorio.</div>
         </div>
+
+
+        <ion-item>
+          <ion-label position="stacked">Dirección</ion-label>
+          <ion-input id="direccion" formControlName="direccion"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('direccion')?.invalid && (ingresarform.get('direccion')?.dirty || ingresarform.get('direccion')?.touched)">
+          <div *ngIf="ingresarform.get('direccion')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('direccion')?.hasError('maxlength')">Este campo debe tener máximo 35 caracteres.
+          </div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Ciudad</ion-label>
+          <ion-input id="ciudad" formControlName="ciudad"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('ciudad')?.invalid && (ingresarform.get('ciudad')?.dirty || ingresarform.get('ciudad')?.touched)">
+          <div *ngIf="ingresarform.get('ciudad')?.hasError('required')">Este campo es obligatorio.</div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Contacto</ion-label>
+          <ion-input id="contacto" formControlName="contacto"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('contacto')?.invalid && (ingresarform.get('contacto')?.dirty || ingresarform.get('contacto')?.touched)">
+          <div *ngIf="ingresarform.get('contacto')?.hasError('required')">Este campo es obligatorio.</div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Teléfono </ion-label>
+          <ion-input id="telefono" formControlName="telefono"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('telefono')?.invalid && (ingresarform.get('telefono')?.dirty || ingresarform.get('telefono')?.touched)">
+          <div *ngIf="ingresarform.get('telefono')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('telefono')?.hasError('pattern')">El telefono debe contener solo números.</div>
+          <div *ngIf="ingresarform.get('telefono')?.hasError('minlength')">El telefono debe contener minimo 9 digitos.
+          </div>
+          <div *ngIf="ingresarform.get('telefono')?.hasError('maxlength')">El telefono debe contener maximo 9 digitos.
+          </div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Correo </ion-label>
+          <ion-input id="correo" formControlName="correo"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('correo')?.invalid && (ingresarform.get('correo')?.dirty || ingresarform.get('correo')?.touched)">
+          <div *ngIf="ingresarform.get('correo')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('correo')?.hasError('pattern')">Este correo no es valido.</div>
+        </div>
+
+
       </ion-list>
 
+      <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL HARDWARE REPORTADO</ion-card-title>
       <ion-list>
         <ion-item>
-          <ion-label position="stacked">Solución:</ion-label>
-          <ion-textarea id="solucionreport" formControlName="solucionreport" rows="4" [maxlength]="maxChars1" [(ngModel)]="role1" placeholder="Escribe la solución..."></ion-textarea>
+          <ion-label position="stacked">Tipo de equipo</ion-label>
+          <ion-select formControlName="tipoequipo" placeholder="Selecciona el tipo de servicio">
+            <ion-select-option value="impresion">Impresión</ion-select-option>
+            <ion-select-option value="pc">PC</ion-select-option>
+          </ion-select>
         </ion-item>
-        <ion-text style="float: right; margin-right: 10px;">Caracteres restantes: {{role1.length}}/{{maxChars1}}</ion-text>
-        <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('solucionreport')?.invalid && (ingresarform.get('solucionreport')?.dirty || ingresarform.get('solucionreport')?.touched)">
-          <div *ngIf="ingresarform.get('solucionreport')?.hasError('maxlength')">Este campo puede contener un máximo de 200 caracteres.</div>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('tipoequipo')?.invalid && (ingresarform.get('tipoequipo')?.dirty || ingresarform.get('tipoequipo')?.touched)">
+          <div *ngIf="ingresarform.get('tipoequipo')?.hasError('required')">Esta sección es obligatoria.</div>
         </div>
-      </ion-list>
 
-      <ion-card-title style="font-size: 13px;">STATUS DE SERVICIO</ion-card-title>
-      <ion-list>
-        <ion-radio-group id="equipoEspera" #equipoEspera (ionChange)="onSelected(equipoEspera, equipoEspera.value)">
+        <ion-item>
+          <ion-label position="stacked">Marca</ion-label>
+          <ion-select id="marca" formControlName="marca">
+            <div *ngIf="ingresarform.get('tipoequipo')!.value === 'pc'">
+              <ion-select-option value="">Selecciona una marca</ion-select-option>
+              <ion-select-option value="LENOVO">LENOVO</ion-select-option>
+              <ion-select-option value="DELL">DELL</ion-select-option>
+              <ion-select-option value="HP">HP</ion-select-option>
+              <ion-select-option value="ASUS">ASUS</ion-select-option>
+              <ion-select-option value="APPLE">APPLE</ion-select-option>
+              <ion-select-option value="ACER">ACER</ion-select-option>
+            </div>
+            <div *ngIf="ingresarform.get('tipoequipo')!.value === 'impresion'">
+              <ion-select-option value="">Selecciona una marca</ion-select-option>
+              <ion-select-option value="LEXMARK">LEXMARK</ion-select-option>
+              <ion-select-option value="BROTHER">BROTHER</ion-select-option>
+              <ion-select-option value="KYOCERA">KYOCERA</ion-select-option>
+              <ion-select-option value="HP">HP</ion-select-option>
+              <ion-select-option value="XEROX">XEROX</ion-select-option>
+              <ion-select-option value="TOSHIBA">TOSHIBA</ion-select-option>
+              <ion-select-option value="CANON">CANON</ion-select-option>
+              <ion-select-option value="EPSON">EPSON</ion-select-option>
+            </div>
+            <ion-select-option value="OTRO">OTRO</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div *ngIf="ingresarform.get('marca')!.value === 'OTRO'">
           <ion-item>
-            <ion-label>Equipo Espera de partes</ion-label>
-            <ion-radio slot="end" value="si"></ion-radio>
-            <ion-radio slot="end" value="no"></ion-radio>
+            <ion-label position="stacked">Marca Personalizada</ion-label>
+            <ion-input formControlName="otraMarca" placeholder="Ingresa otra marca"></ion-input>
           </ion-item>
-        </ion-radio-group>
-        <ion-radio-group id="equipoOperativo" #equipoOperativo (ionChange)="onSelected(equipoOperativo, equipoOperativo.value)">
-          <ion-item>
-            <ion-label>Equipo Operativo</ion-label>
-            <ion-radio slot="end" value="si"></ion-radio>
-            <ion-radio slot="end" value="no"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-        <ion-radio-group id="equipoBackup" #equipoBackup (ionChange)="onSelected(equipoBackup, equipoBackup.value)">
-          <ion-item>
-            <ion-label>Equipo Backup instalado</ion-label>
-            <ion-radio slot="end" value="si"></ion-radio>
-            <ion-radio slot="end" value="no"></ion-radio>
-          </ion-item>
-        </ion-radio-group>
-      </ion-list>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;"
+            *ngIf="ingresarform.get('otraMarca')?.invalid && (ingresarform.get('otraMarca')?.dirty || ingresarform.get('otraMarca')?.touched)">
+            <div *ngIf="ingresarform.get('otraMarca')?.hasError('required')">Este campo es obligatorio.</div>
+          </div>
+        </div>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('marca')?.invalid && (ingresarform.get('marca')?.dirty || ingresarform.get('marca')?.touched)">
+          <div *ngIf="ingresarform.get('marca')?.hasError('required')">Selecciona una marca.</div>
+        </div>
+        <ion-item>
+          <ion-label position="stacked">Modelo</ion-label>
+          <ion-input id="modelo" formControlName="modelo"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('modelo')?.invalid && (ingresarform.get('modelo')?.dirty || ingresarform.get('modelo')?.touched)">
+          <div *ngIf="ingresarform.get('modelo')?.hasError('required')">Este campo es obligatorio.</div>
+        </div>
 
-      <div *ngIf="ingresarform.get('equipoEspera')?.value === 'si'">
-        <form [formGroup]="repuestosform">
-          <ion-card-title style="font-size: 13px;">REPUESTOS</ion-card-title>
-          <ion-item>
-            <ion-label position="stacked">Nombre:</ion-label>
-            <ion-input formControlName="nombreRepuesto" id="nombreRepuesto" #nombreInput></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosform.get('nombreRepuesto')?.invalid && (repuestosform.get('nombreRepuesto')?.dirty || repuestosform.get('nombreRepuesto')?.touched)">
-            <div *ngIf="repuestosform.get('nombreRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">N° Parte:</ion-label>
-            <ion-input formControlName="nparteRepuesto" id="nparteRepuesto" #numeroParteInput></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosform.get('nparteRepuesto')?.invalid && (repuestosform.get('nparteRepuesto')?.dirty || repuestosform.get('nparteRepuesto')?.touched)">
-            <div *ngIf="repuestosform.get('nparteRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
-            <div *ngIf="repuestosform.get('nparteRepuesto')?.hasError('pattern')">Este campo solo puede contener letras y números.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">Estado:</ion-label>
-            <ion-select formControlName="estadoRepuesto" id="estadoRepuesto" #estadoInput placeholder="Selecciona el estado del repuesto" >
-              <ion-select-option value="SOLICITUD">Solicitud</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosform.get('estadoRepuesto')?.invalid && (repuestosform.get('estadoRepuesto')?.dirty || repuestosform.get('estadoRepuesto')?.touched)">
-            <div *ngIf="repuestosform.get('estadoRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-          <ion-item>
-            <ion-button style="width: 100%;" [disabled]="!repuestosform.valid" (click)="agregarRepuesto(nombreInput.value!, numeroParteInput.value!, estadoInput.value!)">Agregar Repuesto</ion-button>
-          </ion-item>
-          <table style="width: 100%;">
-            <thead style="width: 100%;">
-              <tr style="background-color: #000e76; color: white; font-weight: 200;">
-                <th>Nombre</th>
-                <th>N° Parte</th>
-                <th>Estado</th>
-                <th>Opciones</th>
-              </tr>
-            </thead>
-            <tbody style="width: 100%;">
-              <tr *ngFor="let repuesto of repuestos; let i = index" style="text-align: center; color: black; font-size: 16px;">
-                <td>{{ repuesto.nombre }}</td>
-                <td>{{ repuesto.numeroParte }}</td>
-                <td>{{ repuesto.estado }}</td>
-                <td (click)="borrarRepuesto(i)"><ion-icon name="trash-outline" style="font-size: 30px;"></ion-icon></td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
-      </div>
+        <ion-item>
+          <ion-label position="stacked">N° Serie</ion-label>
+          <ion-input id="nserie" formControlName="nserie" (input)="transformarAMayusculas($event)"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('nserie')?.invalid && (ingresarform.get('nserie')?.dirty || ingresarform.get('nserie')?.touched)">
+          <div *ngIf="ingresarform.get('nserie')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('nserie')?.hasError('pattern')">Este campo solo puede contener Mayúsculas y
+            Números.</div>
+        </div>
 
-      <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si'">
+        <ion-item>
+          <ion-label position="stacked">IP</ion-label>
+          <ion-input id="ip" formControlName="ip"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('ip')?.invalid && (ingresarform.get('ip')?.dirty || ingresarform.get('ip')?.touched)">
+          <div *ngIf="ingresarform.get('ip')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Accesorios</ion-label>
+          <ion-input id="accesorios" formControlName="accesorios"></ion-input>
+        </ion-item>
+
+
+        <ion-card-title style="font-size: 13px;">DESCRIPCIÓN DEL CASO</ion-card-title>
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Problema reportado:</ion-label>
+            <ion-textarea id="problemareport" formControlName="problemareport" rows="4" [maxlength]="maxChars"
+              [(ngModel)]="role" placeholder="Escribe el problema reportado..."></ion-textarea>
+          </ion-item>
+          <ion-text style="float: right; margin-right: 10px;">Caracteres restantes:
+            {{role.length}}/{{maxChars}}</ion-text>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;"
+            *ngIf="ingresarform.get('problemareport')?.invalid && (ingresarform.get('problemareport')?.dirty || ingresarform.get('problemareport')?.touched)">
+            <div *ngIf="ingresarform.get('problemareport')?.hasError('maxlength')">Este campo puede contener un máximo
+              de 200 caracteres.</div>
+          </div>
+        </ion-list>
+
+        <ion-list>
+          <ion-item>
+            <ion-label position="stacked">Solución:</ion-label>
+            <ion-textarea id="solucionreport" formControlName="solucionreport" rows="4" [maxlength]="maxChars1"
+              [(ngModel)]="role1" placeholder="Escribe la solución..."></ion-textarea>
+          </ion-item>
+          <ion-text style="float: right; margin-right: 10px;">Caracteres restantes:
+            {{role1.length}}/{{maxChars1}}</ion-text>
+          <div style="color: red; margin-top: 3px; margin-left: 10px;"
+            *ngIf="ingresarform.get('solucionreport')?.invalid && (ingresarform.get('solucionreport')?.dirty || ingresarform.get('solucionreport')?.touched)">
+            <div *ngIf="ingresarform.get('solucionreport')?.hasError('maxlength')">Este campo puede contener un máximo
+              de 200 caracteres.</div>
+          </div>
+        </ion-list>
+
+        <ion-card-title style="font-size: 13px;">STATUS DE SERVICIO</ion-card-title>
+        <ion-list>
+          <ion-radio-group id="equipoEspera" #equipoEspera (ionChange)="onSelected(equipoEspera, equipoEspera.value)">
+            <ion-item>
+              <ion-label>Equipo Espera de partes</ion-label>
+              <ion-radio slot="end" value="si"></ion-radio>
+              <ion-radio slot="end" value="no"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+          <ion-radio-group id="equipoOperativo" #equipoOperativo
+            (ionChange)="onSelected(equipoOperativo, equipoOperativo.value)">
+            <ion-item>
+              <ion-label>Equipo Operativo</ion-label>
+              <ion-radio slot="end" value="si"></ion-radio>
+              <ion-radio slot="end" value="no"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+          <ion-radio-group id="equipoBackup" #equipoBackup (ionChange)="onSelected(equipoBackup, equipoBackup.value)">
+            <ion-item>
+              <ion-label>Equipo Backup instalado</ion-label>
+              <ion-radio slot="end" value="si"></ion-radio>
+              <ion-radio slot="end" value="no"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ion-list>
+
+        <div *ngIf="ingresarform.get('equipoEspera')?.value === 'si'">
+          <form [formGroup]="repuestosform">
+            <ion-card-title style="font-size: 13px;">REPUESTOS</ion-card-title>
+            <ion-item>
+              <ion-label position="stacked">Nombre:</ion-label>
+              <ion-input formControlName="nombreRepuesto" id="nombreRepuesto" #nombreInput></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="repuestosform.get('nombreRepuesto')?.invalid && (repuestosform.get('nombreRepuesto')?.dirty || repuestosform.get('nombreRepuesto')?.touched)">
+              <div *ngIf="repuestosform.get('nombreRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">N° Parte:</ion-label>
+              <ion-input formControlName="nparteRepuesto" id="nparteRepuesto" #numeroParteInput></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="repuestosform.get('nparteRepuesto')?.invalid && (repuestosform.get('nparteRepuesto')?.dirty || repuestosform.get('nparteRepuesto')?.touched)">
+              <div *ngIf="repuestosform.get('nparteRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
+              <div *ngIf="repuestosform.get('nparteRepuesto')?.hasError('pattern')">Este campo solo puede contener
+                letras y números.</div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">Estado:</ion-label>
+              <ion-select formControlName="estadoRepuesto" id="estadoRepuesto" #estadoInput
+                placeholder="Selecciona el estado del repuesto">
+                <ion-select-option value="SOLICITUD">Solicitud</ion-select-option>
+              </ion-select>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="repuestosform.get('estadoRepuesto')?.invalid && (repuestosform.get('estadoRepuesto')?.dirty || repuestosform.get('estadoRepuesto')?.touched)">
+              <div *ngIf="repuestosform.get('estadoRepuesto')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+            <ion-item>
+              <ion-button style="width: 100%;" [disabled]="!repuestosform.valid"
+                (click)="agregarRepuesto(nombreInput.value!, numeroParteInput.value!, estadoInput.value!)">Agregar
+                Repuesto</ion-button>
+            </ion-item>
+            <table style="width: 100%;">
+              <thead style="width: 100%;">
+                <tr style="background-color: #000e76; color: white; font-weight: 200;">
+                  <th>Nombre</th>
+                  <th>N° Parte</th>
+                  <th>Estado</th>
+                  <th>Opciones</th>
+                </tr>
+              </thead>
+              <tbody style="width: 100%;">
+                <tr *ngFor="let repuesto of repuestos; let i = index"
+                  style="text-align: center; color: black; font-size: 16px;">
+                  <td>{{ repuesto.nombre }}</td>
+                  <td>{{ repuesto.numeroParte }}</td>
+                  <td>{{ repuesto.estado }}</td>
+                  <td (click)="borrarRepuesto(i)"><ion-icon name="trash-outline" style="font-size: 30px;"></ion-icon>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+
+        <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si'">
           <ion-card-title style="font-size: 13px;">Equipo Operativo</ion-card-title>
           <ion-list>
             <form [formGroup]="utilizoRepuestosform">
-              <ion-radio-group id="utilizoRepuestos" #utilizoRepuestos (ionChange)="seleccionarutilizarepuestos(utilizoRepuestos, utilizoRepuestos.value)">
+              <ion-radio-group id="utilizoRepuestos" #utilizoRepuestos
+                (ionChange)="seleccionarutilizarepuestos(utilizoRepuestos, utilizoRepuestos.value)">
                 <ion-item>
                   <ion-label>¿Utilizó repuestos?</ion-label>
                   <ion-radio slot="end" value="si"></ion-radio>
@@ -284,30 +354,42 @@
               <ion-card-title style="font-size: 13px;">REPUESTOS</ion-card-title>
               <ion-item>
                 <ion-label position="stacked">Nombre:</ion-label>
-                <ion-input formControlName="nombreRepuestoOperativo" id="nombreRepuestoOperativo" #nombreInputOperativo></ion-input>
+                <ion-input formControlName="nombreRepuestoOperativo" id="nombreRepuestoOperativo"
+                  #nombreInputOperativo></ion-input>
               </ion-item>
-              <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosOperativoform.get('nombreRepuestoOperativo')?.invalid && (repuestosOperativoform.get('nombreRepuestoOperativo')?.dirty || repuestosOperativoform.get('nombreRepuestoOperativo')?.touched)">
-                <div *ngIf="repuestosOperativoform.get('nombreRepuestoOperativo')?.hasError('required')">Este campo es obligatorio.</div>
+              <div style="color: red; margin-top: 3px; margin-left: 10px;"
+                *ngIf="repuestosOperativoform.get('nombreRepuestoOperativo')?.invalid && (repuestosOperativoform.get('nombreRepuestoOperativo')?.dirty || repuestosOperativoform.get('nombreRepuestoOperativo')?.touched)">
+                <div *ngIf="repuestosOperativoform.get('nombreRepuestoOperativo')?.hasError('required')">Este campo es
+                  obligatorio.</div>
               </div>
               <ion-item>
                 <ion-label position="stacked">N° Parte:</ion-label>
-                <ion-input formControlName="nparteRepuestoOperativo" id="nparteRepuestoOperativo" #numeroParteInputOperativo></ion-input>
+                <ion-input formControlName="nparteRepuestoOperativo" id="nparteRepuestoOperativo"
+                  #numeroParteInputOperativo></ion-input>
               </ion-item>
-              <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.invalid && (repuestosOperativoform.get('nparteRepuestoOperativo')?.dirty || repuestosOperativoform.get('nparteRepuestoOperativo')?.touched)">
-                <div *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.hasError('required')">Este campo es obligatorio.</div>
-                <div *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.hasError('pattern')">Este campo solo puede contener letras y números.</div>
+              <div style="color: red; margin-top: 3px; margin-left: 10px;"
+                *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.invalid && (repuestosOperativoform.get('nparteRepuestoOperativo')?.dirty || repuestosOperativoform.get('nparteRepuestoOperativo')?.touched)">
+                <div *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.hasError('required')">Este campo es
+                  obligatorio.</div>
+                <div *ngIf="repuestosOperativoform.get('nparteRepuestoOperativo')?.hasError('pattern')">Este campo solo
+                  puede contener letras y números.</div>
               </div>
               <ion-item>
                 <ion-label position="stacked">Estado:</ion-label>
-                <ion-select formControlName="estadoRepuestoOperativo" id="estadoRepuestoOperativo" #estadoInputOperativo placeholder="Selecciona el estado del repuesto" >
+                <ion-select formControlName="estadoRepuestoOperativo" id="estadoRepuestoOperativo" #estadoInputOperativo
+                  placeholder="Selecciona el estado del repuesto">
                   <ion-select-option value="INSTALADO">Instalado</ion-select-option>
                 </ion-select>
               </ion-item>
-              <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="repuestosOperativoform.get('estadoRepuestoOperativo')?.invalid && (repuestosOperativoform.get('estadoRepuestoOperativo')?.dirty || repuestosOperativoform.get('estadoRepuestoOperativo')?.touched)">
-                <div *ngIf="repuestosOperativoform.get('estadoRepuestoOperativo')?.hasError('required')">Este campo es obligatorio.</div>
+              <div style="color: red; margin-top: 3px; margin-left: 10px;"
+                *ngIf="repuestosOperativoform.get('estadoRepuestoOperativo')?.invalid && (repuestosOperativoform.get('estadoRepuestoOperativo')?.dirty || repuestosOperativoform.get('estadoRepuestoOperativo')?.touched)">
+                <div *ngIf="repuestosOperativoform.get('estadoRepuestoOperativo')?.hasError('required')">Este campo es
+                  obligatorio.</div>
               </div>
               <ion-item>
-                <ion-button style="width: 100%;" [disabled]="!repuestosOperativoform.valid" (click)="agregarRepuestoOperativo(nombreInputOperativo.value!, numeroParteInputOperativo.value!, estadoInputOperativo.value!)">Agregar Repuesto</ion-button>
+                <ion-button style="width: 100%;" [disabled]="!repuestosOperativoform.valid"
+                  (click)="agregarRepuestoOperativo(nombreInputOperativo.value!, numeroParteInputOperativo.value!, estadoInputOperativo.value!)">Agregar
+                  Repuesto</ion-button>
               </ion-item>
               <table style="width: 100%;">
                 <thead style="width: 100%;">
@@ -319,96 +401,147 @@
                   </tr>
                 </thead>
                 <tbody style="width: 100%;">
-                  <tr *ngFor="let repuesto of repuestosOperativo; let i = index" style="text-align: center; color: black; font-size: 16px;">
+                  <tr *ngFor="let repuesto of repuestosOperativo; let i = index"
+                    style="text-align: center; color: black; font-size: 16px;">
                     <td>{{ repuesto.nombre }}</td>
                     <td>{{ repuesto.numeroParte }}</td>
                     <td>{{ repuesto.estado }}</td>
-                    <td (click)="borrarRepuestoOperativo(i)"><ion-icon name="trash-outline" style="font-size: 30px;"></ion-icon></td>
+                    <td (click)="borrarRepuestoOperativo(i)"><ion-icon name="trash-outline"
+                        style="font-size: 30px;"></ion-icon></td>
                   </tr>
                 </tbody>
               </table>
             </form>
           </div>
-      </div>
-            
-      <div *ngIf="ingresarform.get('equipoBackup')?.value === 'si'">
-        <form [formGroup]="backupform">
-          <ion-card-title style="font-size: 13px;">INFORMACIÓN EQUIPO BACKUP INSTALADO</ion-card-title>
-          <ion-item>
-            <ion-label position="stacked">Marca:</ion-label>
-            <ion-input id="marcabackup" formControlName="marcabackup"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="backupform.get('marcabackup')?.invalid && (backupform.get('marcabackup')?.dirty || backupform.get('marcabackup')?.touched)">
-            <div *ngIf="backupform.get('marcabackup')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">Modelo:</ion-label>
-            <ion-input id="modelobackup" formControlName="modelobackup"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="backupform.get('modelobackup')?.invalid && (backupform.get('modelobackup')?.dirty || backupform.get('modelobackup')?.touched)">
-            <div *ngIf="backupform.get('modelobackup')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">N° Serie:</ion-label>
-            <ion-input id="nseriebackup" formControlName="nseriebackup" (input)="transformarAMayusculas1($event)"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="backupform.get('nseriebackup')?.invalid && (backupform.get('nseriebackup')?.dirty || backupform.get('nseriebackup')?.touched)">
-            <div *ngIf="backupform.get('nseriebackup')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">IP:</ion-label>
-            <ion-input id="ipbackup" formControlName="ipbackup"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="backupform.get('ipbackup')?.invalid && (backupform.get('ipbackup')?.dirty || backupform.get('ipbackup')?.touched)">
-            <div *ngIf="backupform.get('ipbackup')?.hasError('required')">Este campo es obligatorio.</div>
-            <div *ngIf="backupform.get('ipbackup')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
-          </div>
-          <ion-item>
-            <ion-label position="stacked">Contador:</ion-label>
-            <ion-input id="contadorbackup" formControlName="contadorbackup" type="number"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="backupform.get('contadorbackup')?.invalid && (backupform.get('contadorbackup')?.dirty || backupform.get('contadorbackup')?.touched)">
-            <div *ngIf="backupform.get('contadorbackup')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
-        </form>
-      </div>
-       
-      
-      <br><br>
-      <ion-card-title style="font-size: 13px;">DATOS CLIENTE</ion-card-title>
-      <ion-item>
-        <ion-label position="stacked">Nombre</ion-label>
-        <ion-input id="nombrecli" formControlName="nombrecli"></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('nombrecli')?.invalid && (ingresarform.get('nombrecli')?.dirty || ingresarform.get('nombrecli')?.touched)">
-        <div *ngIf="ingresarform.get('nombrecli')?.hasError('required')">Este campo es obligatorio.</div>
-        <div *ngIf="ingresarform.get('nombrecli')?.hasError('pattern')">Este campo solo puede contener letras.</div>
-      </div>
+        </div>
 
-      <ion-item>
-        <ion-label position="stacked">Rut</ion-label>
-        <ion-input id="rutcli" formControlName="rutcli"></ion-input>
-      </ion-item>
-      <div style="color: red; margin-top: 3px; margin-left: 10px;" *ngIf="ingresarform.get('rutcli')?.invalid && (ingresarform.get('rutcli')?.dirty || ingresarform.get('rutcli')?.touched)">
-        <div *ngIf="ingresarform.get('rutcli')?.hasError('required')">El RUT es obligatorio.</div>
-        <div *ngIf="ingresarform.get('rutcli')?.hasError('invalidRut')">El RUT es invalido.</div>
-      </div>
-
-      <ion-item class="ion-text-center">
-        <ion-label>Ingresa tu firma</ion-label>
-      </ion-item>
-      <ion-item>
-        <ion-col size="12" class="ion-no-padding">
-          <canvas #canvas style="border: 1px solid black;"></canvas>
-        </ion-col>
+        <div *ngIf="ingresarform.get('equipoBackup')?.value === 'si'">
+          <form [formGroup]="backupform">
+            <ion-card-title style="font-size: 13px;">INFORMACIÓN EQUIPO BACKUP INSTALADO</ion-card-title>
+            <ion-item>
+              <ion-label position="stacked">Marca:</ion-label>
+              <ion-input id="marcabackup" formControlName="marcabackup"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('marcabackup')?.invalid && (backupform.get('marcabackup')?.dirty || backupform.get('marcabackup')?.touched)">
+              <div *ngIf="backupform.get('marcabackup')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">Modelo:</ion-label>
+              <ion-input id="modelobackup" formControlName="modelobackup"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('modelobackup')?.invalid && (backupform.get('modelobackup')?.dirty || backupform.get('modelobackup')?.touched)">
+              <div *ngIf="backupform.get('modelobackup')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">N° Serie:</ion-label>
+              <ion-input id="nseriebackup" formControlName="nseriebackup"
+                (input)="transformarAMayusculas($event)"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('nseriebackup')?.invalid && (backupform.get('nseriebackup')?.dirty || backupform.get('nseriebackup')?.touched)">
+              <div *ngIf="backupform.get('nseriebackup')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">IP:</ion-label>
+              <ion-input id="ipbackup" formControlName="ipbackup"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('ipbackup')?.invalid && (backupform.get('ipbackup')?.dirty || backupform.get('ipbackup')?.touched)">
+              <div *ngIf="backupform.get('ipbackup')?.hasError('pattern')">La IP solo puede contener números y puntos.
+              </div>
+            </div>
+            <ion-item>
+              <ion-label position="stacked">Contador:</ion-label>
+              <ion-input id="contadorbackup" formControlName="contadorbackup" type="number"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('contadorbackup')?.invalid && (backupform.get('contadorbackup')?.dirty || backupform.get('contadorbackup')?.touched)">
+              <div *ngIf="backupform.get('contadorbackup')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+          </form>
+        </div>
+        <ion-item>
+          <ion-item>
+            <ion-label>Tomar o Cargar foto</ion-label>
+          </ion-item>
         </ion-item>
-      <ion-item class="ion-text-center">
-        <ion-button style="width: 50%;" [disabled]="isCanvasBlank()" (click)="guardar()">Guardar</ion-button>
-        <ion-button style="width: 50%;" (click)="limpiar()">Limpiar</ion-button>
-      </ion-item>
-    </ion-list>
 
-    <ion-button expand="full" [disabled]="  !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>
-  </ion-card>
+        <br><br>
+        <ion-card-title style="font-size: 13px;">DATOS CLIENTE</ion-card-title>
+        <ion-item>
+          <ion-label position="stacked">Nombre</ion-label>
+          <ion-input id="nombrecli" formControlName="nombrecli"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('nombrecli')?.invalid && (ingresarform.get('nombrecli')?.dirty || ingresarform.get('nombrecli')?.touched)">
+          <div *ngIf="ingresarform.get('nombrecli')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('nombrecli')?.hasError('pattern')">Este campo solo puede contener letras.</div>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Rut</ion-label>
+          <ion-input id="rutcli" formControlName="rutcli"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('rutcli')?.invalid && (ingresarform.get('rutcli')?.dirty || ingresarform.get('rutcli')?.touched)">
+          <div *ngIf="ingresarform.get('rutcli')?.hasError('required')">El RUT es obligatorio.</div>
+          <div *ngIf="ingresarform.get('rutcli')?.hasError('invalidRut')">El RUT es invalido.</div>
+        </div>
+
+        <ion-item class="ion-text-center">
+          <ion-label>Ingresa tu firma</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-col size="12" class="ion-no-padding">
+            <canvas #canvas style="border: 1px solid black;"></canvas>
+          </ion-col>
+        </ion-item>
+        <ion-item class="ion-text-center">
+          <ion-button style="width: 50%;" [disabled]="isCanvasBlank()" (click)="guardar()">Guardar</ion-button>
+          <ion-button style="width: 50%;" (click)="limpiar()">Limpiar</ion-button>
+        </ion-item>
+        <ion-card-title style="font-size: 13px;">ADJUNTOS</ion-card-title>
+        <ion-grid *ngIf="photos.length > 0">
+          <ion-row>
+            <ion-col size="6" *ngFor="let photo of photos; let i = index">
+              <img [src]="photo" width="100%" height="auto">
+              <div class="ion-text-center">
+                <ion-button (click)="deletePhoto(i)" fill="clear" class="delete-button">
+                  <ion-icon name="trash-outline" style="color: white;"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-grid *ngIf="photos.length === 0">
+          <ion-row>
+            <ion-col size="6" style="height: 230px;">
+              <div class="ion-text-center" style="margin-top: 70%;">
+                No hay foto
+              </div>
+            </ion-col>
+            <ion-col size="6" style="height: 230px;">
+              <div class="ion-text-center" style="margin-top: 70%;">
+                No hay foto
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-item class="ion-text-center">
+          <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
+          <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
+        </ion-item>
+        
+      </ion-list>
+      <div *ngIf="loading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-message">Generando PDF...</div>
+      </div>
+
+      <!--<ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>-->
+      <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
+    </ion-card>
   </form>
 </ion-content>
