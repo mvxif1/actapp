@@ -77,7 +77,7 @@ export class IngresarformPage {
   chars1= 0;
   //Barra de carga
   loading: boolean = false; // Variable para controlar la visibilidad de la barra de carga
-
+  loadingImage: boolean = false;
   usuario!: any;
   pattern = {
     numeros: /^\d{1,9}$/,
@@ -396,6 +396,8 @@ export class IngresarformPage {
   }
 
   takePhoto() {
+    this.loadingImage = true; // Activar mensaje de carga
+    
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
@@ -404,38 +406,46 @@ export class IngresarformPage {
       saveToPhotoAlbum: false,
       correctOrientation: true
     };
-
+  
     this.camera.getPicture(options).then((imageData) => {
       // Add the photo to the array
       this.photos.push('data:image/jpeg;base64,' + imageData);
-
+  
       // Limit to 10 photos
       if (this.photos.length > 10) {
         this.photos.splice(0, 1); // Remove the first (oldest) photo
       }
+  
+      this.loadingImage = false; // Desactivar mensaje de carga
     }, (err) => {
       console.log('Error taking photo', err);
+      this.loadingImage = false; // Desactivar mensaje de carga en caso de error
     });
   }
-
+  
   selectFromGallery() {
+    this.loadingImage = true; // Activar mensaje de carga
+  
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
       sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
       saveToPhotoAlbum: false
     };
-
+  
     this.camera.getPicture(options).then((imageData) => {
       // Add the photo to the array
       this.photos.push('data:image/jpeg;base64,' + imageData);
-
-      // ---Limite de 10 fotos máximo---
+  
+      // Limit to 10 photos
       if (this.photos.length > 10) {
-        this.photos.splice(0, 1); // -----Elimina la primera foto si son 10-----
+        this.photos.splice(0, 1); // Remove the first (oldest) photo
       }
+  
+      this.loadingImage = false; // Desactivar mensaje de carga
     }, (err) => {
       console.log('Error selecting photo', err);
+      this.loadingImage = false; // Desactivar mensaje de carga en caso de error
     });
   }
 
@@ -461,7 +471,7 @@ export class IngresarformPage {
       const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
       const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
   
-      const tipoEquipo = (document.getElementById('tipoEquipo') as HTMLSelectElement)?.value || '';
+      const tipoequipo = (document.getElementById('tipoequipo') as HTMLSelectElement)?.value || '';
       const marca = (document.getElementById('marca') as HTMLSelectElement)?.value || '';
       const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
       const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
@@ -514,9 +524,9 @@ export class IngresarformPage {
       pdf.text(contacto, 292, 157);
       pdf.text(telefono, 292, 172);
       pdf.text(correo, 292, 189);
-      if (tipoEquipo === 'impresion') {
+      if (tipoequipo === 'impresion') {
         pdf.circle(183, 252, 7, "F");
-      } else {
+      } else if (tiposervicio === 'pc') {
         pdf.circle(222, 252, 7, "F");
       }
       pdf.text(marca, 98, 273);

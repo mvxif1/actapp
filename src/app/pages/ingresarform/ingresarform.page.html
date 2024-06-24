@@ -133,7 +133,7 @@
       <ion-list>
         <ion-item>
           <ion-label position="stacked">Tipo de equipo</ion-label>
-          <ion-select formControlName="tipoequipo" placeholder="Selecciona el tipo de servicio">
+          <ion-select id="tipoequipo" formControlName="tipoequipo" placeholder="Selecciona el tipo de servicio">
             <ion-select-option value="impresion">Impresión</ion-select-option>
             <ion-select-option value="pc">PC</ion-select-option>
           </ion-select>
@@ -332,6 +332,7 @@
                 </tr>
               </tbody>
             </table>
+            <br><br><br>
           </form>
         </div>
 
@@ -411,6 +412,7 @@
                   </tr>
                 </tbody>
               </table>
+              <br><br><br>
             </form>
           </div>
         </div>
@@ -462,13 +464,6 @@
             </div>
           </form>
         </div>
-        <ion-item>
-          <ion-item>
-            <ion-label>Tomar o Cargar foto</ion-label>
-          </ion-item>
-        </ion-item>
-
-        <br><br>
         <ion-card-title style="font-size: 13px;">DATOS CLIENTE</ion-card-title>
         <ion-item>
           <ion-label position="stacked">Nombre</ion-label>
@@ -490,19 +485,21 @@
           <div *ngIf="ingresarform.get('rutcli')?.hasError('invalidRut')">El RUT es invalido.</div>
         </div>
 
+
+          
+        
+        <ion-card-title style="font-size: 13px;">INGRESA TU FIRMA</ion-card-title>
+        
         <ion-item class="ion-text-center">
-          <ion-label>Ingresa tu firma</ion-label>
-        </ion-item>
-        <ion-item>
           <ion-col size="12" class="ion-no-padding">
-            <canvas #canvas style="border: 1px solid black;"></canvas>
+            <canvas #canvas style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px;"></canvas>
           </ion-col>
         </ion-item>
         <ion-item class="ion-text-center">
           <ion-button style="width: 50%;" [disabled]="isCanvasBlank()" (click)="guardar()">Guardar</ion-button>
           <ion-button style="width: 50%;" (click)="limpiar()">Limpiar</ion-button>
         </ion-item>
-        <ion-card-title style="font-size: 13px;">ADJUNTOS</ion-card-title>
+        <ion-card-title style="font-size: 13px;">ADJUNTOS (MÁXIMO 10 ARCHIVOS)</ion-card-title>
         <ion-grid *ngIf="photos.length > 0">
           <ion-row>
             <ion-col size="6" *ngFor="let photo of photos; let i = index">
@@ -515,29 +512,31 @@
             </ion-col>
           </ion-row>
         </ion-grid>
+        
         <ion-grid *ngIf="photos.length === 0">
-          <ion-row>
-            <ion-col size="6" style="height: 230px;">
-              <div class="ion-text-center" style="margin-top: 70%;">
-                No hay foto
-              </div>
-            </ion-col>
-            <ion-col size="6" style="height: 230px;">
-              <div class="ion-text-center" style="margin-top: 70%;">
-                No hay foto
+          <ion-item>
+          <ion-row style="width: 100%;">
+            <ion-col size="12" style="height: 230px; margin-bottom: 20px; background-color: gray; border: 5px solid rgba(0, 0, 0, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <div style="color: white; font-weight: 500;">
+                No hay fotos
               </div>
             </ion-col>
           </ion-row>
+          </ion-item>
+          <ion-item class="ion-text-center">
+            <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
+            <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
+          </ion-item>
         </ion-grid>
-        <ion-item class="ion-text-center">
-          <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
-          <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
-        </ion-item>
-        
       </ion-list>
       <div *ngIf="loading" class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-message">Generando PDF...</div>
+      </div>
+
+      <div *ngIf="loadingImage" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-message">Cargando imagen...</div>
       </div>
 
       <!--<ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>-->
