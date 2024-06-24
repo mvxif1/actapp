@@ -466,6 +466,16 @@
         </div>
         <ion-card-title style="font-size: 13px;">DATOS CLIENTE</ion-card-title>
         <ion-item>
+          <ion-label position="stacked">Rut</ion-label>
+          <ion-input id="rutcli" formControlName="rutcli"></ion-input>
+        </ion-item>
+        <div style="color: red; margin-top: 3px; margin-left: 10px;"
+          *ngIf="ingresarform.get('rutcli')?.invalid && (ingresarform.get('rutcli')?.dirty || ingresarform.get('rutcli')?.touched)">
+          <div *ngIf="ingresarform.get('rutcli')?.hasError('required')">El RUT es obligatorio.</div>
+          <div *ngIf="ingresarform.get('rutcli')?.hasError('invalidRut')">El RUT es invalido.</div>
+        </div>
+
+        <ion-item>
           <ion-label position="stacked">Nombre</ion-label>
           <ion-input id="nombrecli" formControlName="nombrecli"></ion-input>
         </ion-item>
@@ -476,17 +486,13 @@
         </div>
 
         <ion-item>
-          <ion-label position="stacked">Rut</ion-label>
-          <ion-input id="rutcli" formControlName="rutcli"></ion-input>
+          <ion-label position="stacked">Correo</ion-label>
+          <ion-input id="correocli" formControlName="correocli"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
-          *ngIf="ingresarform.get('rutcli')?.invalid && (ingresarform.get('rutcli')?.dirty || ingresarform.get('rutcli')?.touched)">
-          <div *ngIf="ingresarform.get('rutcli')?.hasError('required')">El RUT es obligatorio.</div>
-          <div *ngIf="ingresarform.get('rutcli')?.hasError('invalidRut')">El RUT es invalido.</div>
-        </div>
-
-
-          
+        *ngIf="ingresarform.get('correocli')?.invalid && (ingresarform.get('correocli')?.dirty || ingresarform.get('correocli')?.touched)">
+        <div *ngIf="ingresarform.get('correocli')?.hasError('required')">Este campo es obligatorio.</div>
+      </div>          
         
         <ion-card-title style="font-size: 13px;">INGRESA TU FIRMA</ion-card-title>
         
@@ -497,7 +503,7 @@
         </ion-item>
         <ion-item class="ion-text-center">
           <ion-button style="width: 50%;" [disabled]="isCanvasBlank()" (click)="guardar()">Guardar</ion-button>
-          <ion-button style="width: 50%;" (click)="limpiar()">Limpiar</ion-button>
+          <ion-button style="width: 50%;" color="medium" (click)="limpiar()">Limpiar</ion-button>
         </ion-item>
         <ion-card-title style="font-size: 13px;">ADJUNTOS (MÁXIMO 10 ARCHIVOS)</ion-card-title>
         <ion-grid *ngIf="photos.length > 0">
@@ -523,11 +529,11 @@
             </ion-col>
           </ion-row>
           </ion-item>
-          <ion-item class="ion-text-center">
-            <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
-            <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
-          </ion-item>
         </ion-grid>
+        <ion-item class="ion-text-center">
+          <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
+          <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
+        </ion-item>
       </ion-list>
       <div *ngIf="loading" class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -539,8 +545,7 @@
         <div class="loading-message">Cargando imagen...</div>
       </div>
 
-      <!--<ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>-->
-      <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
+      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>
     </ion-card>
   </form>
 </ion-content>

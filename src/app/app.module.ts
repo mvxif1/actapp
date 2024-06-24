@@ -8,11 +8,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { SQLite } from '@ionic-native/sqlite/ngx';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Camera } from '@ionic-native/camera/ngx';
+import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, FormsModule, ReactiveFormsModule],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, SQLite, Camera],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, SQLite, Camera, EmailComposer],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

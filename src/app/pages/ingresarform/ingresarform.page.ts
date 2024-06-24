@@ -12,7 +12,7 @@ const RutValidator = {
 
     return this.dv(rut) === digv;
   },
-  
+
   dv(T: string): string {
     let M = 0, S = 1;
     for (let i = T.length - 1; i >= 0; i--) {
@@ -24,9 +24,9 @@ const RutValidator = {
 
 
 
-import { Component, ViewChild, ElementRef} from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
-import  SignaturePad  from 'signature_pad';
+import SignaturePad from 'signature_pad';
 import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -34,6 +34,7 @@ import { IonRadioGroup } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 
 @Component({
   selector: 'app-ingresarform',
@@ -55,30 +56,31 @@ export class IngresarformPage {
   signaturePad: any;
   signatureImage: any;
   firmaIngresada: boolean = false;
-  
-  //Formulario
-  ingresarform! : FormGroup;
-  repuestosform!: FormGroup;
-  backupform!   : FormGroup;
-  utilizoRepuestosform!   : FormGroup;
-  repuestosOperativoform! : FormGroup;
 
-  repuestosactivado : boolean = false;
-  equipoactivado    : boolean = false;
-  backupactivado    : boolean = false;
-  utilizaRepuestosActivo : boolean = false;
-  utilizaRepuestosInactivo : boolean = false;
+  //Formulario
+  ingresarform!: FormGroup;
+  repuestosform!: FormGroup;
+  backupform!: FormGroup;
+  utilizoRepuestosform!: FormGroup;
+  repuestosOperativoform!: FormGroup;
+
+  repuestosactivado: boolean = false;
+  equipoactivado: boolean = false;
+  backupactivado: boolean = false;
+  utilizaRepuestosActivo: boolean = false;
+  utilizaRepuestosInactivo: boolean = false;
   //Caracteres restantes
-  maxChars= 200;
-  role= '';
-  chars= 0;
-  maxChars1= 200;
-  role1= '';
-  chars1= 0;
+  maxChars = 200;
+  role = '';
+  chars = 0;
+  maxChars1 = 200;
+  role1 = '';
+  chars1 = 0;
   //Barra de carga
   loading: boolean = false; // Variable para controlar la visibilidad de la barra de carga
   loadingImage: boolean = false;
   usuario!: any;
+
   pattern = {
     numeros: /^\d{1,9}$/,
     correo: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -86,10 +88,10 @@ export class IngresarformPage {
     letras: /^[a-zA-ZñÑ\s]+$/,
     mayusnum: /^[A-Z0-9]+$/,
     letrasynum: /^[a-zA-ZñÑ0-9]+$/,
-    
+
   };
-  
-  constructor(private formBuilder: FormBuilder ,private db: DbService, private elementRef: ElementRef, private camera: Camera) {
+
+  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer) {
     this.ingresarform = this.formBuilder.group({
       //Orden de servicio
       eventocliente: ['', [Validators.required]],
@@ -101,7 +103,7 @@ export class IngresarformPage {
       ciudad: ['', [Validators.required]],
       contacto: ['', [Validators.required]],
       telefono: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9), Validators.pattern(this.pattern.numeros)]],
-      correo: ['', [Validators.required, Validators.pattern(this.pattern.correo )]],
+      correo: ['', [Validators.required, Validators.pattern(this.pattern.correo)]],
       //Información de hardware
       tipoequipo: ['', [Validators.required]],
       marca: ['', [Validators.required]],
@@ -110,11 +112,11 @@ export class IngresarformPage {
       nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
       ip: ['', [Validators.pattern(this.pattern.ptsynum)]],
       accesorios: [''],
-      
+
       //Descripcion del caso
       problemareport: ['', [Validators.maxLength(200)]],
-      solucionreport:['', [Validators.maxLength(200)]],
-      
+      solucionreport: ['', [Validators.maxLength(200)]],
+
       //Status de servicio
       equipoEspera: ['no', [Validators.required]],
       equipoOperativo: ['no', [Validators.required]],
@@ -122,6 +124,7 @@ export class IngresarformPage {
 
       //Datos cliente
       nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
+      correocli: ['', [Validators.required]],
       rutcli: ['', [Validators.required, this.validateRutFormat.bind(this)]],
     });
 
@@ -150,23 +153,23 @@ export class IngresarformPage {
       estadoRepuesto: ['SOLICITUD'],
     });
 
-   }
-  
-  
-  ngOnInit(){
-    //this.db.getUsuarioActual().subscribe((usuario)=>{
-      //this.usuario = usuario;
-    //});
+  }
+
+
+  ngOnInit() {
+    this.db.getUsuarioActual().subscribe((usuario) => {
+      this.usuario = usuario;
+    });
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
-    canvas.height= window.innerHeight -140;
+    canvas.height = window.innerHeight - 140;
     console.log(canvas.width, ' - ', canvas.height);
-    if (this.signaturePad){
+    if (this.signaturePad) {
       this.signaturePad.clear();
     }
   }
 
-  fechaHoy(){
+  fechaHoy() {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -189,37 +192,37 @@ export class IngresarformPage {
   validarHoras(control: AbstractControl): { [key: string]: boolean } | null {
     const horaInicioValue = control.value;
     const horaInicio = (horaInicioValue !== null && horaInicioValue !== undefined) ? horaInicioValue.toString().replace(/[^0-9]/g, '') : '';
-  
+
     const horaTerminoElement = document.getElementById('horaTermino') as HTMLIonInputElement | null;
-  
+
     if (horaTerminoElement) {
       const horaTerminoValue = horaTerminoElement.value;
       const horaTermino = (horaTerminoValue !== null && horaTerminoValue !== undefined) ? horaTerminoValue.toString().replace(/[^0-9]/g, '') : '';
-  
+
       if (parseInt(horaInicio, 10) > parseInt(horaTermino, 10)) {
         return { 'horaInvalida': true }; // Retorna un error si la hora de inicio es mayor que la de término
       }
     }
-  
+
     return null; // Si la validación pasa o no hay un elemento 'horaTermino', retorna null
   }
-  
-  
-  
+
+
+
   formatearhora(event: any) {
     const input = event.target;
     let value = input.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
     if (value.length > 4) {
       value = value.slice(0, 4); // Limitar la longitud a 4 caracteres
     }
-    
+
     let dosdigitosprincipales = parseInt(value.slice(0, 2), 10);
     let dosdigitosfinales = parseInt(value.slice(2), 10);
     if (dosdigitosprincipales > 23) {
       value = '23' + value.slice(2);
       dosdigitosprincipales = 23;
     }
-    if (dosdigitosfinales > 59){
+    if (dosdigitosfinales > 59) {
       value = value.slice(0, 2) + '59'; // Limitar los minutos a 59
       dosdigitosfinales = 59;
     }
@@ -232,7 +235,7 @@ export class IngresarformPage {
       ampm = "PM";
     }
     (document.getElementById('ampm') as HTMLIonTextElement).innerText = ampm;
-  
+
     input.value = value;
   }
 
@@ -251,83 +254,83 @@ export class IngresarformPage {
   }
 
   isGenerarPDFDisabled() {
-    const { equipoEspera, equipoOperativo, equipoBackup} = this.ingresarform.value;
+    const { equipoEspera, equipoOperativo, equipoBackup } = this.ingresarform.value;
     // Desactivar botón si todos los valores son 'no'
     const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no';
-  
+
     if (todasNo) return true;
-  
+
     // Activar botón si equipoOperativo es 'si'
     if (equipoOperativo === 'si' && this.utilizaRepuestosActivo && this.repuestosOperativo.length > 0) return false;
     if (equipoOperativo === 'si' && this.utilizaRepuestosInactivo) return false;
     // Activar botón si equipoBackup es válido
     if (this.backupform.valid) return false;
-  
+
     // Activar botón si hay repuestos y equipoEspera es 'si'
     if (equipoEspera === 'si' && this.repuestos.length > 0) return false;
-  
+
     return true;
   }
 
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
-  
+
     // Actualizar los valores del formulario
     this.ingresarform.patchValue({
       equipoEspera: this.equipoEspera.value,
       equipoOperativo: this.equipoOperativo.value,
       equipoBackup: this.equipoBackup.value
     });
-  
+
     // Verificar si todas las opciones están en "NO"
     const todasNo = Object.values(this.ingresarform.value).every(val => val === 'no');
-  
+
     if (todasNo) { // Si todas las opciones están en "NO", establecer una de ellas en "SI"
-        if (radioGroup !== this.equipoEspera) {
-          this.equipoEspera.value = 'si';
-        } else if (radioGroup !== this.equipoOperativo) {
-          this.equipoOperativo.value = 'si';
-          this.equipoactivado = true;
-        } else if (radioGroup !== this.equipoBackup) {
-          this.equipoBackup.value = 'si';
-        }
-      } else if (value === 'si') { // Si se selecciona "SI", establecer los otros grupos en "NO"
-        if (radioGroup !== this.equipoEspera) {
-          this.equipoEspera.value = 'no';
-        }
-        if (radioGroup !== this.equipoOperativo) {
-          this.equipoOperativo.value = 'no';
-          this.equipoactivado = false;
-        }
-        if (radioGroup !== this.equipoBackup) {
-          this.equipoBackup.value = 'no';
-        }
+      if (radioGroup !== this.equipoEspera) {
+        this.equipoEspera.value = 'si';
+      } else if (radioGroup !== this.equipoOperativo) {
+        this.equipoOperativo.value = 'si';
+        this.equipoactivado = true;
+      } else if (radioGroup !== this.equipoBackup) {
+        this.equipoBackup.value = 'si';
       }
+    } else if (value === 'si') { // Si se selecciona "SI", establecer los otros grupos en "NO"
+      if (radioGroup !== this.equipoEspera) {
+        this.equipoEspera.value = 'no';
+      }
+      if (radioGroup !== this.equipoOperativo) {
+        this.equipoOperativo.value = 'no';
+        this.equipoactivado = false;
+      }
+      if (radioGroup !== this.equipoBackup) {
+        this.equipoBackup.value = 'no';
+      }
+    }
 
     if (this.equipoOperativo.value === 'si') {
       this.equipoactivado = true;
       this.utilizaRepuestosInactivo = false;
-    } else if(this.equipoOperativo.value === 'no'){
+    } else if (this.equipoOperativo.value === 'no') {
       this.utilizaRepuestosActivo = false;
       this.utilizaRepuestosInactivo = true;
       this.equipoactivado = false;
     }
 
   }
-  seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string){
+  seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
-  
+
     // Actualizar los valores del formulario
     this.utilizoRepuestosform.patchValue({
       utilizoRepuestos: this.utilizoRepuestos.value
     });
 
-    if (this.utilizoRepuestos.value === 'si'){
+    if (this.utilizoRepuestos.value === 'si') {
       this.utilizaRepuestosActivo = true;
       this.utilizaRepuestosInactivo = false;
-    }else{
+    } else {
       this.utilizaRepuestosActivo = false;
       this.utilizaRepuestosInactivo = true;
     }
@@ -338,8 +341,8 @@ export class IngresarformPage {
     this.repuestosactivado = true;
     this.db.presentAlertP("Repuesta agregado correctamente!");
   }
-  borrarRepuesto(index: number){
-    this.repuestos.splice(index,1);
+  borrarRepuesto(index: number) {
+    this.repuestos.splice(index, 1);
     if (this.repuestos.length === 0) {
       this.repuestosactivado = false;
     }
@@ -351,13 +354,13 @@ export class IngresarformPage {
     this.repuestosactivado = true;
     this.db.presentAlertP("Repuesta agregado correctamente!");
   }
-  borrarRepuestoOperativo(index: number){
-    this.repuestosOperativo.splice(index,1);
+  borrarRepuestoOperativo(index: number) {
+    this.repuestosOperativo.splice(index, 1);
     if (this.repuestos.length === 0) {
       this.repuestosactivado = false;
     }
     this.db.presentAlertP("Repuesto borrado correctamente!");
-  }  
+  }
 
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
@@ -383,13 +386,13 @@ export class IngresarformPage {
     return this.signaturePad ? this.signaturePad.isEmpty() : true;
   }
 
-  guardar(){
+  guardar() {
     this.signatureImage = this.signaturePad.toDataURL();
     this.db.presentAlertP("Se ha guardado correctamente la firma");
     this.firmaIngresada = true;
     console.log(this.signatureImage);
   }
-  limpiar(){
+  limpiar() {
     this.signaturePad.clear();
     this.firmaIngresada = false;
     this.db.presentAlertP("Se ha limpiado correctamente la firma");
@@ -397,7 +400,7 @@ export class IngresarformPage {
 
   takePhoto() {
     this.loadingImage = true; // Activar mensaje de carga
-    
+
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
@@ -406,42 +409,42 @@ export class IngresarformPage {
       saveToPhotoAlbum: false,
       correctOrientation: true
     };
-  
+
     this.camera.getPicture(options).then((imageData) => {
       // Add the photo to the array
       this.photos.push('data:image/jpeg;base64,' + imageData);
-  
+
       // Limit to 10 photos
       if (this.photos.length > 10) {
         this.photos.splice(0, 1); // Remove the first (oldest) photo
       }
-  
+
       this.loadingImage = false; // Desactivar mensaje de carga
     }, (err) => {
       console.log('Error taking photo', err);
       this.loadingImage = false; // Desactivar mensaje de carga en caso de error
     });
   }
-  
+
   selectFromGallery() {
     this.loadingImage = true; // Activar mensaje de carga
-  
+
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
       sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
       saveToPhotoAlbum: false
     };
-  
+
     this.camera.getPicture(options).then((imageData) => {
       // Add the photo to the array
       this.photos.push('data:image/jpeg;base64,' + imageData);
-  
+
       // Limit to 10 photos
       if (this.photos.length > 10) {
         this.photos.splice(0, 1); // Remove the first (oldest) photo
       }
-  
+
       this.loadingImage = false; // Desactivar mensaje de carga
     }, (err) => {
       console.log('Error selecting photo', err);
@@ -450,7 +453,7 @@ export class IngresarformPage {
   }
 
   deletePhoto(index: number) {
-    this.photos.splice(index, 1); 
+    this.photos.splice(index, 1);
   }
 
   async generarPDF() {
@@ -463,44 +466,44 @@ export class IngresarformPage {
       const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
       const ampm = ampmElement ? ampmElement.textContent || '' : '';
       const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
-  
+
       const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
       const direccion = (document.getElementById('direccion') as HTMLInputElement)?.value || '';
       const contacto = (document.getElementById('contacto') as HTMLInputElement)?.value || '';
       const telefono = (document.getElementById('telefono') as HTMLInputElement)?.value || '';
       const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
       const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
-  
+
       const tipoequipo = (document.getElementById('tipoequipo') as HTMLSelectElement)?.value || '';
       const marca = (document.getElementById('marca') as HTMLSelectElement)?.value || '';
       const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
       const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
       const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
       const accesorios = (document.getElementById('accesorios') as HTMLInputElement)?.value || '';
-  
+
       const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
       const solucionreport = (document.getElementById('solucionreport') as HTMLTextAreaElement)?.value || '';
-  
+
       const equipoEspera = (document.getElementById('equipoEspera') as HTMLIonRadioGroupElement)?.value || '';
       const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
       const equipoBackup = (document.getElementById('equipoBackup') as HTMLIonRadioGroupElement)?.value || '';
-  
+
       const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
       const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
       const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
-  
+
       const marcabackup = (document.getElementById('marcabackup') as HTMLInputElement)?.value || '';
       const modelobackup = (document.getElementById('modelobackup') as HTMLInputElement)?.value || '';
       const nseriebackup = (document.getElementById('nseriebackup') as HTMLInputElement)?.value || '';
       const ipbackup = (document.getElementById('ipbackup') as HTMLInputElement)?.value || '';
       const contadorbackup = (document.getElementById('contadorbackup') as HTMLInputElement)?.value || '';
-  
+
       const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
       const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
-  
+
       // Crear el documento PDF
       const pdf = new jsPDF('p', 'pt', 'letter');
-      
+
       // Añadir página de orden de servicio
       const image = await this.fotoPdf('assets/ordenservicio.jpeg');
       pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
@@ -525,7 +528,7 @@ export class IngresarformPage {
       pdf.text(telefono, 292, 172);
       pdf.text(correo, 292, 189);
       if (tipoequipo === 'impresion') {
-        pdf.circle(183, 252, 7, "F");
+        pdf.circle(185, 252, 7, "F");
       } else if (tiposervicio === 'pc') {
         pdf.circle(222, 252, 7, "F");
       }
@@ -579,55 +582,63 @@ export class IngresarformPage {
       }
       pdf.text(nombrecli, 315, 682);
       pdf.text(rutcli, 315, 697);
+
       if (this.signatureImage) {
         pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50);
       }
+      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
+      pdf.text(this.usuario.rut, 85, 697);
 
       const imgWidth = 565;
       const imgHeight = 731;
-      
+
       for (let i = 0; i < this.photos.length; i++) {
         if (i > 0 || pdf.internal.pages.length > 1) {
           pdf.addPage(); // Añadir una nueva página para cada foto, excepto la primera
         }
-      
         const imageData = this.photos[i];
-      
-        // Calcular las dimensiones y posición para centrar la imagen horizontalmente
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
-      
-        // Calcular la posición para centrar horizontalmente
         const x = (pageWidth - imgWidth) / 2;
-        const y = 0; // Puedes ajustar el valor de y según necesites
-      
+        const y = 0;
         pdf.addImage(imageData, 'JPEG', x, y, imgWidth, imgHeight);
       }
-      
-  
-      // Guardar el PDF y realizar acciones adicionales
-      pdf.save();
-  
+
       const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
       const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
-  
+
       const fileName = eventoCliente + ".pdf";
       const path = `${fileName}`;
       const downloadDir = '/TK_Descargas';
-  
+
       const archivoGuardado = await Filesystem.writeFile({
         path: `${downloadDir}/${path}`,
         data: pdfData,
         directory: Directory.Documents,
-        recursive: true // Sobreescribe los archivos si es necesario
+        recursive: true
       });
-  
-      this.db.presentAlertP("Archivo guardado correctamente");
-  
+
+      //=============== ABRIR ARCHIVO ====================//
       await FileOpener.openFile({
         path: archivoGuardado.uri,
       });
-  
+      //================================================//
+
+      //=============== ENVIAR CORREO====================//
+      const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
+      const email = {
+        to: correocliente, // El correo electrónico introducido por el usuario
+        attachments: [archivoGuardado.uri], // Adjuntar el archivo guardado
+        subject: 'Copia - Orden de servicio ACT ',
+        body: 'Se adjunta copia de orden de servicio',
+        isHtml: true,
+      };
+      const result = await this.emailComposer.open(email);
+      console.log('Correo electrónico enviado', result);
+      //================================================//
+
+      this.db.presentAlertP("Archivo guardado correctamente");
+
       await LocalNotifications.schedule({
         notifications: [
           {
@@ -638,7 +649,7 @@ export class IngresarformPage {
           },
         ],
       });
-  
+
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
       this.loading = false;
     } catch (error) {
@@ -646,7 +657,7 @@ export class IngresarformPage {
       this.loading = false;
     }
   }
-  
+
 }
 
 
