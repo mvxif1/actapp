@@ -170,14 +170,16 @@
           </ion-select>
         </ion-item>
         <div *ngIf="ingresarform.get('marca')!.value === 'OTRO'">
-          <ion-item>
-            <ion-label position="stacked">Marca Personalizada</ion-label>
-            <ion-input formControlName="otraMarca" placeholder="Ingresa otra marca"></ion-input>
-          </ion-item>
-          <div style="color: red; margin-top: 3px; margin-left: 10px;"
-            *ngIf="ingresarform.get('otraMarca')?.invalid && (ingresarform.get('otraMarca')?.dirty || ingresarform.get('otraMarca')?.touched)">
-            <div *ngIf="ingresarform.get('otraMarca')?.hasError('required')">Este campo es obligatorio.</div>
-          </div>
+          <form [formGroup]="otramarcaForm">
+            <ion-item>
+              <ion-label position="stacked">Marca Personalizada</ion-label>
+              <ion-input formControlName="otraMarca" id="otraMarca" placeholder="Ingresa otra marca"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="otramarcaForm.get('otraMarca')?.invalid && (otramarcaForm.get('otraMarca')?.dirty || otramarcaForm.get('otraMarca')?.touched)">
+              <div *ngIf="otramarcaForm.get('otraMarca')?.hasError('required')">Este campo es obligatorio.</div>
+            </div>
+          </form>
         </div>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('marca')?.invalid && (ingresarform.get('marca')?.dirty || ingresarform.get('marca')?.touched)">
@@ -490,12 +492,12 @@
           <ion-input id="correocli" formControlName="correocli"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
-        *ngIf="ingresarform.get('correocli')?.invalid && (ingresarform.get('correocli')?.dirty || ingresarform.get('correocli')?.touched)">
-        <div *ngIf="ingresarform.get('correocli')?.hasError('required')">Este campo es obligatorio.</div>
-      </div>          
-        
+          *ngIf="ingresarform.get('correocli')?.invalid && (ingresarform.get('correocli')?.dirty || ingresarform.get('correocli')?.touched)">
+          <div *ngIf="ingresarform.get('correocli')?.hasError('required')">Este campo es obligatorio.</div>
+        </div>
+
         <ion-card-title style="font-size: 13px;">INGRESA TU FIRMA</ion-card-title>
-        
+
         <ion-item class="ion-text-center">
           <ion-col size="12" class="ion-no-padding">
             <canvas #canvas style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px;"></canvas>
@@ -518,16 +520,17 @@
             </ion-col>
           </ion-row>
         </ion-grid>
-        
+
         <ion-grid *ngIf="photos.length === 0">
           <ion-item>
-          <ion-row style="width: 100%;">
-            <ion-col size="12" style="height: 230px; margin-bottom: 20px; background-color: gray; border: 5px solid rgba(0, 0, 0, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-              <div style="color: white; font-weight: 500;">
-                No hay fotos
-              </div>
-            </ion-col>
-          </ion-row>
+            <ion-row style="width: 100%;">
+              <ion-col size="12"
+                style="height: 230px; margin-bottom: 20px; background-color: gray; border: 5px solid rgba(0, 0, 0, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <div style="color: white; font-weight: 500;">
+                  No hay fotos
+                </div>
+              </ion-col>
+            </ion-row>
           </ion-item>
         </ion-grid>
         <ion-item class="ion-text-center">
@@ -545,7 +548,8 @@
         <div class="loading-message">Cargando imagen...</div>
       </div>
 
-      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !ingresarform.valid || !firmaIngresada" (click)="generarPDF()">Generar PDF</ion-button>
+      <ion-button expand="full" [disabled]=" !ingresarform.valid || isGenerarPDFDisabled() || !firmaIngresada || marca()"
+        (click)="generarPDF()">Generar PDF</ion-button>
     </ion-card>
   </form>
 </ion-content>

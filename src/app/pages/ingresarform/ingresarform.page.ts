@@ -60,6 +60,7 @@ export class IngresarformPage {
   //Formulario
   ingresarform!: FormGroup;
   repuestosform!: FormGroup;
+  otramarcaForm!: FormGroup;
   backupform!: FormGroup;
   utilizoRepuestosform!: FormGroup;
   repuestosOperativoform!: FormGroup;
@@ -69,6 +70,8 @@ export class IngresarformPage {
   backupactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
   utilizaRepuestosInactivo: boolean = false;
+
+  otramarcaActiva: boolean = false;
   //Caracteres restantes
   maxChars = 200;
   role = '';
@@ -90,6 +93,8 @@ export class IngresarformPage {
     letrasynum: /^[a-zA-ZñÑ0-9]+$/,
 
   };
+  
+  
 
   constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer) {
     this.ingresarform = this.formBuilder.group({
@@ -107,7 +112,6 @@ export class IngresarformPage {
       //Información de hardware
       tipoequipo: ['', [Validators.required]],
       marca: ['', [Validators.required]],
-      otraMarca: ['', [Validators.required]],
       modelo: ['', [Validators.required]],
       nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
       ip: ['', [Validators.pattern(this.pattern.ptsynum)]],
@@ -127,6 +131,10 @@ export class IngresarformPage {
       correocli: ['', [Validators.required]],
       rutcli: ['', [Validators.required, this.validateRutFormat.bind(this)]],
     });
+
+    this.otramarcaForm = this.formBuilder.group({
+      otraMarca: ['', [Validators.required]]
+    })
 
     this.backupform = this.formBuilder.group({
       //Backup instalado
@@ -268,6 +276,29 @@ export class IngresarformPage {
 
     // Activar botón si hay repuestos y equipoEspera es 'si'
     if (equipoEspera === 'si' && this.repuestos.length > 0) return false;
+
+    return true;
+  }
+
+  marca(){
+    const marca = this.ingresarform.get('marca')!.value;
+    if (marca === 'OTRO') {
+      this.otramarcaForm.enable();
+      if (this.otramarcaForm.valid && this.otramarcaForm.enabled){
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    this.otramarcaForm.disable();
+    if (this.ingresarform.valid){
+      return false;
+    }
+
+    if (marca === ''){
+      return true;
+    }
 
     return true;
   }
@@ -475,7 +506,9 @@ export class IngresarformPage {
       const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
 
       const tipoequipo = (document.getElementById('tipoequipo') as HTMLSelectElement)?.value || '';
+
       const marca = (document.getElementById('marca') as HTMLSelectElement)?.value || '';
+      
       const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
       const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
       const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
@@ -529,10 +562,16 @@ export class IngresarformPage {
       pdf.text(correo, 292, 189);
       if (tipoequipo === 'impresion') {
         pdf.circle(185, 252, 7, "F");
-      } else if (tiposervicio === 'pc') {
+      } else if (tipoequipo === 'pc') {
         pdf.circle(222, 252, 7, "F");
       }
-      pdf.text(marca, 98, 273);
+      
+      const otraMarca = (document.getElementById('otraMarca') as HTMLInputElement)?.value || '';
+      if (marca === 'OTRO') {
+        pdf.text(otraMarca, 98, 273);
+      } else {
+        pdf.text(marca, 98, 273);
+      }
       pdf.text(modelo, 98, 288);
       pdf.text(nserie, 98, 302);
       pdf.text(ip, 98, 316);
@@ -559,6 +598,7 @@ export class IngresarformPage {
           yPosition += 10;
         }
       }
+      pdf.save();
       pdf.setFontSize(11);
       pdf.text(marcabackup, 355, 599);
       pdf.text(modelobackup, 355, 613);
@@ -623,6 +663,7 @@ export class IngresarformPage {
         path: archivoGuardado.uri,
       });
       //================================================//
+      this.db.presentAlertP("Archivo guardado correctamente");
 
       //=============== ENVIAR CORREO====================//
       const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
@@ -637,7 +678,7 @@ export class IngresarformPage {
       console.log('Correo electrónico enviado', result);
       //================================================//
 
-      this.db.presentAlertP("Archivo guardado correctamente");
+      
 
       await LocalNotifications.schedule({
         notifications: [
