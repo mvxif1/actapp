@@ -7,7 +7,9 @@
     </ion-toolbar>
   </ion-header>
 
+  
   <form [formGroup]="ingresarform">
+    <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
     <ion-card id="form">
       <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
 
@@ -46,7 +48,7 @@
           <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
           <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio"
             (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
-          <ion-text id="ampm" style="margin-right: 50%;"></ion-text>
+          <ion-text id="ampm" style="margin-right: 60%;"></ion-text>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
@@ -255,24 +257,39 @@
         <ion-list>
           <ion-radio-group id="equipoEspera" #equipoEspera (ionChange)="onSelected(equipoEspera, equipoEspera.value)">
             <ion-item>
-              <ion-label>Equipo Espera de partes</ion-label>
-              <ion-radio slot="end" value="si"></ion-radio>
-              <ion-radio slot="end" value="no"></ion-radio>
+              <ion-label>Equipo Espera de partes:</ion-label>
+              <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+              <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
             </ion-item>
           </ion-radio-group>
           <ion-radio-group id="equipoOperativo" #equipoOperativo
             (ionChange)="onSelected(equipoOperativo, equipoOperativo.value)">
             <ion-item>
-              <ion-label>Equipo Operativo</ion-label>
-              <ion-radio slot="end" value="si"></ion-radio>
-              <ion-radio slot="end" value="no"></ion-radio>
+              <ion-label>Equipo Operativo:</ion-label>
+              <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+              <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
             </ion-item>
           </ion-radio-group>
           <ion-radio-group id="equipoBackup" #equipoBackup (ionChange)="onSelected(equipoBackup, equipoBackup.value)">
             <ion-item>
-              <ion-label>Equipo Backup instalado</ion-label>
-              <ion-radio slot="end" value="si"></ion-radio>
-              <ion-radio slot="end" value="no"></ion-radio>
+              <ion-label>Equipo Backup instalado:</ion-label>
+              <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+              <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+          <ion-radio-group id="equipoEsperaBackup" #equipoEsperaBackup (ionChange)="onSelected(equipoEsperaBackup, equipoEsperaBackup.value)">
+            <ion-item>
+              <ion-label>Equipo Espera de Backup:</ion-label>
+              <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+              <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+              <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
             </ion-item>
           </ion-radio-group>
         </ion-list>
@@ -346,8 +363,10 @@
                 (ionChange)="seleccionarutilizarepuestos(utilizoRepuestos, utilizoRepuestos.value)">
                 <ion-item>
                   <ion-label>¿Utilizó repuestos?</ion-label>
-                  <ion-radio slot="end" value="si"></ion-radio>
-                  <ion-radio slot="end" value="no"></ion-radio>
+                  <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+                  <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+                  <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+                  <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
                 </ion-item>
               </ion-radio-group>
             </form>
@@ -466,6 +485,8 @@
             </div>
           </form>
         </div>
+
+        
         <ion-card-title style="font-size: 13px;">DATOS CLIENTE</ion-card-title>
         <ion-item>
           <ion-label position="stacked">Rut</ion-label>
@@ -494,15 +515,22 @@
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('correocli')?.invalid && (ingresarform.get('correocli')?.dirty || ingresarform.get('correocli')?.touched)">
           <div *ngIf="ingresarform.get('correocli')?.hasError('required')">Este campo es obligatorio.</div>
+          <div *ngIf="ingresarform.get('correocli')?.hasError('pattern')">Este correo no es valido.</div>
         </div>
 
         <ion-card-title style="font-size: 13px;">INGRESA TU FIRMA</ion-card-title>
 
         <ion-item class="ion-text-center">
           <ion-col size="12" class="ion-no-padding">
-            <canvas #canvas style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px;"></canvas>
+            <canvas #canvas
+              [ngClass]="{ 'firma-incompleta': isCanvasBlank() || !mostrarErrorFirma }"
+              style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; margin-top: 5px;"></canvas>
           </ion-col>
         </ion-item>
+        <div *ngIf="!mostrarErrorFirma" class="error-message" style="text-align: center;">
+          <p>Debe ingresar una firma y guardarla.</p>
+        </div>
+        
         <ion-item class="ion-text-center">
           <ion-button style="width: 50%;" [disabled]="isCanvasBlank()" (click)="guardar()">Guardar</ion-button>
           <ion-button style="width: 50%;" color="medium" (click)="limpiar()">Limpiar</ion-button>
@@ -525,8 +553,8 @@
           <ion-item>
             <ion-row style="width: 100%;">
               <ion-col size="12"
-                style="height: 230px; margin-bottom: 20px; background-color: gray; border: 5px solid rgba(0, 0, 0, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <div style="color: white; font-weight: 500;">
+                style="height: 230px; margin-bottom: 20px; background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <div style="color: gray; font-weight: 500;">
                   No hay fotos
                 </div>
               </ion-col>
@@ -547,9 +575,41 @@
         <div class="loading-spinner"></div>
         <div class="loading-message">Cargando imagen...</div>
       </div>
+      <!--<ion-button expand="full" [disabled]=" !ingresarform.valid || isGenerarPDFDisabled() || !firmaIngresada || marca()" (click)="generarPDF()">Generar PDF</ion-button>-->
+      <div *ngIf="!isFormularioCompleto()" style="color: red; margin-top: 10px; text-align: center;">
+        Completa todos los campos obligatorios de la seccion:
+        <ul style="text-align: left;">
+          <li *ngIf="!isOrdenServicioCompleta()">Orden de servicio</li>
+          <li *ngIf="!isInformacionClienteCompleta()">Información de cliente</li>
+          <li *ngIf="!isInformacionHardwareCompleta()">Información de hardware</li>
+          <li *ngIf="!isDescripcionCasoCompleta()">Descripción del caso</li>
+          <li *ngIf="!isStatusServicioCompleta()">Selecciona un Status de servicio</li>
+          <li *ngIf="isStatusServicioEquipoOperativo()">Selecciona si utilizó repuestos</li>
+          <li *ngIf="!isDatosClienteCompleta()">Datos cliente</li>
+          <li *ngIf="!firmaIngresada">Ingresa la firma del cliente</li>
+        </ul>
+        <div *ngIf="mostrarErrorRepuestos()" style="color: red; margin-top: 10px; text-align: center;">
+           Completa el formulario para Repuestos en equipo espera.
+        </div>
+        
+        <div *ngIf="mostrarErrorRepuestosOperativo()" style="color: red; margin-top: 10px; text-align: center;">
+           Completa el formulario para Repuestos en equipo operativo.
+        </div>
 
-      <ion-button expand="full" [disabled]=" !ingresarform.valid || isGenerarPDFDisabled() || !firmaIngresada || marca()"
-        (click)="generarPDF()">Generar PDF</ion-button>
+        <div *ngIf="mostrarErrorRepuestosOperativoNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
+          Agrega al menos 1 repuesto.
+        </div>
+        
+        <div *ngIf="mostrarErrorRepuestosNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
+          Agrega al menos 1 repuesto.
+        </div>
+
+        <div *ngIf="mostrarErrorBackup()" style="color: red; margin-top: 10px; text-align: center;">
+           Completa el formulario para Backup instalado.
+        </div>
+      </div>
+      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !isFormularioCompleto() || !firmaIngresada || marca() || !ingresarform.valid" (click)="generarPDF()">Generar PDF</ion-button>
+      <br>
     </ion-card>
   </form>
 </ion-content>

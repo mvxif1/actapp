@@ -46,6 +46,7 @@ export class IngresarformPage {
   @ViewChild('equipoEspera') equipoEspera!: IonRadioGroup;
   @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
   @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
+  @ViewChild('equipoEsperaBackup') equipoEsperaBackup!: IonRadioGroup;
 
   @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
 
@@ -56,6 +57,7 @@ export class IngresarformPage {
   signaturePad: any;
   signatureImage: any;
   firmaIngresada: boolean = false;
+  mostrarErrorFirma: boolean = false;
 
   //Formulario
   ingresarform!: FormGroup;
@@ -68,8 +70,11 @@ export class IngresarformPage {
   repuestosactivado: boolean = false;
   equipoactivado: boolean = false;
   backupactivado: boolean = false;
+  esperabackupactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
   utilizaRepuestosInactivo: boolean = false;
+
+
 
   otramarcaActiva: boolean = false;
   //Caracteres restantes
@@ -98,18 +103,18 @@ export class IngresarformPage {
 
   constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer) {
     this.ingresarform = this.formBuilder.group({
-      //Orden de servicio
+      //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
       tiposervicio: ['', [Validators.required]],
       horainicio: ['', [Validators.required, this.validarHoras]],
-      //Información de cliente
+      //SECCION: Información de cliente
       cliente: ['', [Validators.required]],
       direccion: ['', [Validators.required, Validators.maxLength(35)]],
       ciudad: ['', [Validators.required]],
       contacto: ['', [Validators.required]],
       telefono: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9), Validators.pattern(this.pattern.numeros)]],
       correo: ['', [Validators.required, Validators.pattern(this.pattern.correo)]],
-      //Información de hardware
+      //SECCION: Información de hardware
       tipoequipo: ['', [Validators.required]],
       marca: ['', [Validators.required]],
       modelo: ['', [Validators.required]],
@@ -117,18 +122,19 @@ export class IngresarformPage {
       ip: ['', [Validators.pattern(this.pattern.ptsynum)]],
       accesorios: [''],
 
-      //Descripcion del caso
-      problemareport: ['', [Validators.maxLength(200)]],
-      solucionreport: ['', [Validators.maxLength(200)]],
+      //SECCION: Descripcion del caso
+      problemareport: ['', [Validators.required, Validators.maxLength(200)]],
+      solucionreport: ['', [Validators.required, Validators.maxLength(200)]],
 
-      //Status de servicio
-      equipoEspera: ['no', [Validators.required]],
-      equipoOperativo: ['no', [Validators.required]],
-      equipoBackup: ['no', [Validators.required]],
+      //SECCION: Status de servicio
+      equipoEspera: ['', [Validators.required]],
+      equipoOperativo: ['', [Validators.required]],
+      equipoBackup: ['', [Validators.required]],
+      equipoEsperaBackup: ['', [Validators.required]],
 
-      //Datos cliente
+      //SECCION: Datos cliente
       nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
-      correocli: ['', [Validators.required]],
+      correocli: ['', [Validators.required, Validators.pattern(this.pattern.correo)]],
       rutcli: ['', [Validators.required, this.validateRutFormat.bind(this)]],
     });
 
@@ -137,24 +143,24 @@ export class IngresarformPage {
     })
 
     this.backupform = this.formBuilder.group({
-      //Backup instalado
+      //SECCION: Backup instalado
       marcabackup: ['', [Validators.required]],
       modelobackup: ['', [Validators.required]],
       nseriebackup: ['', [Validators.required]],
       ipbackup: ['', [Validators.pattern(this.pattern.ptsynum)]],
       contadorbackup: ['', [Validators.required]]
     })
-    //Utiliza repuestos
+    //SECCION: Utiliza repuestos
     this.utilizoRepuestosform = this.formBuilder.group({
-      utilizoRepuestos: ['no', [Validators.required]]
+      utilizoRepuestos: ['', [Validators.required]]
     })
-    //Repuestos en caso de ser equipo operativo con repuestos
+    //SECCION: Repuestos en caso de ser equipo operativo con repuestos
     this.repuestosOperativoform = this.formBuilder.group({
       nombreRepuestoOperativo: ['', [Validators.required]],
       nparteRepuestoOperativo: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
       estadoRepuestoOperativo: ['INSTALADO'],
     })
-    //Repuestos en caso de ser equipo espera de partes
+    //SECCION: Repuestos en caso de ser equipo espera de partes
     this.repuestosform = this.formBuilder.group({
       nombreRepuesto: ['', [Validators.required]],
       nparteRepuesto: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
@@ -165,9 +171,9 @@ export class IngresarformPage {
 
 
   ngOnInit() {
-    this.db.getUsuarioActual().subscribe((usuario) => {
-      this.usuario = usuario;
-    });
+    //this.db.getUsuarioActual().subscribe((usuario) => {
+      //this.usuario = usuario;
+    //});
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 140;
@@ -190,9 +196,9 @@ export class IngresarformPage {
     const minutos = String(today.getMinutes()).padStart(2, '0');
     let periodo: string;
     if (hora >= 12) {
-      periodo = '   PM';
+      periodo = '  PM';
     } else {
-      periodo = '   AM';
+      periodo = ' AM';
     }
     return `${hora}:${minutos}${periodo}`;
   }
@@ -262,21 +268,29 @@ export class IngresarformPage {
   }
 
   isGenerarPDFDisabled() {
-    const { equipoEspera, equipoOperativo, equipoBackup } = this.ingresarform.value;
-    // Desactivar botón si todos los valores son 'no'
-    const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no';
-
+    const { equipoEspera, equipoOperativo, equipoBackup, equipoEsperaBackup } = this.ingresarform.value;
+    //----Desactivar botón si todos los valores son 'no'----//
+    const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no' && equipoEsperaBackup === 'no' ;
     if (todasNo) return true;
 
     // Activar botón si equipoOperativo es 'si'
     if (equipoOperativo === 'si' && this.utilizaRepuestosActivo && this.repuestosOperativo.length > 0) return false;
     if (equipoOperativo === 'si' && this.utilizaRepuestosInactivo) return false;
+
     // Activar botón si equipoBackup es válido
-    if (this.backupform.valid) return false;
+    if (this.backupform.valid && this.backupactivado) {
+      return false;
+    }
+      
 
     // Activar botón si hay repuestos y equipoEspera es 'si'
     if (equipoEspera === 'si' && this.repuestos.length > 0) return false;
 
+    if (equipoEsperaBackup === 'no'){
+      return true;
+    } else if (equipoEsperaBackup === 'si'){
+      return false;
+    }
     return true;
   }
 
@@ -309,9 +323,10 @@ export class IngresarformPage {
 
     // Actualizar los valores del formulario
     this.ingresarform.patchValue({
-      equipoEspera: this.equipoEspera.value,
-      equipoOperativo: this.equipoOperativo.value,
-      equipoBackup: this.equipoBackup.value
+      equipoEspera:       this.equipoEspera.value,
+      equipoOperativo:    this.equipoOperativo.value,
+      equipoBackup:       this.equipoBackup.value,
+      equipoEsperaBackup: this.equipoEsperaBackup.value
     });
 
     // Verificar si todas las opciones están en "NO"
@@ -325,7 +340,12 @@ export class IngresarformPage {
         this.equipoactivado = true;
       } else if (radioGroup !== this.equipoBackup) {
         this.equipoBackup.value = 'si';
+        this.backupactivado = true;
+      } else if (radioGroup !== this.equipoEsperaBackup){
+        this.equipoEsperaBackup.value = 'si';
+        this.esperabackupactivado = true;
       }
+      
     } else if (value === 'si') { // Si se selecciona "SI", establecer los otros grupos en "NO"
       if (radioGroup !== this.equipoEspera) {
         this.equipoEspera.value = 'no';
@@ -336,7 +356,26 @@ export class IngresarformPage {
       }
       if (radioGroup !== this.equipoBackup) {
         this.equipoBackup.value = 'no';
+        this.backupactivado = false;
+        
       }
+      if (radioGroup !== this.equipoEsperaBackup) {
+        this.equipoEsperaBackup.value = 'no';
+        this.esperabackupactivado = false;
+      }
+    }
+
+    if (this.equipoBackup.value === 'si'){
+      this.backupactivado = true;
+      this.backupform
+    } else if (this.equipoBackup.value === 'no'){
+      this.backupactivado = false;
+    }
+
+    if (this.equipoEsperaBackup.value === 'si'){
+      this.esperabackupactivado = true;
+    } else if (this.equipoEsperaBackup.value === 'no'){
+      this.esperabackupactivado = false;
     }
 
     if (this.equipoOperativo.value === 'si') {
@@ -418,14 +457,21 @@ export class IngresarformPage {
   }
 
   guardar() {
-    this.signatureImage = this.signaturePad.toDataURL();
-    this.db.presentAlertP("Se ha guardado correctamente la firma");
-    this.firmaIngresada = true;
-    console.log(this.signatureImage);
+    if (this.isCanvasBlank()) {
+      this.mostrarErrorFirma = false;
+    } else {
+      this.signatureImage = this.signaturePad.toDataURL();
+      this.db.presentAlertP("Se ha guardado correctamente la firma");
+      this.firmaIngresada = true;
+      this.mostrarErrorFirma = true;
+      console.log(this.signatureImage);
+    }
   }
+
   limpiar() {
     this.signaturePad.clear();
     this.firmaIngresada = false;
+    this.mostrarErrorFirma = false;
     this.db.presentAlertP("Se ha limpiado correctamente la firma");
   }
 
@@ -487,6 +533,81 @@ export class IngresarformPage {
     this.photos.splice(index, 1);
   }
 
+  isFormularioCompleto(): boolean | undefined{
+    // Validar cada sección del formulario y devolver false si alguna sección no está completa
+    return this.isOrdenServicioCompleta() &&
+           this.isInformacionClienteCompleta() &&
+           this.isInformacionHardwareCompleta() &&
+           this.isDescripcionCasoCompleta() &&
+           this.isStatusServicioCompleta() &&
+           this.isDatosClienteCompleta();
+  }
+
+  isOrdenServicioCompleta(): boolean | undefined {
+    return this.ingresarform.get('eventocliente')?.valid &&
+           this.ingresarform.get('tiposervicio')?.valid &&
+           this.ingresarform.get('horainicio')?.valid;
+  }
+
+  isInformacionClienteCompleta(): boolean | undefined{
+    return this.ingresarform.get('cliente')?.valid &&
+           this.ingresarform.get('direccion')?.valid &&
+           this.ingresarform.get('ciudad')?.valid &&
+           this.ingresarform.get('contacto')?.valid &&
+           this.ingresarform.get('telefono')?.valid &&
+           this.ingresarform.get('correo')?.valid;
+  }
+
+  isInformacionHardwareCompleta(): boolean | undefined{
+    return this.ingresarform.get('tipoequipo')?.valid &&
+           this.ingresarform.get('marca')?.valid &&
+           this.ingresarform.get('modelo')?.valid &&
+           this.ingresarform.get('nserie')?.valid &&
+           this.ingresarform.get('ip')?.valid;
+  }
+
+  isDescripcionCasoCompleta(): boolean | undefined{
+    return this.ingresarform.get('problemareport')?.valid &&
+           this.ingresarform.get('solucionreport')?.valid;
+  }
+
+  isStatusServicioCompleta(): boolean | undefined{
+    return (this.ingresarform.get('equipoEspera')?.value === 'si') ||
+           (this.ingresarform.get('equipoBackup')?.value === 'si') ||
+           (this.ingresarform.get('equipoOperativo')?.value === 'si') ||
+           (this.ingresarform.get('equipoEsperaBackup')?.value === 'si');
+  }
+  isStatusServicioEquipoOperativo(): boolean | undefined{
+    return (this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === '')
+  }
+
+  mostrarErrorRepuestosOperativo(): boolean {
+    return this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' && !this.repuestosOperativoform.valid;
+  }
+
+  mostrarErrorBackup(): boolean {
+    return this.ingresarform.get('equipoBackup')?.value === 'si' && !this.backupform.valid;
+  }
+
+  mostrarErrorRepuestos(): boolean {
+    return this.ingresarform.get('equipoEspera')?.value === 'si' && !this.repuestosform.valid;
+  }
+
+  mostrarErrorRepuestosOperativoNohayrepuestos(): boolean {
+    return (this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' && (this.repuestosOperativo && this.repuestosOperativo.length === 0));
+  }
+
+  mostrarErrorRepuestosNohayrepuestos(): boolean {
+    return this.ingresarform.get('equipoEspera')?.value === 'si' && (this.repuestos && this.repuestos.length === 0);
+  }
+
+  isDatosClienteCompleta(): boolean | undefined{
+    return this.ingresarform.get('nombrecli')?.valid &&
+           this.ingresarform.get('correocli')?.valid &&
+           this.ingresarform.get('rutcli')?.valid;
+  }
+
+
   async generarPDF() {
     try {
       this.loading = true;
@@ -495,7 +616,7 @@ export class IngresarformPage {
       const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
       const horaInicio = (document.getElementById('horaInicio') as HTMLInputElement)?.value || '';
       const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
-      const ampm = ampmElement ? ampmElement.textContent || '' : '';
+      const ampm = ampmElement ? ampmElement.textContent || '':'';
       const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
 
       const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
@@ -520,6 +641,7 @@ export class IngresarformPage {
       const equipoEspera = (document.getElementById('equipoEspera') as HTMLIonRadioGroupElement)?.value || '';
       const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
       const equipoBackup = (document.getElementById('equipoBackup') as HTMLIonRadioGroupElement)?.value || '';
+      const equipoEsperaBackup = (document.getElementById('equipoEsperaBackup') as HTMLIonRadioGroupElement)?.value || '';
 
       const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
       const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
@@ -538,11 +660,12 @@ export class IngresarformPage {
       const pdf = new jsPDF('p', 'pt', 'letter');
 
       // Añadir página de orden de servicio
-      const image = await this.fotoPdf('assets/ordenservicio.jpeg');
+      const image = await this.fotoPdf('assets/ordendeservicio.jpeg');
       pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
       pdf.setFontSize(16);
-      pdf.text(eventoCliente, 190, 86);
+      pdf.text(eventoCliente, 190, 73);
       pdf.setFontSize(11);
+      pdf.setFont('Times');
       if (tiposervicio === 'Incidente') {
         pdf.text(tiposervicio, 121, 110);
       } else if (tiposervicio === 'Solicitud') {
@@ -553,7 +676,6 @@ export class IngresarformPage {
       pdf.text(ampm, 515, 98);
       pdf.text(horaTermino, 475, 110);
       pdf.text(cliente, 100, 157);
-      pdf.setFontSize(8);
       pdf.text(direccion, 100, 172);
       pdf.setFontSize(11);
       pdf.text(ciudad, 100, 186);
@@ -565,6 +687,7 @@ export class IngresarformPage {
       } else if (tipoequipo === 'pc') {
         pdf.circle(222, 252, 7, "F");
       }
+      pdf.getFontList;
       
       const otraMarca = (document.getElementById('otraMarca') as HTMLInputElement)?.value || '';
       if (marca === 'OTRO') {
@@ -598,7 +721,7 @@ export class IngresarformPage {
           yPosition += 10;
         }
       }
-      pdf.save();
+      
       pdf.setFontSize(11);
       pdf.text(marcabackup, 355, 599);
       pdf.text(modelobackup, 355, 613);
@@ -620,15 +743,22 @@ export class IngresarformPage {
         pdf.circle(224, 602, 7, "F");
         pdf.circle(184, 619, 7, "F");
       }
+
+      if (equipoEsperaBackup === 'si') {
+        pdf.circle(224, 586, 7, "F");
+        pdf.circle(224, 602, 7, "F");
+        pdf.circle(184, 619, 7, "F");
+      }
       pdf.text(nombrecli, 315, 682);
       pdf.text(rutcli, 315, 697);
 
       if (this.signatureImage) {
         pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50);
       }
-      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
-      pdf.text(this.usuario.rut, 85, 697);
-
+      //pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
+      //pdf.text(this.usuario.rut, 85, 697);
+      console.log(pdf.getFontList());
+      pdf.save();
       const imgWidth = 565;
       const imgHeight = 731;
 
@@ -659,37 +789,37 @@ export class IngresarformPage {
       });
 
       //=============== ABRIR ARCHIVO ====================//
-      await FileOpener.openFile({
-        path: archivoGuardado.uri,
-      });
+      //await FileOpener.openFile({
+        //path: archivoGuardado.uri,
+      //});
       //================================================//
       this.db.presentAlertP("Archivo guardado correctamente");
 
       //=============== ENVIAR CORREO====================//
-      const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
-      const email = {
-        to: correocliente, // El correo electrónico introducido por el usuario
-        attachments: [archivoGuardado.uri], // Adjuntar el archivo guardado
-        subject: 'Copia - Orden de servicio ACT ',
-        body: 'Se adjunta copia de orden de servicio',
-        isHtml: true,
-      };
-      const result = await this.emailComposer.open(email);
-      console.log('Correo electrónico enviado', result);
+    //  const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
+     // const email = {
+       // to: correocliente, // El correo electrónico introducido por el usuario
+        //attachments: [archivoGuardado.uri], // Adjuntar el archivo guardado
+        //subject: 'Copia - Orden de servicio ACT ',
+        //body: 'Se adjunta copia de orden de servicio',
+        //isHtml: true,
+      //};
+      //const result = await this.emailComposer.open(email);
+      //console.log('Correo electrónico enviado', result);
       //================================================//
 
       
 
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title: 'Archivo guardado correctamente.',
-            body: 'Ticket guardado en documentos.',
-            id: 1,
-            schedule: { at: new Date(Date.now() + 1000) },
-          },
-        ],
-      });
+      //await LocalNotifications.schedule({
+        //notifications: [
+          //{
+          //  title: 'Archivo guardado correctamente.',
+            //body: 'Ticket guardado en documentos.',
+            //id: 1,
+           // schedule: { at: new Date(Date.now() + 1000) },
+          //},
+        //],
+      //});
 
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
       this.loading = false;
