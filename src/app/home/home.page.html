@@ -7,7 +7,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-card >
+  <ion-card>
     <ion-card-content>
       <br><br><br>
       <div style="display: flex; justify-content: center;">
@@ -18,39 +18,36 @@
         <ion-list>
           <ion-item>
             <ion-label position="floating">Usuario <ion-icon name="person-outline" slot="end"></ion-icon></ion-label>
-            <ion-input label="Correo:" formControlName="email" placeholder="Ingresa tu Correo"></ion-input>
+            <ion-input formControlName="email" placeholder="Ingresa tu Correo"></ion-input>
           </ion-item>
-
-          <div style="color: red; margin-left: 10px;"
-            *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
+          <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
             <div>Ingrese un usuario (email). </div>
           </div>
           <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
-            <div> Debe ser un correo válido.</div>
+            <div>Debe ser un correo válido.</div>
           </div>
 
           <ion-item>
             <ion-label position="floating">Contraseña <ion-icon name="lock-closed-outline" slot="end"></ion-icon></ion-label>
-            <ion-input label="Contraseña:" formControlName="password" type="password" placeholder="Ingresa tu Contraseña"></ion-input>
-            
+            <ion-input formControlName="password" type="password" placeholder="Ingresa tu Contraseña"></ion-input>
           </ion-item>
-          <div style="color: red; margin-left: 10px;"
-            *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
+          <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
             Ingrese una contraseña.
           </div>
           <div class="ion-text-center">
             <ion-text style="color: red;" name="mensajeError">{{ mensajeError }}</ion-text>
           </div>
           <br>
+          <ion-item>
+            <ion-label class="ion-text">Recordar sesión</ion-label>
+            <ion-toggle formControlName="rememberMe" slot="start"></ion-toggle>
+          </ion-item>
+          
           <ion-button expand="block" type="submit" [disabled]="!loginForm.valid" (click)="iniciarUsuario()">Iniciar Sesión</ion-button>
           <ion-button expand="block" fill="outline" [routerLink]="['/registro']">Registrarse</ion-button>
         </ion-list>
       </form>
-      
       <br>
-      
     </ion-card-content>
-
   </ion-card>
-
 </ion-content>

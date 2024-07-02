@@ -63,6 +63,7 @@ export class IngresarformPage {
   ingresarform!: FormGroup;
   repuestosform!: FormGroup;
   otramarcaForm!: FormGroup;
+  ipForm!: FormGroup;
   backupform!: FormGroup;
   utilizoRepuestosform!: FormGroup;
   repuestosOperativoform!: FormGroup;
@@ -81,7 +82,7 @@ export class IngresarformPage {
   maxChars = 200;
   role = '';
   chars = 0;
-  maxChars1 = 200;
+  maxChars1 = 500;
   role1 = '';
   chars1 = 0;
   //Barra de carga
@@ -119,12 +120,12 @@ export class IngresarformPage {
       marca: ['', [Validators.required]],
       modelo: ['', [Validators.required]],
       nserie: ['', [Validators.required, Validators.pattern(this.pattern.mayusnum)]],
-      ip: ['', [Validators.pattern(this.pattern.ptsynum)]],
+      tipoconexion: ['', [Validators.required]],
       accesorios: [''],
 
       //SECCION: Descripcion del caso
       problemareport: ['', [Validators.required, Validators.maxLength(200)]],
-      solucionreport: ['', [Validators.required, Validators.maxLength(200)]],
+      solucionreport: ['', [Validators.required, Validators.maxLength(500)]],
 
       //SECCION: Status de servicio
       equipoEspera: ['', [Validators.required]],
@@ -140,6 +141,9 @@ export class IngresarformPage {
 
     this.otramarcaForm = this.formBuilder.group({
       otraMarca: ['', [Validators.required]]
+    })
+    this.ipForm = this.formBuilder.group({
+      ip : ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
     })
 
     this.backupform = this.formBuilder.group({
@@ -171,9 +175,9 @@ export class IngresarformPage {
 
 
   ngOnInit() {
-    //this.db.getUsuarioActual().subscribe((usuario) => {
-      //this.usuario = usuario;
-    //});
+    this.db.getUsuarioActual().subscribe((usuario) => {
+      this.usuario = usuario;
+    });
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 140;
@@ -317,6 +321,32 @@ export class IngresarformPage {
     return true;
   }
 
+  tipoconexion() {
+    const tipoconexion = this.ingresarform.get('tipoconexion')!.value;
+    
+    if (tipoconexion === 'IP') {
+      this.ipForm.enable();
+      // Si el formulario IP está habilitado y válido, el botón debe estar habilitado (retorna false para no estar deshabilitado)
+      return !(this.ipForm.valid && this.ipForm.enabled);
+    } 
+  
+    this.ipForm.disable();
+  
+    // Si el formulario principal es válido, el botón debe estar habilitado (retorna false para no estar deshabilitado)
+    if (this.ingresarform.valid) {
+      return false;
+    }
+  
+    // Si el tipo de conexión está vacío, el botón debe estar deshabilitado (retorna true)
+    if (tipoconexion === '') {
+      return true;
+    }
+  
+    // Por defecto, el botón está deshabilitado
+    return true;
+  }
+  
+
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
@@ -434,8 +464,8 @@ export class IngresarformPage {
 
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
-    canvas.width = 300;
-    canvas.height = 200;
+    canvas.width = 500;
+    canvas.height = 250;
     this.signaturePad = new SignaturePad(canvas, {
       penColor: 'rgb(0, 0, 0)',
       backgroundColor: 'rgb(255, 255, 255)',
@@ -563,7 +593,7 @@ export class IngresarformPage {
            this.ingresarform.get('marca')?.valid &&
            this.ingresarform.get('modelo')?.valid &&
            this.ingresarform.get('nserie')?.valid &&
-           this.ingresarform.get('ip')?.valid;
+           this.ingresarform.get('tipoconexion')?.valid 
   }
 
   isDescripcionCasoCompleta(): boolean | undefined{
@@ -632,7 +662,10 @@ export class IngresarformPage {
       
       const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
       const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
+
+      const tipoconexion = (document.getElementById('tipoconexion') as HTMLSelectElement)?.value || '';
       const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
+
       const accesorios = (document.getElementById('accesorios') as HTMLInputElement)?.value || '';
 
       const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
@@ -660,49 +693,53 @@ export class IngresarformPage {
       const pdf = new jsPDF('p', 'pt', 'letter');
 
       // Añadir página de orden de servicio
-      const image = await this.fotoPdf('assets/ordendeservicio.jpeg');
+      const image = await this.fotoPdf('assets/otservicio.jpg');
       pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
       pdf.setFontSize(16);
-      pdf.text(eventoCliente, 190, 73);
+      pdf.text(eventoCliente, 190, 74);
       pdf.setFontSize(11);
       pdf.setFont('Times');
       if (tiposervicio === 'Incidente') {
-        pdf.text(tiposervicio, 121, 110);
+        pdf.text(tiposervicio, 127, 87);
       } else if (tiposervicio === 'Solicitud') {
-        pdf.text(tiposervicio, 121, 110);
+        pdf.text(tiposervicio, 127, 87);
       }
-      pdf.text(fecha, 435, 84);
-      pdf.text(horaInicio, 475, 98);
-      pdf.text(ampm, 515, 98);
-      pdf.text(horaTermino, 475, 110);
-      pdf.text(cliente, 100, 157);
-      pdf.text(direccion, 100, 172);
-      pdf.setFontSize(11);
-      pdf.text(ciudad, 100, 186);
-      pdf.text(contacto, 292, 157);
-      pdf.text(telefono, 292, 172);
-      pdf.text(correo, 292, 189);
+      pdf.text(fecha, 475, 59);
+      pdf.text(horaInicio, 475, 72);
+      pdf.text(ampm, 505, 72);
+      pdf.text(horaTermino, 475, 86);
+
+      pdf.text(cliente, 110, 126);
+      pdf.text(direccion, 110, 140);
+      pdf.text(ciudad, 110, 156);
+      pdf.text(contacto, 372, 122);
+      pdf.text(telefono, 372, 138);
+      pdf.text(correo, 372, 152);
       if (tipoequipo === 'impresion') {
-        pdf.circle(185, 252, 7, "F");
+        pdf.circle(218, 208, 7, "F");
       } else if (tipoequipo === 'pc') {
-        pdf.circle(222, 252, 7, "F");
+        pdf.circle(255, 208, 7, "F");
       }
       pdf.getFontList;
       
       const otraMarca = (document.getElementById('otraMarca') as HTMLInputElement)?.value || '';
       if (marca === 'OTRO') {
-        pdf.text(otraMarca, 98, 273);
+        pdf.text(otraMarca, 145, 228);
       } else {
-        pdf.text(marca, 98, 273);
+        pdf.text(marca, 145, 228);
       }
-      pdf.text(modelo, 98, 288);
-      pdf.text(nserie, 98, 302);
-      pdf.text(ip, 98, 316);
-      pdf.text(accesorios, 98, 330);
+      pdf.text(modelo, 145, 243);
+      pdf.text(nserie, 145, 257);
+      if (tipoconexion === 'IP') {
+        pdf.text(tipoconexion + ': ' + ip, 145, 272);
+      } else {
+        pdf.text(tipoconexion, 145, 272)
+      }
+      pdf.text(accesorios, 145, 286);
       const problemareportLines = pdf.splitTextToSize(problemareport, 400);
       const solucionreportLines = pdf.splitTextToSize(solucionreport, 430);
-      pdf.text(problemareportLines, 145, 360);
-      pdf.text(solucionreportLines, 88, 408);
+      pdf.text(problemareportLines, 145, 316);
+      pdf.text(solucionreportLines, 90, 352);
       pdf.setFontSize(8);
       let repuestosToUse;
       if (this.repuestos && this.repuestos.length > 0) {
@@ -712,16 +749,15 @@ export class IngresarformPage {
       }
       if (repuestosToUse) {
         const maxRepuestos = Math.min(repuestosToUse.length, 5);
-        let yPosition = 480;
+        let yPosition = 587;
         for (let i = 0; i < maxRepuestos; i++) {
           const repuesto = repuestosToUse[i];
-          pdf.text(repuesto.nombre, 55, yPosition);
-          pdf.text(repuesto.numeroParte, 200, yPosition);
+          pdf.text(repuesto.nombre, 75, yPosition);
+          pdf.text(repuesto.numeroParte, 215, yPosition);
           pdf.text(repuesto.estado, 360, yPosition);
           yPosition += 10;
         }
       }
-      
       pdf.setFontSize(11);
       pdf.text(marcabackup, 355, 599);
       pdf.text(modelobackup, 355, 613);
@@ -729,34 +765,37 @@ export class IngresarformPage {
       pdf.text(ipbackup, 355, 642);
       pdf.text(contadorbackup, 355, 656);
       if (equipoEspera === 'si') {
-        pdf.circle(184, 586, 7, "F");
-        pdf.circle(224, 602, 7, "F");
-        pdf.circle(224, 619, 7, "F");
+        pdf.circle(217, 466, 7, "F");
+        pdf.circle(257, 482, 7, "F");
+        pdf.circle(257, 498, 7, "F");
+        pdf.circle(257, 514, 7, "F");
+      }
+      if (equipoEsperaBackup === 'si') {
+        pdf.circle(257, 466, 7, "F");
+        pdf.circle(217, 482, 7, "F");
+        pdf.circle(257, 498, 7, "F");
+        pdf.circle(257, 514, 7, "F");
       }
       if (equipoOperativo === 'si') {
-        pdf.circle(224, 586, 7, "F");
-        pdf.circle(184, 602, 7, "F");
-        pdf.circle(224, 619, 7, "F");
+        pdf.circle(257, 466, 7, "F");
+        pdf.circle(257, 482, 7, "F");
+        pdf.circle(217, 498, 7, "F");
+        pdf.circle(257, 514, 7, "F");
       }
       if (equipoBackup === 'si') {
-        pdf.circle(224, 586, 7, "F");
-        pdf.circle(224, 602, 7, "F");
-        pdf.circle(184, 619, 7, "F");
+        pdf.circle(257, 466, 7, "F");
+        pdf.circle(257, 482, 7, "F");
+        pdf.circle(257, 498, 7, "F");
+        pdf.circle(217, 514, 7, "F");
       }
-
-      if (equipoEsperaBackup === 'si') {
-        pdf.circle(224, 586, 7, "F");
-        pdf.circle(224, 602, 7, "F");
-        pdf.circle(184, 619, 7, "F");
-      }
-      pdf.text(nombrecli, 315, 682);
-      pdf.text(rutcli, 315, 697);
+      pdf.text(nombrecli, 310, 690);
+      pdf.text(rutcli, 310, 700);
 
       if (this.signatureImage) {
-        pdf.addImage(this.signatureImage, 'PNG', 420, 680, 105, 50);
+        pdf.addImage(this.signatureImage, 'PNG', 400, 680, 100, 50);
       }
-      //pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
-      //pdf.text(this.usuario.rut, 85, 697);
+      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
+      pdf.text(this.usuario.rut, 85, 697);
       console.log(pdf.getFontList());
       pdf.save();
       const imgWidth = 565;
@@ -789,37 +828,37 @@ export class IngresarformPage {
       });
 
       //=============== ABRIR ARCHIVO ====================//
-      //await FileOpener.openFile({
-        //path: archivoGuardado.uri,
-      //});
+      await FileOpener.openFile({
+        path: archivoGuardado.uri,
+      });
       //================================================//
       this.db.presentAlertP("Archivo guardado correctamente");
 
       //=============== ENVIAR CORREO====================//
-    //  const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
-     // const email = {
-       // to: correocliente, // El correo electrónico introducido por el usuario
-        //attachments: [archivoGuardado.uri], // Adjuntar el archivo guardado
-        //subject: 'Copia - Orden de servicio ACT ',
-        //body: 'Se adjunta copia de orden de servicio',
-        //isHtml: true,
-      //};
-      //const result = await this.emailComposer.open(email);
-      //console.log('Correo electrónico enviado', result);
+      const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
+      const email = {
+        to: correocliente, // El correo electrónico introducido por el usuario
+        attachments: [archivoGuardado.uri],  //Adjuntar el archivo guardado
+        subject: 'Copia - Orden de servicio ACT ',
+        body: 'Se adjunta copia de orden de servicio',
+        isHtml: true,
+      };
+      const result = await this.emailComposer.open(email);
+      console.log('Correo electrónico enviado', result);
       //================================================//
 
       
 
-      //await LocalNotifications.schedule({
-        //notifications: [
-          //{
-          //  title: 'Archivo guardado correctamente.',
-            //body: 'Ticket guardado en documentos.',
-            //id: 1,
-           // schedule: { at: new Date(Date.now() + 1000) },
-          //},
-        //],
-      //});
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: 'Archivo guardado correctamente.',
+            body: 'Ticket guardado en documentos.',
+            id: 1,
+            schedule: { at: new Date(Date.now() + 1000) },
+          },
+        ],
+      });
 
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
       this.loading = false;

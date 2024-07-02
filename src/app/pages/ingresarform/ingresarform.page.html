@@ -9,7 +9,6 @@
 
   
   <form [formGroup]="ingresarform">
-    <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
     <ion-card id="form">
       <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>
 
@@ -48,7 +47,7 @@
           <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
           <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio"
             (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
-          <ion-text id="ampm" style="margin-right: 60%;"></ion-text>
+          <ion-text id="ampm" style="margin-right: 40%;"></ion-text>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
@@ -135,7 +134,7 @@
       <ion-list>
         <ion-item>
           <ion-label position="stacked">Tipo de equipo</ion-label>
-          <ion-select id="tipoequipo" formControlName="tipoequipo" placeholder="Selecciona el tipo de servicio">
+          <ion-select id="tipoequipo" formControlName="tipoequipo" placeholder="Selecciona el tipo de equipo">
             <ion-select-option value="impresion">Impresión</ion-select-option>
             <ion-select-option value="pc">PC</ion-select-option>
           </ion-select>
@@ -147,7 +146,8 @@
 
         <ion-item>
           <ion-label position="stacked">Marca</ion-label>
-          <ion-select id="marca" formControlName="marca">
+          <ion-select id="marca" formControlName="marca" placeholder="Primero selecciona el tipo de equipo">
+
             <div *ngIf="ingresarform.get('tipoequipo')!.value === 'pc'">
               <ion-select-option value="">Selecciona una marca</ion-select-option>
               <ion-select-option value="LENOVO">LENOVO</ion-select-option>
@@ -156,6 +156,7 @@
               <ion-select-option value="ASUS">ASUS</ion-select-option>
               <ion-select-option value="APPLE">APPLE</ion-select-option>
               <ion-select-option value="ACER">ACER</ion-select-option>
+              <ion-select-option value="OTRO">OTRO</ion-select-option>
             </div>
             <div *ngIf="ingresarform.get('tipoequipo')!.value === 'impresion'">
               <ion-select-option value="">Selecciona una marca</ion-select-option>
@@ -167,10 +168,14 @@
               <ion-select-option value="TOSHIBA">TOSHIBA</ion-select-option>
               <ion-select-option value="CANON">CANON</ion-select-option>
               <ion-select-option value="EPSON">EPSON</ion-select-option>
+              <ion-select-option value="OTRO">OTRO</ion-select-option>
             </div>
-            <ion-select-option value="OTRO">OTRO</ion-select-option>
           </ion-select>
         </ion-item>
+        <div *ngIf="ingresarform.get('tipoequipo')!.value === ''">
+          <ion-text style="color: red; margin-left: 10px; margin-top: 3px;">Primero selecciona el tipo de equipo.</ion-text>
+        </div>
+
         <div *ngIf="ingresarform.get('marca')!.value === 'OTRO'">
           <form [formGroup]="otramarcaForm">
             <ion-item>
@@ -178,7 +183,7 @@
               <ion-input formControlName="otraMarca" id="otraMarca" placeholder="Ingresa otra marca"></ion-input>
             </ion-item>
             <div style="color: red; margin-top: 3px; margin-left: 10px;"
-              *ngIf="otramarcaForm.get('otraMarca')?.invalid && (otramarcaForm.get('otraMarca')?.dirty || otramarcaForm.get('otraMarca')?.touched)">
+              *ngIf="otramarcaForm.get('otraMarca')?.invalid">
               <div *ngIf="otramarcaForm.get('otraMarca')?.hasError('required')">Este campo es obligatorio.</div>
             </div>
           </form>
@@ -208,20 +213,44 @@
         </div>
 
         <ion-item>
-          <ion-label position="stacked">IP</ion-label>
-          <ion-input id="ip" formControlName="ip"></ion-input>
+          <ion-label position="stacked">Tipo de conexion</ion-label>
+          <ion-select id="tipoconexion" formControlName="tipoconexion" placeholder="Primero selecciona el tipo de equipo">
+            <div *ngIf="ingresarform.get('tipoequipo')!.value === 'pc'">
+              <ion-select-option value="IP">IP</ion-select-option>
+              <ion-select-option value="SIN">SIN CONEXIÓN</ion-select-option>
+            </div>
+            <div *ngIf="ingresarform.get('tipoequipo')!.value === 'impresion'">
+              <ion-select-option value="USB">USB</ion-select-option>
+              <ion-select-option value="IP">IP</ion-select-option>
+              <ion-select-option value="SIN">SIN CONEXIÓN</ion-select-option>
+            </div>
+          </ion-select>
         </ion-item>
+        <div *ngIf="ingresarform.get('tipoequipo')!.value === ''">
+          <ion-text style="color: red; margin-left: 10px; margin-top: 3px;">Primero selecciona el tipo de equipo.</ion-text>
+        </div>
+        <div *ngIf="ingresarform.get('tipoconexion')!.value === 'IP'">
+          <form [formGroup]="ipForm">
+            <ion-item>
+              <ion-label position="stacked">IP:</ion-label>
+              <ion-input formControlName="ip" id="ip" placeholder="Ingresa la IP del equipo"></ion-input>
+            </ion-item>
+            <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="ipForm.get('ip')?.invalid">
+              <div *ngIf="ipForm.get('ip')?.hasError('required')">Este campo es obligatorio.</div>
+              <div *ngIf="ipForm.get('ip')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
+            </div>
+          </form>
+        </div>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
-          *ngIf="ingresarform.get('ip')?.invalid && (ingresarform.get('ip')?.dirty || ingresarform.get('ip')?.touched)">
-          <div *ngIf="ingresarform.get('ip')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
+        *ngIf="ingresarform.get('tipoconexion')?.invalid && (ingresarform.get('tipoconexion')?.dirty || ingresarform.get('tipoconexion')?.touched)">
+        <div *ngIf="ingresarform.get('tipoconexion')?.hasError('required')">Selecciona un tipo de conexion.</div>
         </div>
 
         <ion-item>
           <ion-label position="stacked">Accesorios</ion-label>
           <ion-input id="accesorios" formControlName="accesorios"></ion-input>
         </ion-item>
-
-
         <ion-card-title style="font-size: 13px;">DESCRIPCIÓN DEL CASO</ion-card-title>
         <ion-list>
           <ion-item>
@@ -249,7 +278,7 @@
           <div style="color: red; margin-top: 3px; margin-left: 10px;"
             *ngIf="ingresarform.get('solucionreport')?.invalid && (ingresarform.get('solucionreport')?.dirty || ingresarform.get('solucionreport')?.touched)">
             <div *ngIf="ingresarform.get('solucionreport')?.hasError('maxlength')">Este campo puede contener un máximo
-              de 200 caracteres.</div>
+              de 500 caracteres.</div>
           </div>
         </ion-list>
 
@@ -519,9 +548,12 @@
         </div>
 
         <ion-card-title style="font-size: 13px;">INGRESA TU FIRMA</ion-card-title>
-
+        <div class="ion-text-center" style="margin-block: 10px;">
+          <ion-text style="font-weight: 700;">¡IMPORTANTE! *Con la firma de usted está aceptando confirme la ejecución de los trabajos que se indican. 
+          Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos*</ion-text>
+        </div>
         <ion-item class="ion-text-center">
-          <ion-col size="12" class="ion-no-padding">
+          <ion-col size="12">
             <canvas #canvas
               [ngClass]="{ 'firma-incompleta': isCanvasBlank() || !mostrarErrorFirma }"
               style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; margin-top: 5px;"></canvas>
@@ -608,7 +640,7 @@
            Completa el formulario para Backup instalado.
         </div>
       </div>
-      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !isFormularioCompleto() || !firmaIngresada || marca() || !ingresarform.valid" (click)="generarPDF()">Generar PDF</ion-button>
+      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !isFormularioCompleto() || !firmaIngresada || tipoconexion() || marca()" (click)="generarPDF()">Generar PDF</ion-button>
       <br>
     </ion-card>
   </form>
