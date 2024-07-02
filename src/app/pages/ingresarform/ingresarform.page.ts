@@ -792,10 +792,10 @@ export class IngresarformPage {
       pdf.text(rutcli, 310, 700);
 
       if (this.signatureImage) {
-        pdf.addImage(this.signatureImage, 'PNG', 400, 680, 100, 50);
+        pdf.addImage(this.signatureImage, 'PNG', 300, 705, 100, 50);
       }
-      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 85, 682);
-      pdf.text(this.usuario.rut, 85, 697);
+      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 80, 690);
+      pdf.text(this.usuario.rut, 80, 700);
       console.log(pdf.getFontList());
       pdf.save();
       const imgWidth = 565;
