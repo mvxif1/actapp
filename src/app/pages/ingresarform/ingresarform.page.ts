@@ -1,8 +1,10 @@
 const RutValidator = {
   validaRut(rutCompleto: string): boolean {
+    // Reemplaza el guion largo incorrecto
     rutCompleto = rutCompleto.replace('‐', '-');
 
-    if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rutCompleto)) {
+    // Modificar la expresión regular para permitir RUTs que terminen en 'K'
+    if (!/^[0-9]+[-]{1}[0-9kK]{1}$/.test(rutCompleto)) {
       return false;
     }
 
@@ -18,9 +20,10 @@ const RutValidator = {
     for (let i = T.length - 1; i >= 0; i--) {
       S = (S + parseInt(T.charAt(i)) * (9 - M++ % 6)) % 11;
     }
-    return S ? (S - 1).toString() : 'k';
+    return S ? (S - 1).toString() : 'K'; // Cambia 'k' a 'K'
   }
 };
+
 
 
 
