@@ -762,11 +762,11 @@ export class IngresarformPage {
         }
       }
       pdf.setFontSize(11);
-      pdf.text(marcabackup, 355, 599);
-      pdf.text(modelobackup, 355, 613);
-      pdf.text(nseriebackup, 355, 627);
-      pdf.text(ipbackup, 355, 642);
-      pdf.text(contadorbackup, 355, 656);
+      pdf.text(marcabackup, 367, 470);
+      pdf.text(modelobackup, 367, 485);
+      pdf.text(nseriebackup, 367, 500);
+      pdf.text(ipbackup, 367, 514);
+      pdf.text(contadorbackup, 367, 528);
       if (equipoEspera === 'si') {
         pdf.circle(217, 466, 7, "F");
         pdf.circle(257, 482, 7, "F");

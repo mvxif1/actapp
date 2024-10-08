@@ -3,9 +3,11 @@ import { FormControl } from '@angular/forms';
 
 const RutValidator = {
   validaRut(rutCompleto: string): boolean {
+    // Reemplaza el guion largo incorrecto
     rutCompleto = rutCompleto.replace('‐', '-');
 
-    if (!/^[0-9]+[-|‐]{1}[0-9kK]{1}$/.test(rutCompleto)) {
+    // Modificar la expresión regular para permitir RUTs que terminen en 'K'
+    if (!/^[0-9]+[-]{1}[0-9kK]{1}$/.test(rutCompleto)) {
       return false;
     }
 
@@ -15,15 +17,16 @@ const RutValidator = {
 
     return this.dv(rut) === digv;
   },
-  
+
   dv(T: string): string {
     let M = 0, S = 1;
     for (let i = T.length - 1; i >= 0; i--) {
       S = (S + parseInt(T.charAt(i)) * (9 - M++ % 6)) % 11;
     }
-    return S ? (S - 1).toString() : 'k';
+    return S ? (S - 1).toString() : 'K'; // Cambia 'k' a 'K'
   }
 };
+
 
 function correoValido(control: FormControl) {
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -119,8 +122,7 @@ export class RegistroPage implements OnInit {
   registrarUsuario() {
     if (this.registroForm.valid) {
       const formulario = this.registroForm.value;
-      this.dbService.registrarUsuario(formulario.nombre, formulario.apellido, formulario.rut, formulario.correo, formulario.clave) 
-      console.log('Usuario registrado:');
+      this.dbService.registrarUsuario(formulario.nombre, formulario.apellido, formulario.rut, formulario.correo, formulario.clave)
       this.navCtrl.navigateForward('/home');
     }
   }
