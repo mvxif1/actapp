@@ -34,6 +34,10 @@ const routes: Routes = [
     path: 'editarperfil',
     loadChildren: () => import('./pages/editarperfil/editarperfil.module').then( m => m.EditarperfilPageModule)
   },
+  {
+    path: 'despachoform',
+    loadChildren: () => import('./pages/despachoform/despachoform.module').then( m => m.DespachoformPageModule)
+  },
 
 
 ];

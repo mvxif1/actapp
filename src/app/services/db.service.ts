@@ -4,6 +4,7 @@ import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Usuario } from './usuario';
 import { Rol } from './rol';
+import swal from 'sweetalert2';
 @Injectable({
   providedIn: 'root'
 })
@@ -146,40 +147,38 @@ export class DbService {
   
 
   async presentAlertN(msj: string) {
-    const alert = await this.alertController.create({
-      header: 'Error!',
-      message: msj,
-      buttons: [
-      {
-        text: 'OK',
-        cssClass: 'custom-button',
-      }
-    ],
-      cssClass: 'custom-alert',
-    });
-    await alert.present();
+    const alert = await swal.fire({
+      backdrop : false,
+      icon: 'error',
+      width: '300px',
+      title: msj,
+      confirmButtonText: "Cerrar"
+    })
   }
 
   async presentAlertP(msj: string) {
-    const alert = await this.alertController.create({
-      header: 'Exito!',
-      message: msj,
-      buttons: [
-      {
-        text: 'OK',
-        cssClass: 'custom-button', // Agrega una clase de estilo personalizado al botón OK
-      }
-    ],
-      cssClass: 'custom-alert',
-    });
-    await alert.present();
+    const alert = await swal.fire({
+      backdrop : false,
+      icon: 'success',
+      width: '300px',
+      title: msj,
+      confirmButtonText: "Cerrar"
+    })
   }
 
+  async presentAlertConfirm(msj: string, textconfirm: string, textcancel: string) : Promise <boolean>{
+    const result = await swal.fire({
+      text: msj,
+      width: '300px',
+      icon: 'warning',
+      backdrop : false,
+      showCancelButton: true,
+      confirmButtonText: textconfirm,
+      confirmButtonColor: '#3085d6',
+      cancelButtonText: textcancel,
+      cancelButtonColor: '#d33'
+    });
 
-
-  
-
-
-
-
+    return result.isConfirmed
+  }
 }

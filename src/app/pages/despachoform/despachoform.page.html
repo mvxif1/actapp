@@ -1,0 +1,27 @@
+<ion-content [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-list>
+    <form [formGroup]="formulario" (ngSubmit)="enviarFormulario()">
+      <ion-item>
+        <ion-label for="nombre">Nombre:</ion-label>
+        <ion-input type="text" id="nombre" name="nombre" [(ngModel)]="datos.nombre" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label for="clave">Clave:</ion-label>
+        <ion-input type="clave" id="clave" name="clave" [(ngModel)]="datos.clave" required></ion-input>
+      </ion-item>
+    
+      <ion-button type="submit" [disabled]="formulario.invalid">Enviar</ion-button>
+    </form>
+  </ion-list>
+  
+
+</ion-content>
+
