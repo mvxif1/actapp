@@ -1,8 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
-import { ApiService } from 'src/app/services/api.service';
-import { DbService } from 'src/app/services/db.service';
 
 @Component({
   selector: 'app-despachoform',
@@ -20,8 +19,7 @@ export class DespachoformPage implements OnInit {
     nombre: '',
     clave: ''
   }
-  http: any;
-  constructor(private db: DbService,private camera: Camera, private apiService: ApiService, private formBuilder: FormBuilder) {
+  constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient) {
     this.formulario = this.formBuilder.group({
       nombre: [''],
       clave: [''],
@@ -44,7 +42,7 @@ export class DespachoformPage implements OnInit {
       }
     );
   }
-
+/*
   fechaHoy() {
     const today = new Date();
     const year = today.getFullYear();
@@ -120,7 +118,7 @@ export class DespachoformPage implements OnInit {
     }else{
       this.db.presentAlertN("Cancelado!");
     }
-  }
+  }*/
 }
 
 
