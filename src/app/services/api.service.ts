@@ -10,8 +10,19 @@ export class ApiService {
   
   constructor(private http: HttpClient) {}
 
-  enviarDatos(datos: any): Observable<any> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.post(this.baseUrl, datos, { headers });
+  getListTickets(username: string, password: string): Observable<any> {
+    // Codificar las credenciales en base64
+    const token = btoa(`${username}:${password}`);
+
+    // Configurar los headers para la solicitud POST
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+
+    // Crear el cuerpo de la solicitud con acción y token
+    const body = `ACCION=getTicketsProveedor&token=${token}`;
+
+    // Hacer la solicitud POST
+    return this.http.post(this.baseUrl, body, { headers });
   }
 }

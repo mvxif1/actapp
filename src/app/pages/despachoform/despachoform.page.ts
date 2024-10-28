@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { ApiService } from 'src/app/services/api.service';
 
 @Component({
   selector: 'app-despachoform',
@@ -9,32 +10,28 @@ import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
   styleUrls: ['./despachoform.page.scss'],
 })
 export class DespachoformPage implements OnInit {
-  accion: string = 'getTicketsProveedor';
-  token: string;
-  constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient) {
-    this.token = btoa('matias.caro:Mcaro2020'); 
+  ticketsArray: any = [];
+  username: string = '';  // Para capturar el usuario desde el HTML
+  password: string = '';
+  constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
+
   }
 
   ngOnInit() {
   }
+  
 
-  enviar() {
-    const body = {
-      ACCION: this.accion,
-      token: this.token
-    };
-
-    this.http.post('https://desarrollo.act.cl/ACTServicios/api/apiApp.php', body, {
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .subscribe(response => {
-      console.log('Response:', response);
-  }, error => {
-      console.error('Error:', error);
-      if (error.error) {
-          console.error('Error Body:', error.error);
-      }
-  });
+  
+  fetchTickets() {
+    this.api.getListTickets(this.username, this.password).subscribe({
+      next: (response) => {
+        this.ticketsArray = response;
+        console.log(this.ticketsArray);
+      },
+      error: (error) => {
+        console.error('Error al obtener los tickets:', error);
+      },
+    });
   }
 /*
   fechaHoy() {
