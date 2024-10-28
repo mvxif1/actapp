@@ -9,38 +9,32 @@ import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
   styleUrls: ['./despachoform.page.scss'],
 })
 export class DespachoformPage implements OnInit {
-  photos: string[] = [];
-
-  loading: boolean = false;
-
-  loadingImage: boolean = false;
-  formulario!: FormGroup;
-  datos = {
-    nombre: '',
-    clave: ''
-  }
+  accion: string = 'getTicketsProveedor';
+  token: string;
   constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient) {
-    this.formulario = this.formBuilder.group({
-      nombre: [''],
-      clave: [''],
-    })
-   }
+    this.token = btoa('matias.caro:Mcaro2020'); 
+  }
 
   ngOnInit() {
   }
 
-  enviarFormulario() {
-    const url = 'https://desarrollo.act.cl/ACTServicios/api/apiApp.php';
-    const datos = this.formulario.value;
+  enviar() {
+    const body = {
+      ACCION: this.accion,
+      token: this.token
+    };
 
-    this.http.post(url, datos).subscribe(
-      (respuesta: any) => {
-        console.log('Respuesta del servidor:', respuesta);
-      },
-      (error: any) => {
-        console.error('Error:', error);
+    this.http.post('https://desarrollo.act.cl/ACTServicios/api/apiApp.php', body, {
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .subscribe(response => {
+      console.log('Response:', response);
+  }, error => {
+      console.error('Error:', error);
+      if (error.error) {
+          console.error('Error Body:', error.error);
       }
-    );
+  });
   }
 /*
   fechaHoy() {

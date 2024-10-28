@@ -7,18 +7,18 @@
     </ion-toolbar>
   </ion-header>
   <ion-list>
-    <form [formGroup]="formulario" (ngSubmit)="enviarFormulario()">
+    <form (ngSubmit)="enviar()" #formulario="ngForm">
       <ion-item>
-        <ion-label for="nombre">Nombre:</ion-label>
-        <ion-input type="text" id="nombre" name="nombre" formControlName="nombre" required></ion-input>
+        <ion-label position="floating">Acción</ion-label>
+        <ion-input type="text" name="accion" [(ngModel)]="accion" required></ion-input>
       </ion-item>
-
+  
       <ion-item>
-        <ion-label for="clave">Clave:</ion-label>
-        <ion-input type="clave" id="clave" name="clave" formControlName="clave" required></ion-input>
+        <ion-label position="floating">Token</ion-label>
+        <ion-input type="text" name="token" [(ngModel)]="token" required></ion-input>
       </ion-item>
-    
-      <ion-button type="submit" [disabled]="formulario.invalid">Enviar</ion-button>
+  
+      <ion-button expand="full" type="submit">Enviar</ion-button>
     </form>
   </ion-list>
   
