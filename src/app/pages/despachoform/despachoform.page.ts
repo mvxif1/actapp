@@ -13,6 +13,7 @@ export class DespachoformPage implements OnInit {
   ticketsArray! : any ;
   username: string = '';  // Para capturar el usuario desde el HTML
   password: string = '';
+  base64Image: string | null = null;
   constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
 
   }
@@ -35,7 +36,50 @@ export class DespachoformPage implements OnInit {
       },
     });
   }
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        this.base64Image = result.split(',')[1]; // Solo toma la parte Base64
+        
+        // Aquí puedes agregar una validación si deseas
+        // por ejemplo, mostrando un mensaje si no es un tipo permitido
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // Agrega otros tipos permitidos aquí
+        if (!allowedTypes.includes(file.type)) {
+          console.warn('El archivo seleccionado no es de un tipo permitido.');
+        }
+      };
+      reader.readAsDataURL(file); // Convierte el archivo a Base64
+    }
+  }
   
+  
+  
+  
+  cerrarTicket(idticket: string) {
+    const nombreArchivo = `GUIATicket${idticket}`;
+    const archivoBase64 = this.base64Image as string; // Asegúrate de que este contenga solo la parte Base64
+  
+    this.api.cerrarTicket(idticket, nombreArchivo, archivoBase64).subscribe({
+      next: (response: any) => {
+        if (response.code === 200) {
+          console.log('Operación exitosa:', response.message);
+        } else {
+          console.error('Error:', response.message);
+        }
+      },
+      error: (error) => {
+        console.error('Error al cerrar el ticket:', error);
+      },
+    });
+  }
+  
+  
+  
+
   
   
   

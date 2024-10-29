@@ -11,7 +11,6 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   getListTickets(username: string, password: string): Observable<any> {
-    // Codificar las credenciales en base64
     const token = btoa(`${username}:${password}`);
 
     // Configurar los headers para la solicitud POST
@@ -25,4 +24,13 @@ export class ApiService {
     // Hacer la solicitud POST
     return this.http.post(this.baseUrl, body, { headers });
   }
+
+  cerrarTicket(idticket: string, nombreArchivo: string, archivoBase64: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=uploadDocumentApp&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${archivoBase64}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
 }
