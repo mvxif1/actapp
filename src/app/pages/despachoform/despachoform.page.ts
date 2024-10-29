@@ -10,7 +10,7 @@ import { ApiService } from 'src/app/services/api.service';
   styleUrls: ['./despachoform.page.scss'],
 })
 export class DespachoformPage implements OnInit {
-  ticketsArray: any = [];
+  ticketsArray! : any ;
   username: string = '';  // Para capturar el usuario desde el HTML
   password: string = '';
   constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
@@ -25,14 +25,21 @@ export class DespachoformPage implements OnInit {
   fetchTickets() {
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
-        this.ticketsArray = response;
-        console.log(this.ticketsArray);
+        const resp_a_objeto = JSON.parse(response);
+        // Accede a la propiedad correcta y verifica si es un array
+        this.ticketsArray = resp_a_objeto.tikects;
+        console.log("Tickets array:", this.ticketsArray);
       },
       error: (error) => {
         console.error('Error al obtener los tickets:', error);
       },
     });
   }
+  
+  
+  
+  
+  
 /*
   fechaHoy() {
     const today = new Date();

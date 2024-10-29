@@ -19,9 +19,12 @@
   
       <ion-button expand="full" (click)="fetchTickets()">Enviar</ion-button>
       
-      <div>
-        <h3>{{ticketsArray}}</h3>
-      </div>
+      <ion-text *ngIf="ticketsArray && ticketsArray.length > 0">
+        <h3 *ngFor="let ticket of ticketsArray">TICKET: {{ ticket }}</h3>
+      </ion-text>
+      
+      
+      
       
       
   </ion-list>
