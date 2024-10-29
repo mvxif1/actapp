@@ -22,8 +22,7 @@
       <ion-list class="ion-text-center" *ngIf="ticketsArray && ticketsArray.length > 0">
         <ion-col class="ion-text-center" *ngFor="let ticket of ticketsArray">
           <h3>Id Ticket: {{ ticket }}</h3>
-          <ion-label>Seleccionar Foto</ion-label>
-          <input type="file" (change)="onFileSelected($event)" accept="*/*" />
+          <input type="file" (change)="onFileSelected($event, ticket)">
           <ion-button expand="default" (click)="cerrarTicket(ticket)">Cerrar Ticket</ion-button>
         </ion-col>
       </ion-list>

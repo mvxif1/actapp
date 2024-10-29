@@ -13,7 +13,8 @@ export class DespachoformPage implements OnInit {
   ticketsArray! : any ;
   username: string = '';  // Para capturar el usuario desde el HTML
   password: string = '';
-  base64Image: string | null = null;
+  base64Image: string | ArrayBuffer | null = null;
+  files: Array<{ name: string; type: string; base64: string }> = [];
   constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
 
   }
@@ -37,45 +38,50 @@ export class DespachoformPage implements OnInit {
     });
   }
 
-  onFileSelected(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
+  onFileSelected(event: Event, ticket: any) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
       const reader = new FileReader();
+
       reader.onload = () => {
-        const result = reader.result as string;
-        this.base64Image = result.split(',')[1]; // Solo toma la parte Base64
-        
-        // Aquí puedes agregar una validación si deseas
-        // por ejemplo, mostrando un mensaje si no es un tipo permitido
-        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']; // Agrega otros tipos permitidos aquí
-        if (!allowedTypes.includes(file.type)) {
-          console.warn('El archivo seleccionado no es de un tipo permitido.');
-        }
+        this.base64Image = reader.result; 
       };
-      reader.readAsDataURL(file); // Convierte el archivo a Base64
+
+      reader.readAsDataURL(file); // Lee el archivo como un Data URL
     }
   }
-  
-  
-  
-  
-  cerrarTicket(idticket: string) {
+
+  cerrarTicket(ticket: any) {
+    // Verificar que hay un archivo seleccionado
+    if (!this.base64Image) {
+      console.error('No hay archivo seleccionado para subir.');
+      return;
+    }
+    if (typeof this.base64Image !== 'string') {
+      console.error('El archivo seleccionado no es un formato válido.');
+      return;
+    }
+    
+    const idticket = ticket;
     const nombreArchivo = `GUIATicket${idticket}`;
-    const archivoBase64 = this.base64Image as string; // Asegúrate de que este contenga solo la parte Base64
+    const archivoBase64 = this.base64Image.split(',')[1]; // Obtener solo la parte base64 del Data URL
   
-    this.api.cerrarTicket(idticket, nombreArchivo, archivoBase64).subscribe({
-      next: (response: any) => {
-        if (response.code === 200) {
-          console.log('Operación exitosa:', response.message);
-        } else {
-          console.error('Error:', response.message);
-        }
+    this.api.cerrarTicket(this.username, this.password, idticket, nombreArchivo, archivoBase64).subscribe({
+      next: (response) => {
+        
+        console.log('Respuesta de la API:', response);
       },
       error: (error) => {
         console.error('Error al cerrar el ticket:', error);
       },
     });
   }
+}
+  
+
+
+  
   
   
   
@@ -85,13 +91,6 @@ export class DespachoformPage implements OnInit {
   
   
 /*
-  fechaHoy() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${day}-${month}-${year}`;
-  }
   takePhoto() {
     this.loadingImage = true; // Activar mensaje de carga
 
@@ -153,15 +152,6 @@ export class DespachoformPage implements OnInit {
     }
     
   }
-  async cerrarTicket(){
-    const confirmado = await this.db.presentAlertConfirm("¿Estás seguro de que vas a cerrar el ticket?", "Si", "No")
-    if(confirmado){
-      this.db.presentAlertP("Has cerrado el ticket con exito!");
-    }else{
-      this.db.presentAlertN("Cancelado!");
-    }
-  }*/
-}
 
 
 /*    <ion-item>
