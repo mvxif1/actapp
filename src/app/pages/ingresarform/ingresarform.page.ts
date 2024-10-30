@@ -838,7 +838,7 @@ export class IngresarformPage {
       this.db.presentAlertP("Archivo guardado correctamente");
 
       //=============== ENVIAR CORREO====================//
-      const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
+      /*const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
       const email = {
         to: correocliente, // El correo electrónico introducido por el usuario
         attachments: [archivoGuardado.uri],  //Adjuntar el archivo guardado
@@ -849,7 +849,7 @@ export class IngresarformPage {
       const result = await this.emailComposer.open(email);
       console.log('Correo electrónico enviado', result);
       //================================================//
-
+      */
       
 
       await LocalNotifications.schedule({
