@@ -21,10 +21,7 @@
             <ion-input formControlName="email" placeholder="Ingresa tu Correo"></ion-input>
           </ion-item>
           <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
-            <div>Ingrese un usuario (email). </div>
-          </div>
-          <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched">
-            <div>Debe ser un correo válido.</div>
+            <div>Ingrese un usuario. </div>
           </div>
 
           <ion-item>
@@ -44,7 +41,6 @@
           </ion-item>
           
           <ion-button expand="block" type="submit" [disabled]="!loginForm.valid" (click)="iniciarUsuario()">Iniciar Sesión</ion-button>
-          <ion-button expand="block" fill="outline" [routerLink]="['/registro']">Registrarse</ion-button>
         </ion-list>
       </form>
       <br>

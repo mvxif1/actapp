@@ -11,25 +11,30 @@ import { ApiService } from 'src/app/services/api.service';
 })
 export class DespachoformPage implements OnInit {
   ticketsArray! : any ;
-  username: string = '';  // Para capturar el usuario desde el HTML
-  password: string = '';
+  username: string = '' ; 
+  password: string = '' ;
   base64Image: string | ArrayBuffer | null = null;
-  files: Array<{ name: string; type: string; base64: string }> = [];
   constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
 
   }
 
   ngOnInit() {
+    this.username = localStorage.getItem('email')!;
+    this.password = localStorage.getItem('password')!;
+    this.fetchTickets();
   }
   
-
+  refreshTickets(event: any) {
+    this.fetchTickets(); // Refresca los tickets
+    event.target.complete(); // Completa el refresco
+  }
   
   fetchTickets() {
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
         const resp_a_objeto = JSON.parse(response);
-        // Accede a la propiedad correcta y verifica si es un array
-        this.ticketsArray = resp_a_objeto.tikects;
+        this.ticketsArray = resp_a_objeto.tickets || [];
+        this.ticketsArray.sort((a: number, b: number) => b - a);
         console.log("Tickets array:", this.ticketsArray);
       },
       error: (error) => {

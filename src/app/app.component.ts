@@ -9,28 +9,25 @@ import { DbService } from './services/db.service';
 })
 export class AppComponent {
   usuario: any;
-  logueado : number = 0;
+  logueado: boolean = false;
+
   constructor(private navCtrl: NavController, private dbService: DbService) {
-    this.usuario= {};
+    this.usuario = {};
   }
 
-  estaLogueado(): boolean{
-    const rolActual = this.dbService.getRolActual();
-    return rolActual === 1 || rolActual === 2;
-  }
-  
-  esAdmin(): boolean{
-    return this.dbService.getRolActual() === 2;
+  estaLogueado(): boolean {
+    return this.logueado;
   }
 
-  esUsuario(): boolean{
-    return this.dbService.getRolActual() === 1;
+  iniciarSesion() {
+    this.logueado = true;
   }
 
-  cerrarsesion(){
-    this.logueado = 0;
-    this.dbService.setRolActual(0);
-    this.navCtrl.navigateForward('/home');
-    this.dbService.presentAlertP("Has cerrado sesión con exito!");
+  cerrarsesion() {
+    this.logueado = false;
+    localStorage.setItem('email', '');
+    localStorage.setItem('password', '');
+    this.navCtrl.navigateForward('/home'); 
+    this.dbService.presentAlertP("Has cerrado sesión con éxito!");
   }
 }

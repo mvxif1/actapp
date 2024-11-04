@@ -7,8 +7,27 @@ import { Observable } from 'rxjs';
 })
 export class ApiService {
   private baseUrl = 'https://desarrollo.act.cl/ACTServicios/api/apiApp.php';
-  
+  private usuario: { username: string; sessionToken: string } | null = null;
   constructor(private http: HttpClient) {}
+  
+  iniciarSesion(username: string, password: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=iniciarSesion&token=${token}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  setUsuario(username: string, sessionToken: string): void {
+    this.usuario = { username, sessionToken };
+  }
+
+  // Método para obtener el usuario actual
+  getUsuario(): { username: string; sessionToken: string } | null {
+    return this.usuario;
+  }
+
 
   getListTickets(username: string, password: string): Observable<any> {
     const token = btoa(`${username}:${password}`);

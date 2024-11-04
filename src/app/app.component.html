@@ -15,47 +15,28 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-        <ion-row *ngIf="estaLogueado()">
-          <ion-col>
-            <ion-menu-toggle>
-              <ion-button expand="full" [routerLink]="['/inicio']">Inicio</ion-button>
-            </ion-menu-toggle>
-          </ion-col>
-        </ion-row>
-        <ion-row *ngIf="!estaLogueado()">
-          <ion-col>
-            <ion-menu-toggle>
-              <ion-button expand="full" [routerLink]="['/home']">Iniciar Sesión <ion-icon
-                  name="person-outline"></ion-icon>
-              </ion-button>
-            </ion-menu-toggle>
-          </ion-col>
-        </ion-row>
       <ion-row *ngIf="estaLogueado()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" (click)="cerrarsesion()">Cerrar Sesión <ion-icon
-                name="person-outline"></ion-icon></ion-button>
+            <ion-button expand="full" [routerLink]="['/inicio']">Inicio</ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="esUsuario()">
+      <ion-row *ngIf="!estaLogueado()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/perfil']">Perfil<ion-icon
-                name="person-outline"></ion-icon></ion-button>
+            <ion-button expand="full" [routerLink]="['/home']">Iniciar Sesión <ion-icon name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="esAdmin()">
+      <ion-row *ngIf="estaLogueado()">
         <ion-col>
           <ion-menu-toggle>
-            <ion-button expand="full" [routerLink]="['/perfil']">Administrador<ion-icon
-                name="person-outline"></ion-icon></ion-button>
+            <ion-button expand="full" (click)="cerrarsesion()">Cerrar Sesión <ion-icon name="person-outline"></ion-icon></ion-button>
           </ion-menu-toggle>
         </ion-col>
       </ion-row>
-      
+
       <br>
       <ion-row>
         <ion-col>

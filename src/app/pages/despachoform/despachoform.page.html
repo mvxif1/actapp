@@ -6,25 +6,26 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
+
+  <ion-refresher slot="fixed" (ionRefresh)="refreshTickets($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <ion-list>
-      <ion-item>
-        <ion-label position="floating">Usuario</ion-label>
-        <ion-input type="text" name="username" [(ngModel)]="username" required></ion-input>
-      </ion-item>
-  
-      <ion-item>
-        <ion-label position="floating">Clave</ion-label>
-        <ion-input type="text" name="password" [(ngModel)]="password" required></ion-input>
-      </ion-item>
-  
-      <ion-button expand="full" (click)="fetchTickets()">Enviar</ion-button>
-      
+    <div class="ion-text-center">
+      <h3 style="font-weight: 700;">Número de tickets totales: {{ ticketsArray?.length || 0 }}</h3>
+    </div>
       <ion-list class="ion-text-center" *ngIf="ticketsArray && ticketsArray.length > 0">
-        <ion-col class="ion-text-center" *ngFor="let ticket of ticketsArray">
-          <h3>Id Ticket: {{ ticket }}</h3>
-          <input type="file" (change)="onFileSelected($event, ticket)">
-          <ion-button expand="default" (click)="cerrarTicket(ticket)">Cerrar Ticket</ion-button>
-        </ion-col>
+        <ion-item class="ion-text-center" *ngFor="let ticket of ticketsArray">
+          <ion-text>ID: {{ ticket }}</ion-text>
+          <ion-col>
+            <input type="file" (change)="onFileSelected($event, ticket)">
+            <ion-button expand="full" (click)="cerrarTicket(ticket)">Cerrar Ticket</ion-button>
+          </ion-col>
+          <ion-item>
+            
+          </ion-item>
+        </ion-item>
       </ion-list>
       
   </ion-list>
