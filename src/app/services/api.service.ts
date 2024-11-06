@@ -32,7 +32,7 @@ export class ApiService {
   getListTickets(username: string, password: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     });
     const body = `ACCION=getTicketsProveedor&token=${token}`;
     return this.http.post(this.baseUrl, body, { headers });

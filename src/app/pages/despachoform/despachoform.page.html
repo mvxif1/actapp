@@ -10,26 +10,49 @@
   <ion-refresher slot="fixed" (ionRefresh)="refreshTickets($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-
-  <ion-list>
-    <div class="ion-text-center">
-      <h3 style="font-weight: 700;">Número de tickets totales: {{ ticketsArray?.length || 0 }}</h3>
-    </div>
-      <ion-list class="ion-text-center" *ngIf="ticketsArray && ticketsArray.length > 0">
-        <ion-item class="ion-text-center" *ngFor="let ticket of ticketsArray">
-          <ion-text>ID: {{ ticket }}</ion-text>
-          <ion-col>
-            <input type="file" (change)="onFileSelected($event, ticket)">
-            <ion-button expand="full" (click)="cerrarTicket(ticket)">Cerrar Ticket</ion-button>
-          </ion-col>
-          <ion-item>
-            
-          </ion-item>
-        </ion-item>
-      </ion-list>
-      
-  </ion-list>
   
+  <!-- Buscar tickets con ion-searchbar -->
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filterTickets()" placeholder="Buscar por ID"></ion-searchbar>
 
+  <!-- Mostrar spinner mientras se está cargando la búsqueda -->
+  <div *ngIf="isLoading" class="ion-text-center">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <!-- Mostrar la lista de tickets filtrados -->
+        <ion-list *ngIf="filteredTicketsArray.length > 0 && !isLoading">
+          <ion-item *ngFor="let ticket of filteredTicketsArray">
+            <ion-label>
+              <div><strong>ID:</strong> {{ ticket.id }}</div>
+              <ion-button expand="full" (click)="onTicketSelect(ticket.id)">
+                Ver Detalles
+              </ion-button>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+        <!-- Mensaje cuando no hay tickets disponibles -->
+        <ion-list class="ion-text-center" *ngIf="filteredTicketsArray.length === 0 && !isLoading">
+          <ion-text>No hay tickets disponibles</ion-text>
+        </ion-list>
+
+        <!-- Mostrar detalles del ticket seleccionado -->
+        <ion-list *ngIf="selectedTicket && !isLoading">
+          <ion-item>
+            <ion-label>
+              <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
+              <div><strong>Dirección:</strong> {{ selectedTicket.titulo }}</div>
+              <div><strong>Contenido:</strong> <ion-text [innerHTML]="decodeHtml(selectedTicket.detalle)"></ion-text></div>
+              <div><strong>Guía:</strong> {{ selectedTicket.guia || 'No disponible' }}</div>
+              <!-- Aquí podrías agregar otros botones u opciones relacionadas con el ticket -->
+            </ion-label>
+          </ion-item>
+        </ion-list>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
-

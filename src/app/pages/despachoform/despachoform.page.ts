@@ -1,8 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
+import { FormBuilder } from '@angular/forms';
+import { Camera } from '@ionic-native/camera/ngx';
 import { ApiService } from 'src/app/services/api.service';
+
+interface Ticket {
+  id: string;
+  titulo: string;
+  detalle: string;
+  guia: string | null;
+}
 
 @Component({
   selector: 'app-despachoform',
@@ -10,13 +17,22 @@ import { ApiService } from 'src/app/services/api.service';
   styleUrls: ['./despachoform.page.scss'],
 })
 export class DespachoformPage implements OnInit {
-  ticketsArray! : any ;
-  username: string = '' ; 
-  password: string = '' ;
+  ticketsArray: Ticket[] = [];
+  username: string = ''; 
+  password: string = '';
   base64Image: string | ArrayBuffer | null = null;
-  constructor(private camera: Camera, private formBuilder: FormBuilder, private http: HttpClient, private api: ApiService) {
 
-  }
+  //filtro por id
+  filteredTicketsArray: Ticket[] = [];
+  searchTerm: string = ''; // Término de búsqueda
+  selectedTicket: Ticket | null = null; // Ticket seleccionado para mostrar
+  isLoading: boolean = false; // Indicador de carga
+  constructor(
+    private camera: Camera, 
+    private formBuilder: FormBuilder, 
+    private http: HttpClient, 
+    private api: ApiService
+  ) {}
 
   ngOnInit() {
     this.username = localStorage.getItem('email')!;
@@ -25,56 +41,83 @@ export class DespachoformPage implements OnInit {
   }
   
   refreshTickets(event: any) {
-    this.fetchTickets(); // Refresca los tickets
-    event.target.complete(); // Completa el refresco
+    this.fetchTickets();
+    event.target.complete();
   }
-  
+
   fetchTickets() {
+    this.isLoading = true; // Mostrar spinner
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
-        const resp_a_objeto = JSON.parse(response);
-        this.ticketsArray = resp_a_objeto.tickets || [];
-        this.ticketsArray.sort((a: number, b: number) => b - a);
-        console.log("Tickets array:", this.ticketsArray);
+        this.ticketsArray = response.tickets || [];
+        this.filteredTicketsArray = this.ticketsArray; // Inicializar con todos los tickets
+        this.isLoading = false; // Ocultar spinner
       },
       error: (error) => {
         console.error('Error al obtener los tickets:', error);
+        this.isLoading = false; // Ocultar spinner en caso de error
       },
     });
   }
+  
 
-  onFileSelected(event: Event, ticket: any) {
+  filterTickets() {
+    this.isLoading = true; // Mostrar el spinner mientras se busca
+  
+    if (this.searchTerm.trim() === '') {
+      // Si no hay término de búsqueda, mostrar todos los tickets
+      this.filteredTicketsArray = this.ticketsArray;
+      this.isLoading = false; // Ocultar el spinner
+    } else {
+      // Filtrar los tickets según el término de búsqueda
+      setTimeout(() => {  // Simulamos un pequeño retraso para mejorar la experiencia
+        this.filteredTicketsArray = this.ticketsArray.filter(ticket => 
+          ticket.id.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
+        this.isLoading = false; // Ocultar el spinner después de filtrar
+      }, 500); // Retraso de medio segundo (puedes ajustarlo según tus necesidades)
+    }
+  }
+  
+  
+
+
+  // Evento al seleccionar un ticket
+  onTicketSelect(ticketId: string) {
+    this.selectedTicket = this.ticketsArray.find(ticket => ticket.id === ticketId) || null;
+  }
+
+
+  decodeHtml(html: string): string {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  }
+
+  onFileSelected(event: Event, ticket: Ticket) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       const reader = new FileReader();
-
       reader.onload = () => {
-        this.base64Image = reader.result; 
+        this.base64Image = reader.result;
       };
-
-      reader.readAsDataURL(file); // Lee el archivo como un Data URL
+      reader.readAsDataURL(file);
     }
   }
 
-  cerrarTicket(ticket: any) {
-    // Verificar que hay un archivo seleccionado
-    if (!this.base64Image) {
-      console.error('No hay archivo seleccionado para subir.');
+  cerrarTicket(ticket: Ticket) {
+    if (!this.base64Image || typeof this.base64Image !== 'string') {
+      console.error('No hay archivo seleccionado o el formato no es válido.');
       return;
     }
-    if (typeof this.base64Image !== 'string') {
-      console.error('El archivo seleccionado no es un formato válido.');
-      return;
-    }
-    
-    const idticket = ticket;
+
+    const idticket = ticket.id;
     const nombreArchivo = `GUIATicket${idticket}`;
-    const archivoBase64 = this.base64Image.split(',')[1]; // Obtener solo la parte base64 del Data URL
-  
+    const archivoBase64 = this.base64Image.split(',')[1];
+
     this.api.cerrarTicket(this.username, this.password, idticket, nombreArchivo, archivoBase64).subscribe({
       next: (response) => {
-        
         console.log('Respuesta de la API:', response);
       },
       error: (error) => {
@@ -83,7 +126,7 @@ export class DespachoformPage implements OnInit {
     });
   }
 }
-  
+
 
 
   

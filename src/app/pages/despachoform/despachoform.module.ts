@@ -16,7 +16,8 @@ import { HttpClientModule } from '@angular/common/http';
     IonicModule,
     DespachoformPageRoutingModule,
     HttpClientModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    
   ],
   declarations: [DespachoformPage]
 })

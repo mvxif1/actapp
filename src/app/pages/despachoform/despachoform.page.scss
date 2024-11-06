@@ -14,8 +14,15 @@ ion-card-title {
   .custom-alert {
     font-size: 1.2em;
   }
-
-  ion-grid ion-row ion-col {
-    background-color: #5f71ff;
-    color: white;
-}
+  .ticket-detail {
+    overflow: hidden;
+    height: 0;
+    opacity: 0;
+    transition: height 0.3s ease, opacity 0.3s ease;
+  }
+  
+  .ticket-detail.show {
+    height: auto;
+    opacity: 1;
+  }
+  
