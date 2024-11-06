@@ -23,7 +23,7 @@ export class DespachoformPage implements OnInit {
   base64Image: string | ArrayBuffer | null = null;
 
   //filtro por id
-  filteredTicketsArray: Ticket[] = [];
+  filtroTicketArray: Ticket[] = [];
   searchTerm: string = ''; // Término de búsqueda
   selectedTicket: Ticket | null = null; // Ticket seleccionado para mostrar
   isLoading: boolean = false; // Indicador de carga
@@ -50,7 +50,7 @@ export class DespachoformPage implements OnInit {
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
         this.ticketsArray = response.tickets || [];
-        this.filteredTicketsArray = this.ticketsArray; // Inicializar con todos los tickets
+        this.filtroTicketArray = this.ticketsArray; // Inicializar con todos los tickets
         this.isLoading = false; // Ocultar spinner
       },
       error: (error) => {
@@ -61,31 +61,40 @@ export class DespachoformPage implements OnInit {
   }
   
 
-  filterTickets() {
-    this.isLoading = true; // Mostrar el spinner mientras se busca
+  filtrarTicket() {
+    this.isLoading = true;
+    // Resetear el ticket seleccionado cuando se haga una nueva búsqueda
+    this.selectedTicket = null;
   
     if (this.searchTerm.trim() === '') {
       // Si no hay término de búsqueda, mostrar todos los tickets
-      this.filteredTicketsArray = this.ticketsArray;
-      this.isLoading = false; // Ocultar el spinner
+      this.filtroTicketArray = this.ticketsArray;
+      this.isLoading = false;
     } else {
       // Filtrar los tickets según el término de búsqueda
-      setTimeout(() => {  // Simulamos un pequeño retraso para mejorar la experiencia
-        this.filteredTicketsArray = this.ticketsArray.filter(ticket => 
+      setTimeout(() => { 
+        this.filtroTicketArray = this.ticketsArray.filter(ticket => 
           ticket.id.toLowerCase().includes(this.searchTerm.toLowerCase())
         );
-        this.isLoading = false; // Ocultar el spinner después de filtrar
-      }, 500); // Retraso de medio segundo (puedes ajustarlo según tus necesidades)
+        this.isLoading = false; 
+      }, 500);
     }
   }
   
-  
-
-
-  // Evento al seleccionar un ticket
   onTicketSelect(ticketId: string) {
+    // Encontramos el ticket seleccionado
     this.selectedTicket = this.ticketsArray.find(ticket => ticket.id === ticketId) || null;
+  
+    // Después de seleccionar el ticket, ocultamos los demás resultados de la búsqueda
+    if (this.selectedTicket) {
+      this.filtroTicketArray = []; // Solo mostrar el ticket seleccionado
+    }
   }
+  volverListTicket() {
+    this.selectedTicket = null;
+    this.filtroTicketArray = this.ticketsArray; // Volver a mostrar todos los tickets
+  }
+  
 
 
   decodeHtml(html: string): string {

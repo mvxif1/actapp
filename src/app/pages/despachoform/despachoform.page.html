@@ -11,10 +11,9 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   
-  <!-- Buscar tickets con ion-searchbar -->
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filterTickets()" placeholder="Buscar por ID"></ion-searchbar>
+  <!-- Buscar tickets -->
+  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filtrarTicket()" placeholder="Buscar por ID"></ion-searchbar>
 
-  <!-- Mostrar spinner mientras se está cargando la búsqueda -->
   <div *ngIf="isLoading" class="ion-text-center">
     <ion-spinner name="dots"></ion-spinner>
   </div>
@@ -22,36 +21,40 @@
   <ion-grid>
     <ion-row>
       <ion-col size="12">
-        <!-- Mostrar la lista de tickets filtrados -->
-        <ion-list *ngIf="filteredTicketsArray.length > 0 && !isLoading">
-          <ion-item *ngFor="let ticket of filteredTicketsArray">
-            <ion-label>
-              <div><strong>ID:</strong> {{ ticket.id }}</div>
-              <ion-button expand="full" (click)="onTicketSelect(ticket.id)">
-                Ver Detalles
-              </ion-button>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-
-        <!-- Mensaje cuando no hay tickets disponibles -->
-        <ion-list class="ion-text-center" *ngIf="filteredTicketsArray.length === 0 && !isLoading">
-          <ion-text>No hay tickets disponibles</ion-text>
-        </ion-list>
-
-        <!-- Mostrar detalles del ticket seleccionado -->
         <ion-list *ngIf="selectedTicket && !isLoading">
           <ion-item>
-            <ion-label>
+            <ion-list>
               <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
               <div><strong>Dirección:</strong> {{ selectedTicket.titulo }}</div>
               <div><strong>Contenido:</strong> <ion-text [innerHTML]="decodeHtml(selectedTicket.detalle)"></ion-text></div>
               <div><strong>Guía:</strong> {{ selectedTicket.guia || 'No disponible' }}</div>
-              <!-- Aquí podrías agregar otros botones u opciones relacionadas con el ticket -->
-            </ion-label>
+            </ion-list>
           </ion-item>
         </ion-list>
 
+        <ion-list *ngIf="filtroTicketArray.length > 0 && !isLoading">
+          <ion-item *ngFor="let ticket of filtroTicketArray">
+            <ion-label>  
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <div class="ion-text-center" style="font-size: 24px;"><strong>ID:</strong> {{ ticket.id }}</div>
+                  </ion-col>
+                  <ion-col>
+                    <ion-icon name="chevron-forward-circle" (click)="onTicketSelect(ticket.id)" style="font-size: 30px;"></ion-icon>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        <div class="ion-text-center">
+          <ion-button expand="block" *ngIf="selectedTicket" (click)="volverListTicket()">Volver a la lista</ion-button>
+        </div>
+
+        <ion-list class="ion-text-center" *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedTicket">
+          <ion-text>No hay tickets disponibles</ion-text>
+        </ion-list>
       </ion-col>
     </ion-row>
   </ion-grid>
