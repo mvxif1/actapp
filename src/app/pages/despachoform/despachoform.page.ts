@@ -28,6 +28,7 @@ export class DespachoformPage implements OnInit {
   searchTerm: string = '';
   selectedTicket: Ticket | null = null;
   
+  mostrarContenido = false;
   //carga (SPINNER)
   isLoading: boolean = false; 
   //carga de fotos
@@ -99,7 +100,9 @@ export class DespachoformPage implements OnInit {
     this.selectedTicket = null;
     this.filtroTicketArray = this.ticketsArray; // Volver a mostrar todos los tickets
   }
-  
+  despliegaContenido() {
+    this.mostrarContenido = !this.mostrarContenido;
+  }
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
@@ -112,15 +115,16 @@ export class DespachoformPage implements OnInit {
       const file = input.files[0];
       const reader = new FileReader();
       reader.onload = () => {
-        this.base64Image = reader.result;
+        this.base64Image = `data:image/jpeg;base64,${reader.result?.toString().split(',')[1]}`; //prefijo para visualizar correctamente
       };
       reader.readAsDataURL(file);
     }
   }
+  
 
   takePhoto() {
-    this.loadingImage = true; // Activar mensaje de carga
-
+    this.loadingImage = true;
+    this.isLoading = true;
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
@@ -133,21 +137,22 @@ export class DespachoformPage implements OnInit {
     this.camera.getPicture(options).then((imageData) => {
       this.photos.push('data:image/jpeg;base64,' + imageData);
 
-      // Limit to 10 photos
-      if (this.photos.length > 10) {
+      // limite de 3 fotos
+      if (this.photos.length > 3) {
+        this.db.presentAlertN("Superaste el limite de imagenes adjuntas"); 
         this.photos.splice(0, 1);
       }
-
-      this.loadingImage = false; 
+      this.loadingImage = false;
+      this.isLoading = false; 
     }, (err) => {
-      console.log('Error taking photo', err);
+      console.log('Error toma de foto', err);
       this.loadingImage = false;
     });
   }
 
   selectFromGallery() {
     this.loadingImage = true;
-
+    this.isLoading = true;
     const options: CameraOptions = {
       quality: 100,
       destinationType: this.camera.DestinationType.DATA_URL,
@@ -157,12 +162,12 @@ export class DespachoformPage implements OnInit {
 
     this.camera.getPicture(options).then((imageData) => {
       this.photos.push('data:image/jpeg;base64,' + imageData);
-
       if (this.photos.length > 10) {
         this.photos.splice(0, 1); 
       }
 
       this.loadingImage = false; 
+      this.isLoading = false;
     }, (err) => {
       console.log('Error selecting photo', err);
       this.loadingImage = false;
@@ -237,20 +242,18 @@ export class DespachoformPage implements OnInit {
     );
   
     if (confirmacion) {
-      // Crear un input de tipo archivo para seleccionar un archivo
       const inputFile = document.createElement('input');
       inputFile.type = 'file';
-      inputFile.accept = '.jpg, .jpeg, .png'; // Puedes cambiar los tipos de archivo según lo necesario
+      inputFile.accept = '.jpg, .jpeg, .png';
       inputFile.onchange = async (event: Event) => {
         const target = event.target as HTMLInputElement;
         if (target?.files?.length) {
           const file = target.files[0];
           
-          // Depurar el archivo antes de leerlo
-          console.log('Archivo seleccionado:');
-          console.log('Nombre del archivo:', file.name);
-          console.log('Tamaño del archivo:', file.size);
-          console.log('Tipo de archivo:', file.type);
+          //console.log('Archivo seleccionado:');
+          //console.log('Nombre del archivo:', file.name);
+          //console.log('Tamaño del archivo:', file.size);
+          //console.log('Tipo de archivo:', file.type);
   
           // Leer el archivo seleccionado como Base64
           const reader = new FileReader();
@@ -258,31 +261,24 @@ export class DespachoformPage implements OnInit {
             const base64File = reader.result as string;
 
             // Depurar la cadena Base64
-            console.log('Base64 del archivo:', base64File);
+            //console.log('Base64 del archivo:', base64File);
   
             // Eliminar el prefijo data:image/jpeg;base64, si existe
             const base64Image = base64File.split(',')[1]; // Elimina el prefijo si es necesario
-            console.log('Base64 limpio:', base64Image);
+            //console.log('Base64 limpio:', base64Image);
   
             // Verificar si tenemos un ticket seleccionado
             if (this.selectedTicket) {
               // Depurar los datos que se enviarán a la API
-              console.log('Enviando datos a la API:');
-              console.log('ID del Ticket:', this.selectedTicket.id);
-              console.log('Nombre del archivo:', file.name);
-              console.log('Base64 del archivo:', base64Image);
+              //console.log('Enviando datos a la API:');
+              //console.log('ID del Ticket:', this.selectedTicket.id);
+              //console.log('Nombre del archivo:', file.name);
+              //console.log('Base64 del archivo:', base64Image);
   
               // Llamar a la API para cerrar el ticket
-              this.api.cerrarTicket(
-                this.username, 
-                this.password, 
-                this.selectedTicket.id,  // ID del ticket
-                file.name,  // Nombre del archivo
-                base64Image   // Archivo en base64 limpio
+              this.api.cerrarTicket(this.username, this.password, this.selectedTicket.id, file.name,  base64Image
               ).subscribe({
                 next: (response) => {
-                  // Si la API responde correctamente, mostramos un mensaje de éxito
-                  this.db.presentAlertP('Ticket cerrado con éxito');
                   console.log("Respuesta de la API: ", response);
                 },
                 error: (error) => {
