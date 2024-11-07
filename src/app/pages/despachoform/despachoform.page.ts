@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { Camera } from '@ionic-native/camera/ngx';
+import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { ApiService } from 'src/app/services/api.service';
+import { DbService } from 'src/app/services/db.service';
 
 interface Ticket {
   id: string;
@@ -24,14 +25,20 @@ export class DespachoformPage implements OnInit {
 
   //filtro por id
   filtroTicketArray: Ticket[] = [];
-  searchTerm: string = ''; // Término de búsqueda
-  selectedTicket: Ticket | null = null; // Ticket seleccionado para mostrar
-  isLoading: boolean = false; // Indicador de carga
+  searchTerm: string = '';
+  selectedTicket: Ticket | null = null;
+  
+  //carga (SPINNER)
+  isLoading: boolean = false; 
+  //carga de fotos
+  photos: string[] = [];
+  loadingImage!: boolean;
   constructor(
     private camera: Camera, 
     private formBuilder: FormBuilder, 
     private http: HttpClient, 
-    private api: ApiService
+    private api: ApiService,
+    private db: DbService
   ) {}
 
   ngOnInit() {
@@ -46,16 +53,16 @@ export class DespachoformPage implements OnInit {
   }
 
   fetchTickets() {
-    this.isLoading = true; // Mostrar spinner
+    this.isLoading = true;
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
         this.ticketsArray = response.tickets || [];
-        this.filtroTicketArray = this.ticketsArray; // Inicializar con todos los tickets
-        this.isLoading = false; // Ocultar spinner
+        this.filtroTicketArray = this.ticketsArray;
+        this.isLoading = false; 
       },
       error: (error) => {
         console.error('Error al obtener los tickets:', error);
-        this.isLoading = false; // Ocultar spinner en caso de error
+        this.isLoading = false;
       },
     });
   }
@@ -63,11 +70,9 @@ export class DespachoformPage implements OnInit {
 
   filtrarTicket() {
     this.isLoading = true;
-    // Resetear el ticket seleccionado cuando se haga una nueva búsqueda
     this.selectedTicket = null;
   
     if (this.searchTerm.trim() === '') {
-      // Si no hay término de búsqueda, mostrar todos los tickets
       this.filtroTicketArray = this.ticketsArray;
       this.isLoading = false;
     } else {
@@ -95,8 +100,6 @@ export class DespachoformPage implements OnInit {
     this.filtroTicketArray = this.ticketsArray; // Volver a mostrar todos los tickets
   }
   
-
-
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
@@ -115,39 +118,6 @@ export class DespachoformPage implements OnInit {
     }
   }
 
-  cerrarTicket(ticket: Ticket) {
-    if (!this.base64Image || typeof this.base64Image !== 'string') {
-      console.error('No hay archivo seleccionado o el formato no es válido.');
-      return;
-    }
-
-    const idticket = ticket.id;
-    const nombreArchivo = `GUIATicket${idticket}`;
-    const archivoBase64 = this.base64Image.split(',')[1];
-
-    this.api.cerrarTicket(this.username, this.password, idticket, nombreArchivo, archivoBase64).subscribe({
-      next: (response) => {
-        console.log('Respuesta de la API:', response);
-      },
-      error: (error) => {
-        console.error('Error al cerrar el ticket:', error);
-      },
-    });
-  }
-}
-
-
-
-  
-  
-  
-  
-
-  
-  
-  
-  
-/*
   takePhoto() {
     this.loadingImage = true; // Activar mensaje de carga
 
@@ -200,49 +170,159 @@ export class DespachoformPage implements OnInit {
   }
 
   async deletePhoto(index: number) {
-    const eliminar = await this.db.presentAlertConfirm("¿Estás seguro de que quieres borrar la foto?", "Si", "No")
+    const eliminar = await this.db.presentAlertConfirm("¿Estás seguro de que quieres borrar la foto?", "Si", "No");
     if(eliminar){
       this.db.presentAlertP("Has borrado la foto con exito!");
       this.photos.splice(index, 1);
     }else{
       this.db.presentAlertN("Cancelado!")
+    } 
+  }
+
+  async cerrarTicket() {
+    if (!this.selectedTicket) {
+      console.error('No hay un ticket seleccionado');
+      await this.db.presentAlertN('No hay un ticket seleccionado');
+      return;
     }
-    
+  
+    if (this.photos.length === 0) {
+      console.error('No se ha adjuntado una foto');
+      await this.db.presentAlertN('Debe adjuntar al menos una foto para cerrar el ticket');
+      return;
+    }
+
+    const confirmar = await this.db.presentAlertConfirm('¿Estás seguro de que quieres cerrar el ticket?', 'Sí', 'No');
+    if (!confirmar) {
+      await this.db.presentAlertN('Cancelado');
+      return;
+    }
+    this.isLoading = true;
+    const nombreArchivo = `ticket_${this.selectedTicket.id}_cierre.jpg`;
+    const archivoBase64 = this.photos[0].split(',')[1];
+  
+    this.api.cerrarTicket(this.username, this.password, this.selectedTicket.id, nombreArchivo, archivoBase64)
+      .subscribe({
+        next: async (response) => {
+          this.isLoading = false;
+          if (response.error === 200) {
+            console.log(response.mensaje);
+            await this.db.presentAlertP(`Ticket ${this.selectedTicket?.id} cerrado correctamente.`);
+            this.fetchTickets();
+            this.selectedTicket = null;
+            this.photos = [];
+          } else {
+            console.error('Error al cerrar el ticket:', response.mensaje);
+            await this.db.presentAlertN(`Error al cerrar el ticket: ${response.mensaje}`);
+          }
+        },
+        error: async (error) => {
+          this.isLoading = false;
+          console.error('Error en la solicitud:', error);
+          await this.db.presentAlertN('Hubo un problema al cerrar el ticket. Intente nuevamente.');
+        }
+      });
   }
 
 
-/*    <ion-item>
-      <ion-text style="font-size: 12px;">Fecha: </ion-text>
-      <ion-input id="fecha" [value]="fechaHoy()" readonly style="margin-left: 10px;"></ion-input>
-    </ion-item>
-    <ion-card-title style="font-size: 13px;">ADJUNTAR ARCHIVO DE CIERRE</ion-card-title>
-    <ion-grid *ngIf="photos.length > 0">
-      <ion-row>
-        <ion-col size="6" *ngFor="let photo of photos; let i = index">
-          <img [src]="photo" width="100%" height="auto">
-          <div class="ion-text-center">
-            <ion-button (click)="deletePhoto(i)" fill="clear" class="delete-button">
-              <ion-icon name="trash-outline" style="color: white;"></ion-icon>
-            </ion-button>
-          </div>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-    <ion-grid *ngIf="photos.length === 0">
-      <ion-item>
-        <ion-row style="width: 100%;">
-          <ion-col size="12"
-            style="height: 230px; margin-bottom: 20px; background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-            <div style="color: gray; font-weight: 500;">
-              No hay fotos
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-item>
-    </ion-grid>
-    <ion-item class="ion-text-center">
-      <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
-      <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
-    </ion-item>
-  </ion-list>
-  <ion-button expand="full" (click)="cerrarTicket()">Cerrar Ticket</ion-button>*/
+
+
+  //PRUEBA
+  async cerrarTicketP() {
+    // Confirmación antes de cerrar el ticket
+    const confirmacion = await this.db.presentAlertConfirm(
+      '¿Estás seguro que quieres cerrar el ticket?',
+      'Sí, cerrar ticket',
+      'Cancelar'
+    );
+  
+    if (confirmacion) {
+      // Crear un input de tipo archivo para seleccionar un archivo
+      const inputFile = document.createElement('input');
+      inputFile.type = 'file';
+      inputFile.accept = '.jpg, .jpeg, .png'; // Puedes cambiar los tipos de archivo según lo necesario
+      inputFile.onchange = async (event: Event) => {
+        const target = event.target as HTMLInputElement;
+        if (target?.files?.length) {
+          const file = target.files[0];
+          
+          // Depurar el archivo antes de leerlo
+          console.log('Archivo seleccionado:');
+          console.log('Nombre del archivo:', file.name);
+          console.log('Tamaño del archivo:', file.size);
+          console.log('Tipo de archivo:', file.type);
+  
+          // Leer el archivo seleccionado como Base64
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64File = reader.result as string;
+
+            // Depurar la cadena Base64
+            console.log('Base64 del archivo:', base64File);
+  
+            // Eliminar el prefijo data:image/jpeg;base64, si existe
+            const base64Image = base64File.split(',')[1]; // Elimina el prefijo si es necesario
+            console.log('Base64 limpio:', base64Image);
+  
+            // Verificar si tenemos un ticket seleccionado
+            if (this.selectedTicket) {
+              // Depurar los datos que se enviarán a la API
+              console.log('Enviando datos a la API:');
+              console.log('ID del Ticket:', this.selectedTicket.id);
+              console.log('Nombre del archivo:', file.name);
+              console.log('Base64 del archivo:', base64Image);
+  
+              // Llamar a la API para cerrar el ticket
+              this.api.cerrarTicket(
+                this.username, 
+                this.password, 
+                this.selectedTicket.id,  // ID del ticket
+                file.name,  // Nombre del archivo
+                base64Image   // Archivo en base64 limpio
+              ).subscribe({
+                next: (response) => {
+                  // Si la API responde correctamente, mostramos un mensaje de éxito
+                  this.db.presentAlertP('Ticket cerrado con éxito');
+                  console.log("Respuesta de la API: ", response);
+                },
+                error: (error) => {
+                  // Si la API devuelve un error, mostramos un mensaje de error
+                  console.error('Error al cerrar el ticket:', error);
+                  this.db.presentAlertN('Error al cerrar el ticket. Intenta de nuevo.');
+                }
+              });
+            } else {
+              this.db.presentAlertN('No se ha seleccionado un ticket.');
+            }
+          };
+          reader.readAsDataURL(file); // Convertir el archivo a base64
+        } else {
+          this.db.presentAlertN('No se seleccionó ningún archivo');
+        }
+      };
+  
+      // Abrir el selector de archivos
+      inputFile.click();
+    } else {
+      this.db.presentAlertN('Operación cancelada');
+    }
+  }
+
+  
+}
+
+
+
+  
+  
+  
+  
+/*  
+  */
+  
+  
+  
+  
+/*
+
+    */

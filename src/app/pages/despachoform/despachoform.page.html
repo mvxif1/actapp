@@ -14,34 +14,69 @@
   <!-- Buscar tickets -->
   <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filtrarTicket()" placeholder="Buscar por ID"></ion-searchbar>
 
-  <div *ngIf="isLoading" class="ion-text-center">
-    <ion-spinner name="dots"></ion-spinner>
+  <div *ngIf="isLoading" class="ion-text-center" style="align-items: center; margin-top: 10px;">
+    <ion-spinner name="crescent" style="width: 200px; height: 100px;"></ion-spinner>
   </div>
 
   <ion-grid>
     <ion-row>
       <ion-col size="12">
         <ion-list *ngIf="selectedTicket && !isLoading">
+          <ion-card-title style="font-size: 13px;">DETALLE TICKET</ion-card-title>
           <ion-item>
             <ion-list>
               <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
-              <div><strong>Dirección:</strong> {{ selectedTicket.titulo }}</div>
+              <div><strong>Titulo:</strong> {{ selectedTicket.titulo }}</div>
               <div><strong>Contenido:</strong> <ion-text [innerHTML]="decodeHtml(selectedTicket.detalle)"></ion-text></div>
               <div><strong>Guía:</strong> {{ selectedTicket.guia || 'No disponible' }}</div>
             </ion-list>
           </ion-item>
+          <ion-list>
+            <ion-card-title style="font-size: 13px;">ADJUNTAR ARCHIVO DE CIERRE</ion-card-title>
+            <ion-grid *ngIf="photos.length > 0">
+              <ion-row>
+                <ion-col size="6" *ngFor="let photo of photos; let i = index">
+                  <img [src]="photo" width="100%" height="auto">
+                  <div class="ion-text-center">
+                    <ion-button (click)="deletePhoto(i)" fill="clear" class="delete-button">
+                      <ion-icon name="trash-outline" style="color: white;"></ion-icon>
+                    </ion-button>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+            <ion-grid *ngIf="photos.length === 0">
+              <ion-item>
+                <ion-row style="width: 100%;">
+                  <ion-col size="12"
+                    style="height: 230px; margin-bottom: 20px; background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div style="color: gray; font-weight: 500;">
+                      No hay fotos
+                    </div>
+                  </ion-col>
+                </ion-row>
+              </ion-item>
+            </ion-grid>
+            <ion-item class="ion-text-center">
+              <ion-button size="small" color="medium" style="width: 50%;" (click)="takePhoto()">Cámara</ion-button>
+              <ion-button size="small" color="medium" style="width: 50%;" (click)="selectFromGallery()">Galería</ion-button>
+            </ion-item>
+          </ion-list>
+          <ion-button expand="full" (click)="cerrarTicket()">Cerrar Ticket</ion-button>
         </ion-list>
 
         <ion-list *ngIf="filtroTicketArray.length > 0 && !isLoading">
           <ion-item *ngFor="let ticket of filtroTicketArray">
             <ion-label>  
               <ion-grid>
-                <ion-row>
-                  <ion-col>
-                    <div class="ion-text-center" style="font-size: 24px;"><strong>ID:</strong> {{ ticket.id }}</div>
+                <ion-row style="align-items: center;">
+                  <ion-col class="ion-text-center">
+                    <ion-text  style="font-size: 20px;"><strong>ID:</strong> {{ ticket.id }}</ion-text>
                   </ion-col>
-                  <ion-col>
-                    <ion-icon name="chevron-forward-circle" (click)="onTicketSelect(ticket.id)" style="font-size: 30px;"></ion-icon>
+                  <ion-col class="ion-text-center">
+                    <ion-button (click)="onTicketSelect(ticket.id)" size="default" shape="round">
+                      <ion-icon name="eye" style="font-size: 30px;" slot="icon-only"></ion-icon>
+                    </ion-button>
                   </ion-col>
                 </ion-row>
               </ion-grid>
