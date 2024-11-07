@@ -4,6 +4,7 @@ import { FormBuilder } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { ApiService } from 'src/app/services/api.service';
 import { DbService } from 'src/app/services/db.service';
+import { Network } from '@ionic-native/network/ngx';
 
 interface Ticket {
   id: string;
@@ -39,7 +40,8 @@ export class DespachoformPage implements OnInit {
     private formBuilder: FormBuilder, 
     private http: HttpClient, 
     private api: ApiService,
-    private db: DbService
+    private db: DbService,
+    private internet: Network
   ) {}
 
   ngOnInit() {
@@ -137,9 +139,9 @@ export class DespachoformPage implements OnInit {
     this.camera.getPicture(options).then((imageData) => {
       this.photos.push('data:image/jpeg;base64,' + imageData);
 
-      // limite de 3 fotos
-      if (this.photos.length > 3) {
-        this.db.presentAlertN("Superaste el limite de imagenes adjuntas"); 
+      // limite de 1 foto
+      if (this.photos.length > 1) {
+        this.db.presentAlertN("Solamente puedes adjuntar 1 imagen"); 
         this.photos.splice(0, 1);
       }
       this.loadingImage = false;
@@ -186,14 +188,26 @@ export class DespachoformPage implements OnInit {
 
   async cerrarTicket() {
     if (!this.selectedTicket) {
-      console.error('No hay un ticket seleccionado');
       await this.db.presentAlertN('No hay un ticket seleccionado');
       return;
     }
   
     if (this.photos.length === 0) {
-      console.error('No se ha adjuntado una foto');
       await this.db.presentAlertN('Debe adjuntar al menos una foto para cerrar el ticket');
+      return;
+    }
+
+    const archivoBase64 = this.photos[0].split(',')[1];
+    const imagenTamanio = (archivoBase64.length * 3) / 4;
+    const maxTamanio = 20 * 1024 * 1024; 
+
+    if (imagenTamanio > maxTamanio) {
+      await this.db.presentAlertN('La imagen seleccionada es demasiado grande. Debe ser menor a 20 MB.');
+      return;
+    }
+
+    if (this.internet.type === 'none') {
+      await this.db.presentAlertN('No hay conexión a internet. Por favor, conéctese a internet para cerrar el ticket.');
       return;
     }
 
@@ -204,7 +218,6 @@ export class DespachoformPage implements OnInit {
     }
     this.isLoading = true;
     const nombreArchivo = `ticket_${this.selectedTicket.id}_cierre.jpg`;
-    const archivoBase64 = this.photos[0].split(',')[1];
   
     this.api.cerrarTicket(this.username, this.password, this.selectedTicket.id, nombreArchivo, archivoBase64)
       .subscribe({

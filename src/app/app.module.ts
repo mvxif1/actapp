@@ -11,11 +11,12 @@ import { Camera } from '@ionic-native/camera/ngx';
 import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Network } from '@ionic-native/network/ngx';
 
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, FormsModule, ReactiveFormsModule, HttpClientModule, BrowserAnimationsModule],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, SQLite, Camera, EmailComposer],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, SQLite, Camera, EmailComposer, Network],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

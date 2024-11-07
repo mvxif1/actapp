@@ -168,7 +168,7 @@ export class DbService {
 
   async presentAlertConfirm(msj: string, textconfirm: string, textcancel: string) : Promise <boolean>{
     const result = await swal.fire({
-      text: msj,
+      title: msj,
       width: '300px',
       icon: 'warning',
       backdrop : false,

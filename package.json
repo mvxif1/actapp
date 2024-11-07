@@ -35,6 +35,7 @@
     "@capawesome-team/capacitor-file-opener": "^6.0.0",
     "@ionic-native/camera": "^5.36.0",
     "@ionic-native/core": "^5.36.0",
+    "@ionic-native/network": "^5.36.0",
     "@ionic-native/sqlite": "^5.36.0",
     "@ionic/angular": "^6.5.0",
     "canvas": "^2.11.2",
