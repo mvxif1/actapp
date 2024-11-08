@@ -28,7 +28,15 @@ export class ApiService {
     return this.usuario;
   }
 
-
+  getAyuda(username: string, password: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    const body = `ACCION=getAyuda&token=${token}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+  
   getListTickets(username: string, password: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
@@ -46,4 +54,5 @@ export class ApiService {
     const body = `ACCION=uploadDocumentApp&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
+
 }

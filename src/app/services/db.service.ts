@@ -165,6 +165,15 @@ export class DbService {
       confirmButtonText: "Cerrar"
     })
   }
+  async presentAlertW(msj: string) {
+    const alert = await swal.fire({
+      backdrop : false,
+      icon: 'warning',
+      width: '300px',
+      text: msj,
+      confirmButtonText: "Cerrar"
+    })
+  }
 
   async presentAlertConfirm(msj: string, textconfirm: string, textcancel: string) : Promise <boolean>{
     const result = await swal.fire({

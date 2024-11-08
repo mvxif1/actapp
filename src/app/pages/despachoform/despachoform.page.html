@@ -11,7 +11,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   <!-- Buscar tickets -->
-  <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="filtrarTicket()" placeholder="Buscar por ID"></ion-searchbar>
+  <ion-searchbar [debounce]="1000" (ionChange)="filtrarTicket($event)" placeholder="Buscar por ID" style="margin-top: 10px;"></ion-searchbar>
     
   <div *ngIf="isLoading" class="ion-text-center" style="align-items: center; margin-top: 10px;">
     <ion-spinner name="crescent" style="width: 200px; height: 100px;"></ion-spinner>
@@ -20,31 +20,44 @@
   <div *ngIf="!selectedTicket && filtroTicketArray.length > 0 && !isLoading" class="ion-text-center">
     <div>
       <ion-grid>
-        <ion-row>
-            <ion-col size="6">
-              <h4 style="font-weight: 600;">Tickets pendientes: </h4>
-            </ion-col>
-            <ion-col size="6">
-              <h4 style="font-weight: 600; background-color: #3880ff; color: white; border-radius: 20px; width: 100%;">{{ticketsArray.length}}</h4>
-            </ion-col>
+        <ion-row style="align-items: center; margin-block: 5px;">
+              <ion-text style="font-weight: 600; font-size: 20px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO: </ion-text>
+              <ion-text style="font-weight: 600; background-color: #ffb938; color: rgb(0, 0, 0); border-radius: 50px; padding: 0px 20px; font-size: 30px;">{{guiaArray.length}}</ion-text>
         </ion-row>
       </ion-grid>
-
-      
     </div>
-    
-    
     <ion-card-title style="font-size: 18px; font-weight: 600;">SELECCIONE UN TICKET</ion-card-title>
   </div>
+
+  <ion-list *ngIf="filtroTicketArray.length > 0 && !isLoading">
+    <ion-item *ngFor="let ticket of filtroTicketArray">
+      <ion-label>  
+        <ion-grid>
+          <ion-row style="align-items: center;">
+            <ion-col class="ion-text-center">
+              <ion-text  style="font-size: 20px;"><strong>GUIA:</strong> {{ Guia.guia }}</ion-text>
+            </ion-col>
+            <ion-col class="ion-text-center">
+              <ion-button (click)="onTicketSelect(ticket.id)" size="default" shape="round">Despachar
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-list class="ion-text-center" *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedTicket">
+    <ion-text>No hay tickets disponibles</ion-text>
+  </ion-list>
+
   <ion-grid>
     <ion-row>
       <ion-col size="12">
         <ion-list *ngIf="selectedTicket && !isLoading">
-          <ion-card-title style="font-size: 18px; font-weight: 600;">DETALLE TICKET</ion-card-title>
+          <ion-card-title style="font-size: 18px; font-weight: 600;">DETALLE GUIA</ion-card-title>
           <ion-item>
             <ion-list>
-              <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
-              <div><strong>Titulo:</strong> {{ selectedTicket.titulo }}</div>
+              <div><strong>GUIA:</strong> {{ selectedGuia.guia }}</div>
               <div style="display: flex; align-items: center;"><strong>Contenido:</strong>
                 <ion-button fill="outline" (click)="despliegaContenido()">
                   {{ mostrarContenido ? 'Ocultar contenido' : 'Ver contenido' }}
@@ -53,7 +66,7 @@
               <div>
                 <ion-text *ngIf="mostrarContenido" [innerHTML]="decodeHtml(selectedTicket.detalle)"></ion-text>
               </div>              
-              <div><strong>Guía:</strong> {{ selectedTicket.guia || 'No disponible' }}</div>
+              
             </ion-list>
           </ion-item>
           <ion-list>
@@ -91,31 +104,8 @@
           </ion-list>
             <ion-item class="ion-text-center">
               <ion-button style="width: 15%; height: 50px;" *ngIf="selectedTicket" (click)="volverListTicket()"><ion-icon name="arrow-back-outline">Volver a la lista</ion-icon></ion-button>
-              <ion-button style="width: 85%; height: 50px;" expand="block" color="danger" (click)="cerrarTicket()">Cerrar Ticket</ion-button>
+              <ion-button style="width: 85%; height: 50px;" expand="block" color="danger" (click)="cerrarTicketP()">Cerrar Ticket</ion-button>
             </ion-item>
-        </ion-list>
-
-        <ion-list *ngIf="filtroTicketArray.length > 0 && !isLoading">
-          <ion-item *ngFor="let ticket of filtroTicketArray">
-            <ion-label>  
-              <ion-grid>
-                <ion-row style="align-items: center;">
-                  <ion-col class="ion-text-center">
-                    <ion-text  style="font-size: 20px;"><strong>ID:</strong> {{ ticket.id }}</ion-text>
-                  </ion-col>
-                  <ion-col class="ion-text-center">
-                    <ion-button (click)="onTicketSelect(ticket.id)" size="default" shape="round">Despachar
-                    </ion-button>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-
-
-        <ion-list class="ion-text-center" *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedTicket">
-          <ion-text>No hay tickets disponibles</ion-text>
         </ion-list>
       </ion-col>
     </ion-row>

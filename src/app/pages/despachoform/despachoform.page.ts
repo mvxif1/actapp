@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { ApiService } from 'src/app/services/api.service';
@@ -13,20 +13,26 @@ interface Ticket {
   guia: string | null;
 }
 
+interface Guia {
+  guia: string;
+  ticket: Ticket[];
+}
+
 @Component({
   selector: 'app-despachoform',
   templateUrl: './despachoform.page.html',
   styleUrls: ['./despachoform.page.scss'],
 })
 export class DespachoformPage implements OnInit {
-  ticketsArray: Ticket[] = [];
+  guiaArray: Guia[] = [];
   username: string = ''; 
   password: string = '';
   base64Image: string | ArrayBuffer | null = null;
 
   //filtro por id
-  filtroTicketArray: Ticket[] = [];
+  filtroTicketArray: Guia[] = [];
   searchTerm: string = '';
+  selectedGuia: Guia | null = null;
   selectedTicket: Ticket | null = null;
   
   mostrarContenido = false;
@@ -41,7 +47,8 @@ export class DespachoformPage implements OnInit {
     private http: HttpClient, 
     private api: ApiService,
     private db: DbService,
-    private internet: Network
+    private internet: Network,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -59,8 +66,18 @@ export class DespachoformPage implements OnInit {
     this.isLoading = true;
     this.api.getListTickets(this.username, this.password).subscribe({
       next: (response) => {
-        this.ticketsArray = response.tickets || [];
-        this.filtroTicketArray = this.ticketsArray;
+        const guiaMap: { [guiaId: string]: Guia } = {};
+
+        // Agrupar tickets por guía
+        response.tickets.forEach((ticket: Ticket) => {
+          if (!guiaMap[ticket.guia!]) {
+            guiaMap[ticket.guia!] = { guia: ticket.guia!, ticket: [] };
+          }
+          guiaMap[ticket.guia!].ticket.push(ticket);
+        });
+
+        // Convertir el mapa en un array de guías
+        this.guiaArray = Object.values(guiaMap);
         this.isLoading = false; 
       },
       error: (error) => {
@@ -71,40 +88,42 @@ export class DespachoformPage implements OnInit {
   }
   
 
-  filtrarTicket() {
+  filtrarTicket(event: any) {
     this.isLoading = true;
-    this.selectedTicket = null;
+    this.cdr.detectChanges();  // Forzar la detección de cambios
   
-    if (this.searchTerm.trim() === '') {
-      this.filtroTicketArray = this.ticketsArray;
+    const query = event.target.value.toLowerCase(); 
+    this.filtroTicketArray = this.guiaArray.filter(ticket => 
+      ticket.guia.toLowerCase().includes(query)
+    );
+  
+    setTimeout(() => {
       this.isLoading = false;
-    } else {
-      // Filtrar los tickets según el término de búsqueda
-      setTimeout(() => { 
-        this.filtroTicketArray = this.ticketsArray.filter(ticket => 
-          ticket.id.toLowerCase().includes(this.searchTerm.toLowerCase())
-        );
-        this.isLoading = false; 
-      }, 500);
+      this.cdr.detectChanges();  // Forzar la detección de cambios
+    }, 500);
+  }
+  onGuiaSelect(guiaId: string) {
+    this.selectedGuia = this.guiaArray.find(guia => guia.guia === guiaId) || null;
+
+    if (this.selectedGuia) {
+      this.filtroTicketArray = [];
     }
   }
   
   onTicketSelect(ticketId: string) {
-    // Encontramos el ticket seleccionado
-    this.selectedTicket = this.ticketsArray.find(ticket => ticket.id === ticketId) || null;
-  
-    // Después de seleccionar el ticket, ocultamos los demás resultados de la búsqueda
-    if (this.selectedTicket) {
-      this.filtroTicketArray = []; // Solo mostrar el ticket seleccionado
-    }
+    this.selectedTicket = this.selectedGuia?.ticket.find(ticket => ticket.id === ticketId) || null;
+
   }
+
   volverListTicket() {
     this.selectedTicket = null;
-    this.filtroTicketArray = this.ticketsArray; // Volver a mostrar todos los tickets
+    this.filtroTicketArray = this.guiaArray;
   }
+
   despliegaContenido() {
     this.mostrarContenido = !this.mostrarContenido;
   }
+
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
@@ -217,7 +236,8 @@ export class DespachoformPage implements OnInit {
       return;
     }
     this.isLoading = true;
-    const nombreArchivo = `ticket_${this.selectedTicket.id}_cierre.jpg`;
+    const fileType = this.photos[0].split(';')[0].split('/')[1]; 
+    const nombreArchivo = `imagenGUIA_${this.selectedTicket.guia}_${this.selectedTicket.id}.${fileType}`; //imagenGUIA_(GUIA)_(IDTICKET).(TIPO ARCHIVO);
   
     this.api.cerrarTicket(this.username, this.password, this.selectedTicket.id, nombreArchivo, archivoBase64)
       .subscribe({

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { DbService } from './services/db.service';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -11,10 +12,14 @@ export class AppComponent {
   usuario: any;
   logueado: boolean = false;
 
-  constructor(private navCtrl: NavController, private dbService: DbService) {
+  username: string = 'matias.caro'; 
+  password: string = 'Mcaro2020';
+  ayuda: string = '';
+
+  constructor(private navCtrl: NavController, private db: DbService, private api: ApiService) {
     this.usuario = {};
   }
-
+  
   estaLogueado(): boolean {
     return this.logueado;
   }
@@ -22,12 +27,26 @@ export class AppComponent {
   iniciarSesion() {
     this.logueado = true;
   }
-
+  getAyuda() {
+    this.api.getAyuda(this.username, this.password).subscribe(
+      (response: any) => {
+        const ayudaTexto = response.ayuda;
+        this.db.presentAlertW(ayudaTexto);
+      },
+      (error) => {
+        console.error('Error al obtener la ayuda:', error);
+        this.ayuda = 'Hubo un error al obtener la ayuda. Intenta nuevamente.';
+      }
+    );
+  }
+  
+  
+  
   cerrarsesion() {
     this.logueado = false;
     localStorage.setItem('email', '');
     localStorage.setItem('password', '');
     this.navCtrl.navigateForward('/home'); 
-    this.dbService.presentAlertP("Has cerrado sesión con éxito!");
+    this.db.presentAlertP("Has cerrado sesión con éxito!");
   }
 }

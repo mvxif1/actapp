@@ -48,7 +48,7 @@ export class HomePage {
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           this.loginForm.reset();
-          this.navCtrl.navigateForward('/inicio');
+          this.navCtrl.navigateForward('/despachoform');
           this.dbservice.presentAlertP("Has ingresado al usuario");
         }
       },
