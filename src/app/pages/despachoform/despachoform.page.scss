@@ -4,6 +4,12 @@ ion-card-title {
     text-align: center;
     font-weight: 500;
 }
+.btn-titulo{
+  background-color: #000e76;
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
 
 .custom-button {
     background-color: #4CAF50; /* Color verde personalizado */
@@ -31,5 +37,20 @@ ion-card-title {
   }
   .btn-final{
     border-radius: 20px;
+  }
+  .ticket-content {
+    max-width: 100%; /* Limita el ancho al 100% de la pantalla */
+    word-wrap: break-word; /* Asegura que las palabras largas se rompan si es necesario */
+    overflow-wrap: break-word; /* Para palabras muy largas */
+    white-space: normal; /* Asegura que el texto no se quede en una sola línea */
+    word-break: break-word; /* Opcional, para permitir que las palabras se dividan */
+    padding: 10px;
+    font-size: 16px; /* Tamaño de fuente ajustable según necesidades */
+  }
+  
+  ion-text {
+    display: block; /* Asegura que el contenido de ion-text no se desborde */
+    word-wrap: break-word;
+    overflow: hidden; /* Esconde contenido que se desborda */
   }
   
