@@ -54,11 +54,11 @@
     <ion-row>
       <ion-col size="12">
         <ion-list *ngIf="selectedGuia && !isLoading">
-          <ion-card-title style="font-size: 18px; font-weight: 600;">DETALLE GUIA</ion-card-title>
+          <ion-card-title style="font-size: 18px; font-weight: 600;">DETALLE GUIA: {{ selectedGuia?.guia }}</ion-card-title>
           <ion-item>
             <ion-list>
-              <div><strong>GUIA:</strong> {{ selectedGuia?.guia }}</div>
-              <div><strong>TICKETS</strong>
+              <div>
+                <div><strong>TICKETS ASOCIADOS</strong></div>
                 <div *ngFor="let ticket of selectedGuia?.ticket" style="display: flex; align-items: center;">
                   <strong>{{ ticket.id }}</strong>
                   <ion-button fill="clear" shape="round" style="margin-left: 10px;" (click)="onTicketSelect(ticket.id)">

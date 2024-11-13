@@ -14,7 +14,7 @@
         <ion-img style="max-width: 250px;" src="/assets/logo.png"></ion-img>
       </div>
       <br><br><br>
-      <form [formGroup]="loginForm">
+      <form [formGroup]="loginForm" (ngSubmit)="iniciarUsuario()">
         <ion-list>
           <ion-item>
             <ion-label position="floating">Usuario <ion-icon name="person-outline" slot="end"></ion-icon></ion-label>
@@ -40,7 +40,7 @@
             <ion-toggle formControlName="rememberMe" slot="start"></ion-toggle>
           </ion-item>
           
-          <ion-button expand="block" type="submit" [disabled]="!loginForm.valid" (click)="iniciarUsuario()">Iniciar Sesión</ion-button>
+          <ion-button expand="block" type="submit" [disabled]="!loginForm.valid">Iniciar Sesión</ion-button>
         </ion-list>
       </form>
       <br>

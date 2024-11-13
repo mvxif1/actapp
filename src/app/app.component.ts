@@ -12,8 +12,8 @@ export class AppComponent {
   usuario: any;
   logueado: boolean = false;
 
-  username: string = 'matias.caro'; 
-  password: string = 'Mcaro2020';
+  username: string = ''; 
+  password: string = '';
   ayuda: string = '';
 
   constructor(private navCtrl: NavController, private db: DbService, private api: ApiService) {
@@ -28,8 +28,11 @@ export class AppComponent {
     this.logueado = true;
   }
   getAyuda() {
+    this.username = localStorage.getItem('email')!;
+    this.password = localStorage.getItem('password')!;
     this.api.getAyuda(this.username, this.password).subscribe(
       (response: any) => {
+        console.log(response)
         const ayudaTexto = response.ayuda;
         this.db.presentAlertW(ayudaTexto);
       },
