@@ -16,7 +16,7 @@
 
   <!-- carga -->
   <div *ngIf="isLoading" class="ion-text-center" style="align-items: center; margin-top: 10px;">
-    <ion-spinner name="crescent" style="width: 200px; height: 100px;"></ion-spinner>
+    <ion-label style="font-size: 20px;">Espere un momento... <ion-spinner name="crescent" style="width: 50px; height: 50px;"></ion-spinner></ion-label>
   </div>
 
   <div *ngIf="!selectedGuia && filtroTicketArray.length > 0 && !isLoading" class="ion-text-center">
@@ -30,7 +30,7 @@
         </ion-row>
       </ion-grid>
     </div>
-    <ion-card-title style="font-size: 18px; font-weight: 600;">SELECCIONE UN TICKET</ion-card-title>
+    <ion-card-title style="font-size: 18px; font-weight: 600;">SELECCIONE UNA GUIA</ion-card-title>
   </div>
 
   <ion-list *ngIf="displayGuias.length > 0 && !isLoading">
@@ -125,11 +125,34 @@
             name="images-outline" style="margin-left: 5px;"></ion-icon></ion-button>
       </ion-item>
     </ion-list>
+
+    <form [formGroup]="problemaForm">
+      <ion-list>
+        <ion-item>
+          <ion-label>Selecciona una opción</ion-label>
+          <ion-select formControlName="tipoProblema">
+            <ion-select-option *ngFor="let opcion of opciones">{{ opcion }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <form [formGroup]="otroProblemaForm">
+          <ion-item *ngIf="problemaForm.get('tipoProblema')!.value === 'Otro'">
+            <ion-textarea placeholder="Describe el problema" formControlName="otroProblema"></ion-textarea>
+          </ion-item>
+        </form>
+      </ion-list>
+    </form>
+    
+    
+    
+    
+    
     <ion-item class="ion-text-center">
-      <ion-button style="width: 15%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon
+      <ion-button style="width: 10%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon
           name="arrow-back-outline">Volver a la lista</ion-icon></ion-button>
-      <ion-button style="width: 85%; height: 50px;" expand="block" color="danger" (click)="cerrarTicket()">Cerrar
+      <ion-button style="width: 45%; height: 50px;" expand="block" color="danger" (click)="cerrarTicketP()">Cerrar
         Ticket</ion-button>
+        <ion-button style="width: 45%; height: 50px;" expand="block" color="danger" (click)="problema()">Problema Entrega</ion-button>
     </ion-item>
   </ion-list>
   <ion-infinite-scroll [disabled]="infiniteScrollDisabled" threshold="100px" (ionInfinite)="loadMoreTickets($event)">

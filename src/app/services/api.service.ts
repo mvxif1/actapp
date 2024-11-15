@@ -23,7 +23,6 @@ export class ApiService {
     this.usuario = { username, sessionToken };
   }
 
-  // Método para obtener el usuario actual
   getUsuario(): { username: string; sessionToken: string } | null {
     return this.usuario;
   }
@@ -54,5 +53,24 @@ export class ApiService {
     const body = `ACCION=uploadDocumentApp&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
+
+  getListTipoProblema(username: string, password: string): Observable<any>{
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=getTipoProblema&token=${token}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  setTicketNota(username: string, password: string, idticket: string, nota: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTicketNota&token=${token}&idticket=${idticket}&nota=${nota}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+  
 
 }

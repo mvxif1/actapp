@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { ApiService } from 'src/app/services/api.service';
 import { DbService } from 'src/app/services/db.service';
@@ -16,6 +16,10 @@ interface Ticket {
 interface Guia {
   guia: string;
   ticket: Ticket[];
+}
+
+interface ProblemaResponse {
+  opciones: string[];
 }
 
 @Component({
@@ -46,24 +50,40 @@ export class DespachoformPage implements OnInit {
   mostrarContenido = false;
 
   //carga (SPINNER)
-  isLoading: boolean = false; 
+  isLoading: boolean = false;
 
   //carga de fotos
   photos: string[] = [];
   loadingImage!: boolean;
+
+  //problemas con entrega
+  opciones: string[] = []; // Propiedad para almacenar las opciones
+  selectedProblema: string | null = null;
+  problemaForm!: FormGroup;
+  otroProblemaForm!: FormGroup;
+  textProblema: boolean = false;
 
   constructor(
     private camera: Camera, 
     private api: ApiService,
     private db: DbService,
     private internet: Network,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private formBuilder: FormBuilder,
+  ) {
+    this.problemaForm = this.formBuilder.group({
+      tipoProblema: ['']
+    })
+    this.otroProblemaForm = this.formBuilder.group({
+      otroProblema: ['']
+    })
+  }
 
   ngOnInit() {
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
     this.fetchTickets();
+    this.getProblema();
   }
   
   //recarga tickets
@@ -102,7 +122,8 @@ export class DespachoformPage implements OnInit {
         this.guiaArray.shift();
         this.filtroTicketArray = this.guiaArray;
         this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
-        this.isLoading = false
+        this.isLoading = false;
+        
       },
       error: (error) => {
         console.error('Error al obtener los tickets:', error);
@@ -231,6 +252,7 @@ export class DespachoformPage implements OnInit {
     }, (err) => {
       console.log('Error toma de foto', err);
       this.loadingImage = false;
+      this.isLoading = false; 
     });
   }
 
@@ -255,6 +277,7 @@ export class DespachoformPage implements OnInit {
     }, (err) => {
       console.log('Error selecting photo', err);
       this.loadingImage = false;
+      this.isLoading = false; 
     });
   }
 
@@ -266,6 +289,21 @@ export class DespachoformPage implements OnInit {
     }else{
       this.db.presentAlertN("Cancelado!")
     } 
+  }
+
+  getProblema() {
+    this.api.getListTipoProblema(this.username, this.password).subscribe({
+      next: (response) => {
+        if (response && response.opciones) {
+          this.opciones = response.opciones;
+        } else {
+          console.error('Respuesta inesperada:', response);
+        }
+      },
+      error: (error) => {
+        console.error('Error al obtener los problemas:', error);
+      },
+    });
   }
 
   async cerrarTicket() {
@@ -280,7 +318,7 @@ export class DespachoformPage implements OnInit {
       return;
     }
   
-    const archivoBase64 = this.photos[0].split(',')[1]; 
+    const archivoBase64 = this.photos[0].split(',')[1];
     const imagenTamanio = (archivoBase64.length * 3) / 4;
     const maxTamanio = 20 * 1024 * 1024;
   
@@ -294,16 +332,14 @@ export class DespachoformPage implements OnInit {
       return;
     }
   
-    // Verificar si hay una guía seleccionada con tickets
     if (this.selectedGuia && this.selectedGuia.ticket.length > 0) {
       for (const ticket of this.selectedGuia.ticket) {
-        const fileType = this.photos[0].split(';')[0].split('/')[1]; // Obtener el tipo de archivo (jpg, jpeg, png)
-        const nombreArchivo = `imagenGUIA_${this.selectedGuia.guia}_${ticket.id}.${fileType}`; // Formato del nombre de archivo
+        const fileType = this.photos[0].split(';')[0].split('/')[1];
+        const nombreArchivo = `imagenGUIA_${this.selectedGuia.guia}_${ticket.id}.${fileType}`;
   
         this.isLoading = true;
         await this.api.cerrarTicket(this.username, this.password, ticket.id, nombreArchivo, archivoBase64).subscribe({
           next: (response) => {
-            this.isLoading = false;
             if (response.error === 200) {
               console.log(`Ticket ${ticket.id} cerrado correctamente`);
             } else {
@@ -312,32 +348,70 @@ export class DespachoformPage implements OnInit {
             }
           },
           error: (error) => {
-            this.isLoading = false;
             console.error(`Error al cerrar el ticket ${ticket.id}:`, error);
             this.db.presentAlertN(`Error al cerrar el ticket ${ticket.id}. Intenta de nuevo.`);
-          }
+          },
         });
       }
   
-      // Mensaje de éxito después de cerrar todos los tickets
-      this.db.presentAlertP(`Todos los tickets de la guía ${this.selectedGuia.guia} han sido cerrados exitosamente.`);
-      this.displayGuias = this.guiaArray;
-      this.selectedGuia = null;
-      this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
-      this.isLoading = false;
-      this.mostrarContenido = false;
-      this.mostrarDetalle = false;
-      this.infiniteScrollDisabled = false;
-      this.busquedaGuias = true;
+      // Retirar el mensaje de éxito de aquí y moverlo dentro del setTimeout
+      setTimeout(() => {
+        this.db.presentAlertP(`Todos los tickets de la guía ${this.selectedGuia?.guia} han sido cerrados exitosamente.`);
+        
+        // Borrar la guía seleccionada
+        const index = this.guiaArray.findIndex(guia => guia.guia === this.selectedGuia?.guia);
+        if (index !== -1) {
+          this.guiaArray.splice(index, 1);
+        }
+  
+        this.photos = [];
+        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+        this.isLoading = false;
+        this.busquedaGuias = true;
+        this.selectedGuia = null;
+      }, 2000);
     } else {
       this.db.presentAlertN('No se ha seleccionado una guía válida o no tiene tickets.');
     }
   }
+  
+  
 
 
 
 
   //PRUEBA
+
+  problema() {
+    const tipoProblema = this.problemaForm.get('tipoProblema')?.value;
+    var descripcionProblema = tipoProblema;
+  
+    if (tipoProblema === 'Otro') {
+      descripcionProblema = this.otroProblemaForm.get('otroProblema')?.value;
+    }
+    
+    for (const ticket of this.selectedGuia!.ticket) {
+      // Asegúrate de que la descripción del problema se está pasando correctamente
+      this.api.setTicketNota(this.username, this.password, ticket.id, descripcionProblema).subscribe({
+        next: response => {
+          try {
+            const jsonResponse = JSON.parse(response);
+            console.log(jsonResponse);  // Intenta parsear la respuesta
+          } catch (error) {
+            console.error('Respuesta no es JSON:', response);
+          }
+        },
+        error: err => {
+          console.error('Error al establecer la nota para el ticket:', err);
+        }
+      });
+      
+    }
+  }
+  
+
+
+
   async cerrarTicketP() {
     // Confirmación antes de cerrar los tickets
     const confirmacion = await this.db.presentAlertConfirm(
@@ -351,6 +425,7 @@ export class DespachoformPage implements OnInit {
       inputFile.type = 'file';
       inputFile.accept = '.jpg, .jpeg, .png';
   
+      this.isLoading = true;
       inputFile.onchange = async (event: Event) => {
         const target = event.target as HTMLInputElement;
         if (target?.files?.length) {
@@ -375,10 +450,20 @@ export class DespachoformPage implements OnInit {
                   }
                 });
               }
+              //borra la guia seleccionada
+              const index = this.guiaArray.findIndex(guia => guia.guia === this.selectedGuia?.guia);
+              if (index !== -1) {
+                this.guiaArray.splice(index, 1);
+              }
   
-              // Mensaje de éxito después de cerrar todos los tickets
-              this.db.presentAlertP(`Todos los tickets de la guía ${this.selectedGuia.guia} han sido cerrados exitosamente.`);
-              this.displayGuias = this.guiaArray; // Actualizar la lista
+              //recargar los tickets
+              setTimeout(() => {
+                this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+                this.isLoading = false;
+                this.busquedaGuias = true;
+                this.selectedGuia = null;
+              }, 2000);
+              
             } else {
               this.db.presentAlertN('No se ha seleccionado una guía válida.');
             }
@@ -389,12 +474,13 @@ export class DespachoformPage implements OnInit {
           this.db.presentAlertN('No se seleccionó ningún archivo');
         }
       };
-  
+      
       inputFile.click();
     } else {
       this.db.presentAlertN('Operación cancelada');
     }
   }
+  
   
 
   
