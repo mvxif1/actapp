@@ -4,8 +4,8 @@
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>we ACT first</ion-title>
-      <ion-button *ngIf="estaLogueado()" class="btn-ayuda" size="large" slot="end" shape="round" (click)="getAyuda()" style="margin-inline: 10px;">
+      <ion-title>Despachos ACT</ion-title>
+      <ion-button *ngIf="estaLogueado()" class="btn-ayuda" size="large" slot="end" shape="round" [routerLink]="['/ayuda']" style="margin-inline: 10px;">
         <ion-icon slot="icon-only" name="information-circle-outline" size="large"></ion-icon>
       </ion-button>
     </ion-toolbar>
@@ -13,7 +13,7 @@
   <ion-menu contentId="main-content">
     <ion-header style="color: rgb(255, 255, 255);">
       <ion-toolbar style="color: rgb(255, 255, 255); --background: #000e76;">
-        <ion-title>we ACT first</ion-title>
+        <ion-title>Despachos ACT</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content>

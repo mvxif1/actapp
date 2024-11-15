@@ -12,10 +12,6 @@ export class AppComponent {
   usuario: any;
   logueado: boolean = false;
 
-  username: string = ''; 
-  password: string = '';
-  ayuda: string = '';
-
   constructor(private navCtrl: NavController, private db: DbService, private api: ApiService) {
     this.usuario = {};
   }
@@ -27,24 +23,7 @@ export class AppComponent {
   iniciarSesion() {
     this.logueado = true;
   }
-  getAyuda() {
-    this.username = localStorage.getItem('email')!;
-    this.password = localStorage.getItem('password')!;
-    this.api.getAyuda(this.username, this.password).subscribe(
-      (response: any) => {
-        console.log(response)
-        const ayudaTexto = response.ayuda;
-        this.db.presentAlertW(ayudaTexto);
-      },
-      (error) => {
-        console.error('Error al obtener la ayuda:', error);
-        this.ayuda = 'Hubo un error al obtener la ayuda. Intenta nuevamente.';
-      }
-    );
-  }
-  
-  
-  
+
   cerrarsesion() {
     this.logueado = false;
     localStorage.setItem('email', '');

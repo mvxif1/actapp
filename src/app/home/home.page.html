@@ -18,7 +18,7 @@
         <ion-list>
           <ion-item>
             <ion-label position="floating">Usuario <ion-icon name="person-outline" slot="end"></ion-icon></ion-label>
-            <ion-input formControlName="email" placeholder="Ingresa tu Correo"></ion-input>
+            <ion-input formControlName="email" placeholder="Ingresa tu Correo" (keydown.enter)="onEnterKeyPress()"></ion-input>
           </ion-item>
           <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched">
             <div>Ingrese un usuario. </div>
@@ -26,7 +26,7 @@
 
           <ion-item>
             <ion-label position="floating">Contraseña <ion-icon name="lock-closed-outline" slot="end"></ion-icon></ion-label>
-            <ion-input formControlName="password" type="password" placeholder="Ingresa tu Contraseña"></ion-input>
+            <ion-input formControlName="password" type="password" placeholder="Ingresa tu Contraseña" (keydown.enter)="onEnterKeyPress()"></ion-input>
           </ion-item>
           <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
             Ingrese una contraseña.

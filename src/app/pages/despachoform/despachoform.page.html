@@ -11,7 +11,8 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
   <!-- busqueda de guias -->
-  <ion-searchbar [debounce]="1000" (ionChange)="filtrarTicket($event)" placeholder="Buscar por ID" style="margin-top: 10px;"></ion-searchbar>
+  <ion-searchbar *ngIf="busquedaGuias" [debounce]="1000" (ionChange)="filtrarTicket($event)" placeholder="Buscar por ID"
+    style="margin-top: 10px;"></ion-searchbar>
 
   <!-- carga -->
   <div *ngIf="isLoading" class="ion-text-center" style="align-items: center; margin-top: 10px;">
@@ -21,9 +22,11 @@
   <div *ngIf="!selectedGuia && filtroTicketArray.length > 0 && !isLoading" class="ion-text-center">
     <div>
       <ion-grid>
-        <ion-row style="align-items: center; margin-block: 5px;">
-              <ion-text style="font-weight: 600; font-size: 20px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO: </ion-text>
-              <ion-text style="font-weight: 600; background-color: #ffb938; color: rgb(0, 0, 0); border-radius: 50px; padding: 0px 20px; font-size: 30px;">{{guiaArray.length}}</ion-text>
+        <ion-row style="display: flex; align-items: center; justify-content: space-around;">
+          <ion-text style="font-weight: 600; font-size: 16px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO:
+          </ion-text>
+          <ion-text
+            style="font-weight: 600; background-color: #ffb938; color: rgb(0, 0, 0); border-radius: 50px; padding: 0px 20px; font-size: 25px;">{{guiaArray.length}}</ion-text>
         </ion-row>
       </ion-grid>
     </div>
@@ -32,11 +35,11 @@
 
   <ion-list *ngIf="displayGuias.length > 0 && !isLoading">
     <ion-item *ngFor="let ticket of displayGuias">
-      <ion-label>  
+      <ion-label>
         <ion-grid>
           <ion-row style="align-items: center;">
             <ion-col class="ion-text-center">
-              <ion-text  style="font-size: 20px;"><strong>GUIA:</strong> {{ ticket.guia }}</ion-text>
+              <ion-text style="font-size: 20px;"><strong>GUIA:</strong> {{ ticket.guia }}</ion-text>
             </ion-col>
             <ion-col class="ion-text-center">
               <ion-button size="default" shape="round" (click)="onGuiaSelect(ticket.guia)">Despachar</ion-button>
@@ -46,93 +49,92 @@
       </ion-label>
     </ion-item>
   </ion-list>
-  <ion-list class="ion-text-center" *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedGuia && displayGuias.length === 0">
+  <ion-list class="ion-text-center"
+    *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedGuia && displayGuias.length === 0">
     <ion-text>No hay tickets disponibles</ion-text>
   </ion-list>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col size="12">
-        <ion-list *ngIf="selectedGuia && !isLoading">
-          <ion-card-title style="font-size: 18px; font-weight: 600;">DETALLE GUIA: {{ selectedGuia?.guia }}</ion-card-title>
-          <ion-item>
-            <ion-list>
-              <div>
-                <div><strong>TICKETS ASOCIADOS</strong></div>
-                <div *ngFor="let ticket of selectedGuia?.ticket" style="display: flex; align-items: center;">
-                  <strong>{{ ticket.id }}</strong>
-                  <ion-button fill="clear" shape="round" style="margin-left: 10px;" (click)="onTicketSelect(ticket.id)">
-                    <ion-icon slot="icon-only" *ngIf="selectedTicket?.id === ticket.id && mostrarDetalle" name="eye-off"></ion-icon>
-                    <ion-icon slot="icon-only" *ngIf="selectedTicket?.id !== ticket.id || !mostrarDetalle" name="eye"></ion-icon>
-                  </ion-button> 
-                </div>
-                  
-                    
 
-                  <ion-list *ngIf="selectedTicket && !isLoading && mostrarDetalle">
-                      <p class="btn-titulo" style="font-size: 18px; font-weight: 600;">DETALLE TICKET {{selectedTicket.id}}</p>
-                    <ion-item>
-                      <ion-list>
-                        <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
-                        <div ><strong>TÍTULO: </strong><ion-text [innerHTML]="decodeHtml(selectedTicket.titulo)"></ion-text></div>
-                        <div style="display: flex; align-items: center;"><strong>Contenido: </strong>
-                          <ion-button style="margin-left: 5px;" fill="outline" (click)="despliegaContenido()">
-                            {{ mostrarContenido ? 'Ocultar contenido' : 'Ver contenido' }}
-                          </ion-button>
-                        </div>
-                        <div>
-                          <ion-text class="ticket-content" *ngIf="mostrarContenido" [innerHTML]="decodeHtml(selectedTicket.detalle)"></ion-text>
-                        </div>   
-                        <div><strong>GUIA:</strong> {{ selectedTicket.guia }}</div>
-                      </ion-list>
-                    </ion-item>
-                  </ion-list>
-              </div>           
-            </ion-list>
-          </ion-item>
+  <ion-list *ngIf="selectedGuia && !isLoading">
+    <ion-card-title style="font-size: 18px; font-weight: 600; margin-top: 10px;">DETALLE GUIA: {{ selectedGuia?.guia }}</ion-card-title>
+    <ion-text style="margin-top: 10px; text-align: center;"><strong>TICKETS ASOCIADOS</strong></ion-text>
+    <div>
+      <div *ngFor="let ticket of selectedGuia?.ticket"
+        style="display: flex; justify-content: center; align-items: center; width: 100%;">
+        <strong style="text-align: center; display: block;">{{ ticket.id }}</strong>
+        <ion-button fill="clear" shape="round" style="margin-left: 10px;" (click)="onTicketSelect(ticket.id)">
+          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id === ticket.id && mostrarDetalle"
+            name="eye-off"></ion-icon>
+          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id !== ticket.id || !mostrarDetalle" name="eye"></ion-icon>
+        </ion-button>
+      </div>
+
+      <ion-list *ngIf="selectedTicket && !isLoading && mostrarDetalle">
+        <ion-text class="btn-titulo" style="font-size: 18px; font-weight: 600;">DETALLE TICKET
+          {{selectedTicket.id}}</ion-text>
+        <ion-item>
           <ion-list>
-            <ion-card-title style="font-size: 18px; font-weight: 600;">ADJUNTAR ARCHIVO DE CIERRE</ion-card-title>
-            <ion-grid *ngIf="photos.length > 0">
-              <ion-row>
-                <ion-col size="12" *ngFor="let photo of photos; let i = index" class="cuadroimagen">
-                  <img [src]="photo" width="100%" height="auto" alt="Foto capturada">
-                  <div class="ion-text-center">
-                    <ion-button (click)="deletePhoto(i)" fill="clear" class="delete-button">
-                      <ion-icon name="trash-outline" style="color: white;"></ion-icon>
-                    </ion-button>
-                  </div>
-                </ion-col>
-              </ion-row>
-            </ion-grid>
-            
-            <ion-grid *ngIf="photos.length === 0">
-              <ion-item>
-                <ion-row style="width: 100%;">
-                  <ion-col size="12"
-                    style="height: 230px; margin-bottom: 20px; background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <div style="color: gray; font-weight: 500;">
-                      No hay fotos
-                    </div>
-                  </ion-col>
-                </ion-row>
-              </ion-item>
-            </ion-grid>
-
-            <ion-item class="ion-text-center">
-              <ion-button color="success" style="width: 50%;" (click)="takePhoto()">Cámara<ion-icon name="camera-outline" style="margin-left: 5px;"></ion-icon></ion-button>
-              <ion-button color="secondary" style="width: 50%;" (click)="selectFromGallery()">Galería<ion-icon name="images-outline" style="margin-left: 5px;"></ion-icon></ion-button>
-            </ion-item>
+            <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
+            <div><strong>TÍTULO: </strong><ion-text [innerHTML]="decodeHtml(selectedTicket.titulo)"></ion-text></div>
+            <div style="display: flex; align-items: center;"><strong>Contenido: </strong>
+              <ion-button style="margin-left: 5px;" fill="outline" (click)="despliegaContenido()">
+                {{ mostrarContenido ? 'Ocultar contenido' : 'Ver contenido' }}
+              </ion-button>
+            </div>
+            <div>
+              <ion-text *ngIf="mostrarContenido"
+                [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
+            </div>
+            <div><strong>GUIA:</strong> {{ selectedTicket.guia }}</div>
           </ion-list>
-            <ion-item class="ion-text-center">
-              <ion-button style="width: 15%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon name="arrow-back-outline">Volver a la lista</ion-icon></ion-button>
-              <ion-button style="width: 85%; height: 50px;" expand="block" color="danger" (click)="cerrarTicketP()">Cerrar Ticket</ion-button>
-            </ion-item>
-        </ion-list>
-      </ion-col>
-    </ion-row>
-    <ion-infinite-scroll [disabled]="infiniteScrollDisabled" threshold="100px" (ionInfinite)="loadMoreTickets($event)">
-      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más guias...">
-      </ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-  </ion-grid>
+        </ion-item>
+      </ion-list>      
+    </div>
+    <ion-list>
+      <ion-card-title style="font-size: 18px; font-weight: 600;">ADJUNTAR ARCHIVO DE CIERRE</ion-card-title>
+      <ion-grid *ngIf="photos.length > 0">
+        <ion-row>
+          <ion-col size="12" *ngFor="let photo of photos; let i = index" class="cuadroimagen">
+            <img [src]="photo" width="100%" height="auto" alt="Foto capturada">
+            <div class="ion-text-center">
+              <ion-button (click)="deletePhoto(i)" fill="clear" class="delete-button">
+                <ion-icon name="trash-outline" style="color: white;"></ion-icon>
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+
+      <ion-grid *ngIf="photos.length === 0">
+        <ion-item>
+          <ion-row style="width: 100%;">
+            <ion-col size="12"
+              style="height: 230px; margin-bottom: 20px; background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <div style="color: gray; font-weight: 500;">
+                No hay fotos
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-item>
+      </ion-grid>
+
+      <ion-item class="ion-text-center">
+        <ion-button color="success" style="width: 50%;" (click)="takePhoto()">Cámara<ion-icon name="camera-outline"
+            style="margin-left: 5px;"></ion-icon></ion-button>
+        <ion-button color="secondary" style="width: 50%;" (click)="selectFromGallery()">Galería<ion-icon
+            name="images-outline" style="margin-left: 5px;"></ion-icon></ion-button>
+      </ion-item>
+    </ion-list>
+    <ion-item class="ion-text-center">
+      <ion-button style="width: 15%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon
+          name="arrow-back-outline">Volver a la lista</ion-icon></ion-button>
+      <ion-button style="width: 85%; height: 50px;" expand="block" color="danger" (click)="cerrarTicket()">Cerrar
+        Ticket</ion-button>
+    </ion-item>
+  </ion-list>
+  <ion-infinite-scroll [disabled]="infiniteScrollDisabled" threshold="100px" (ionInfinite)="loadMoreTickets($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más guias...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
 </ion-content>

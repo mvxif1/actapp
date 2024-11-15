@@ -39,6 +39,7 @@ export class DespachoformPage implements OnInit {
   searchTerm: string = '';
   selectedGuia: Guia | null = null;
   selectedTicket: Ticket | null = null;
+  busquedaGuias: boolean = true;
 
   //mostrar contenidos de botones
   mostrarDetalle = false;
@@ -65,12 +66,14 @@ export class DespachoformPage implements OnInit {
     this.fetchTickets();
   }
   
+  //recarga tickets
   refreshTickets(event: any) {
     this.selectedGuia = null;
     this.displayGuias = this.guiaArray;
     this.infiniteScrollDisabled = false;
     this.mostrarContenido = false;
     this.mostrarDetalle = false;
+    this.busquedaGuias = true;
     this.fetchTickets();
     event.target.complete();
   }
@@ -140,6 +143,7 @@ export class DespachoformPage implements OnInit {
   onGuiaSelect(guiaId: string) {
     this.selectedGuia = this.guiaArray.find(guia => guia.guia === guiaId) || null;
     this.infiniteScrollDisabled = true;
+    this.busquedaGuias = false;
     if (this.selectedGuia) {
       this.displayGuias = [];
     }
@@ -158,14 +162,14 @@ export class DespachoformPage implements OnInit {
 
   volverListTicket() {
     this.isLoading = true;
-    
     setTimeout(() => {
       this.selectedGuia = null;
-      this.displayGuias = this.guiaArray;
+      this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
       this.isLoading = false;
       this.mostrarContenido = false;
       this.mostrarDetalle = false;
       this.infiniteScrollDisabled = false;
+      this.busquedaGuias = true;
     }, 500);
   }
   
@@ -176,8 +180,17 @@ export class DespachoformPage implements OnInit {
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
-    return txt.value;
-  }
+    const decodedHtml = txt.value;
+
+    // Crear un contenedor con display: flex y añadir el HTML decodificado
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.innerHTML = decodedHtml;
+
+    // Devolver el HTML con el estilo aplicado
+    return wrapper.outerHTML;
+}
+
 
   //subida de archivo
   onFileSelected(event: Event, ticket: Ticket) {
@@ -256,60 +269,69 @@ export class DespachoformPage implements OnInit {
   }
 
   async cerrarTicket() {
-    if (!this.selectedTicket) {
-      await this.db.presentAlertN('No hay un ticket seleccionado');
+    const confirmar = await this.db.presentAlertConfirm('¿Estás seguro de que quieres cerrar todos los tickets de esta guía?', 'Sí', 'No');
+    if (!confirmar) {
+      await this.db.presentAlertN('Operación cancelada');
       return;
     }
   
     if (this.photos.length === 0) {
-      await this.db.presentAlertN('Debe adjuntar al menos una foto para cerrar el ticket');
+      await this.db.presentAlertN('Debe adjuntar al menos una foto para cerrar los tickets.');
       return;
     }
-
-    const archivoBase64 = this.photos[0].split(',')[1];
+  
+    const archivoBase64 = this.photos[0].split(',')[1]; 
     const imagenTamanio = (archivoBase64.length * 3) / 4;
-    const maxTamanio = 20 * 1024 * 1024; 
-
+    const maxTamanio = 20 * 1024 * 1024;
+  
     if (imagenTamanio > maxTamanio) {
       await this.db.presentAlertN('La imagen seleccionada es demasiado grande. Debe ser menor a 20 MB.');
       return;
     }
-
-    if (this.internet.type === 'none') {
-      await this.db.presentAlertN('No hay conexión a internet. Por favor, conéctese a internet para cerrar el ticket.');
-      return;
-    }
-
-    const confirmar = await this.db.presentAlertConfirm('¿Estás seguro de que quieres cerrar el ticket?', 'Sí', 'No');
-    if (!confirmar) {
-      await this.db.presentAlertN('Cancelado');
-      return;
-    }
-    this.isLoading = true;
-    const fileType = this.photos[0].split(';')[0].split('/')[1]; 
-    const nombreArchivo = `imagenGUIA_${this.selectedTicket.guia}_${this.selectedTicket.id}.${fileType}`; //imagenGUIA_(GUIA)_(IDTICKET).(TIPO ARCHIVO);
   
-    this.api.cerrarTicket(this.username, this.password, this.selectedTicket.id, nombreArchivo, archivoBase64)
-      .subscribe({
-        next: async (response) => {
-          this.isLoading = false;
-          if (response.error === 200) {
-            console.log(response.mensaje);
-            await this.db.presentAlertP(`Ticket ${this.selectedTicket?.id} cerrado correctamente.`);
-            this.fetchTickets();
-            this.selectedTicket = null;
-            this.photos = [];
-          } else {
-            console.error('Error al cerrar el ticket:', response.mensaje);
-            await this.db.presentAlertN(`Error al cerrar el ticket: ${response.mensaje}`);
+    if (this.internet.type === 'none') {
+      await this.db.presentAlertN('No hay conexión a internet. Por favor, conéctese a internet para cerrar los tickets.');
+      return;
+    }
+  
+    // Verificar si hay una guía seleccionada con tickets
+    if (this.selectedGuia && this.selectedGuia.ticket.length > 0) {
+      for (const ticket of this.selectedGuia.ticket) {
+        const fileType = this.photos[0].split(';')[0].split('/')[1]; // Obtener el tipo de archivo (jpg, jpeg, png)
+        const nombreArchivo = `imagenGUIA_${this.selectedGuia.guia}_${ticket.id}.${fileType}`; // Formato del nombre de archivo
+  
+        this.isLoading = true;
+        await this.api.cerrarTicket(this.username, this.password, ticket.id, nombreArchivo, archivoBase64).subscribe({
+          next: (response) => {
+            this.isLoading = false;
+            if (response.error === 200) {
+              console.log(`Ticket ${ticket.id} cerrado correctamente`);
+            } else {
+              console.error('Error al cerrar el ticket:', response.mensaje);
+              this.db.presentAlertN(`Error al cerrar el ticket ${ticket.id}: ${response.mensaje}`);
+            }
+          },
+          error: (error) => {
+            this.isLoading = false;
+            console.error(`Error al cerrar el ticket ${ticket.id}:`, error);
+            this.db.presentAlertN(`Error al cerrar el ticket ${ticket.id}. Intenta de nuevo.`);
           }
-        },
-        error: async (error) => {
-          this.isLoading = false;
-          console.error('Error en la solicitud:', error);
-          await this.db.presentAlertN('Hubo un problema al cerrar el ticket. Intente nuevamente.');
-        }
-      });
+        });
+      }
+  
+      // Mensaje de éxito después de cerrar todos los tickets
+      this.db.presentAlertP(`Todos los tickets de la guía ${this.selectedGuia.guia} han sido cerrados exitosamente.`);
+      this.displayGuias = this.guiaArray;
+      this.selectedGuia = null;
+      this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
+      this.isLoading = false;
+      this.mostrarContenido = false;
+      this.mostrarDetalle = false;
+      this.infiniteScrollDisabled = false;
+      this.busquedaGuias = true;
+    } else {
+      this.db.presentAlertN('No se ha seleccionado una guía válida o no tiene tickets.');
+    }
   }
 
 

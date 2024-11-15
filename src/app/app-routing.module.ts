@@ -38,6 +38,10 @@ const routes: Routes = [
     path: 'despachoform',
     loadChildren: () => import('./pages/despachoform/despachoform.module').then( m => m.DespachoformPageModule)
   },
+  {
+    path: 'ayuda',
+    loadChildren: () => import('./pages/ayuda/ayuda.module').then( m => m.AyudaPageModule)
+  },
 
 
 ];

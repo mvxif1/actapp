@@ -27,7 +27,11 @@ export class HomePage {
   ngOnInit() {
     this.checkRememberedSession();
   }
-
+  onEnterKeyPress(){
+    if (this.loginForm.valid) {
+      this.iniciarUsuario();
+    }
+  }
   async iniciarUsuario() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;

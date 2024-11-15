@@ -1,0 +1,24 @@
+<ion-content [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <div style="display: flex; margin-top: 5px; margin-left: 5px;">
+    <ion-button color="primary" (click)="volverAtras()"><ion-icon name="arrow-back-outline"></ion-icon></ion-button>
+  </div>
+
+
+  <ion-grid class="ion-text-center">
+    <ion-row>
+      <ion-col>
+        <ion-card-title style="font-weight: 700; margin-top: 10px;">{{ayuda.titulo}}</ion-card-title>
+        <br>
+        <ion-text>{{ayuda.texto}}</ion-text>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
