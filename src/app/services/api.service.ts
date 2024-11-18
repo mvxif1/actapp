@@ -54,6 +54,15 @@ export class ApiService {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
+  cerrarTicketAdicional(username: string, password: string, idticket: string, nombreArchivo: string, archivoBase64: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=uploadEvidencia&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
   getListTipoProblema(username: string, password: string): Observable<any>{
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({

@@ -54,4 +54,75 @@ ion-card-title {
     word-wrap: break-word;
     overflow: hidden; /* Esconde contenido que se desborda */
   }
+ 
+  ion-modal#problema-modal {
+    --width: 80%;
+    --height: 60%;
+    --border-radius: 12px;
+    --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --background: rgb(255, 255, 255); /* Fondo semitransparente */
+    --backdrop-opacity: 0.3; /* Ver un poco del fondo */
+  }
+  
+  ion-modal#problema-modal h2 {
+    margin: 16px 20px;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  ion-modal#problema-modal .wrapper {
+    padding: 20px;
+  }
+
+  
+
+
+  ion-modal#evidencia-modal {
+    --width: 90%;
+    --height: 90%;
+    --border-radius: 12px;
+    --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    --background: rgb(255, 255, 255); /* Fondo semitransparente */
+    --backdrop-opacity: 0.3; /* Ver un poco del fondo */
+  }
+  
+  ion-modal#evidencia-modal h2 {
+    margin: 16px 20px;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  ion-modal#evidencia-modal .wrapper {
+    padding: 20px;
+  }
+
+  .wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Coloca los botones al final */
+  }
+
+  .wrapper-evidencia {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .photos-container {
+    flex-grow: 1;
+    overflow-y: auto;  /* Esto hace que las fotos sean desplazables */
+  }
+  
+  .button-evidencia {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    padding: 10px 0;
+    z-index: 10; /* Asegura que los botones se mantengan por encima del contenido */
+    margin-inline: 10px;
+  }
+  
+  
   

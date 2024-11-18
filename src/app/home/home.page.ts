@@ -53,7 +53,6 @@ export class HomePage {
           localStorage.setItem('password', password);
           this.loginForm.reset();
           this.navCtrl.navigateForward('/despachoform');
-          this.dbservice.presentAlertP("Has ingresado al usuario");
         }
       },
       (error) => {
