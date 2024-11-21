@@ -151,7 +151,8 @@ export class DbService {
       backdrop : false,
       icon: 'error',
       width: '300px',
-      title: msj,
+      title: 'Error!',
+      text: msj,
       confirmButtonText: "Cerrar"
     })
   }
@@ -161,7 +162,8 @@ export class DbService {
       backdrop : false,
       icon: 'success',
       width: '300px',
-      title: msj,
+      title: 'Exito!',
+      text: msj,
       confirmButtonText: "Cerrar"
     })
   }
@@ -177,7 +179,8 @@ export class DbService {
 
   async presentAlertConfirm(msj: string, textconfirm: string, textcancel: string) : Promise <boolean>{
     const result = await swal.fire({
-      title: msj,
+      title: '¿Estás seguro?',
+      text: msj,
       width: '300px',
       icon: 'warning',
       backdrop : false,

@@ -9,6 +9,7 @@ import { IonModal, LoadingController } from '@ionic/angular';
 import imageCompression from 'browser-image-compression';
 
 
+
 interface Ticket {
   id: string;
   titulo: string;
@@ -34,6 +35,7 @@ export class DespachoformPage implements OnInit {
   username: string = ''; 
   password: string = '';
   base64Image: string | ArrayBuffer | null = null;
+
   //carga por 10 tickets
   displayGuias: Guia[] = [];
   numGuiasCarga: number = 10;
@@ -82,7 +84,8 @@ export class DespachoformPage implements OnInit {
     })
     this.otroProblemaForm = this.formBuilder.group({
       otroProblema: ['']
-    })
+    });
+
   }
 
   ngOnInit() {
@@ -242,7 +245,7 @@ export class DespachoformPage implements OnInit {
 
     // Devolver el HTML con el estilo aplicado
     return wrapper.outerHTML;
-}
+  }
 
 
   //subida de archivo
@@ -474,11 +477,11 @@ export class DespachoformPage implements OnInit {
     console.log('Operación Cancelada');
     this.additionalPhotos.splice(0, this.additionalPhotos.length);
     this.evidenciaModal.dismiss();
-    this.db.presentAlertN("Operación cancelada");
   }
   
   //*************************************************************//
 
+  //************************* PROBLEMA AL ENTREGAR DESPACHO ************************************
   getProblema() {
     this.api.getListTipoProblema(this.username, this.password).subscribe({
       next: (response) => {
@@ -493,6 +496,70 @@ export class DespachoformPage implements OnInit {
       },
     });
   }
+
+    async problema() {
+      const tipoProblema = this.problemaForm.get('tipoProblema')?.value;
+      var descripcionProblema = tipoProblema;
+    
+      if (tipoProblema === 'Otro') {
+        descripcionProblema = this.otroProblemaForm.get('otroProblema')?.value;
+      }
+      
+      for (const ticket of this.selectedGuia!.ticket) {
+        this.isLoading = true;
+        const loading = await this.Cargando();
+  
+        this.api.setTicketNota(this.username, this.password, ticket.id, descripcionProblema).subscribe({
+          next: (response) =>{
+            console.log(response);
+            this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+            this.isLoading = false;
+            this.ocultarCarga(loading);
+            this.busquedaGuias = true;
+            this.selectedGuia = null;
+            this.photos = [];
+            this.additionalPhotos = [];
+            this.db.presentAlertP("Problema al entregar enviado correctamente!")
+          }
+        });
+      }
+    }
+  
+    isAceptarEnabled(): boolean {
+      const tipoProblema = this.problemaForm.get('tipoProblema')!.value;
+      const otroProblema = this.otroProblemaForm.get('otroProblema')!.value;
+      
+      return (tipoProblema && (tipoProblema !== 'Otro' || (tipoProblema === 'Otro' && otroProblema.trim().length > 0)));
+    }
+  
+    onInputText(): void {
+      this.isAceptarEnabled();
+    }
+  
+    aceptarProblema() {
+      const tipoProblema = this.problemaForm.get('tipoProblema')!.value;
+      let descripcionProblema = tipoProblema;
+  
+      if (tipoProblema === 'Otro') {
+        descripcionProblema = this.otroProblemaForm.get('otroProblema')!.value;
+        if (!descripcionProblema || descripcionProblema.trim() === '') {
+          this.db.presentAlertN('Por favor, escribe una descripción del problema.');
+          return;
+        }
+      }
+  
+      this.problemaModal.dismiss().then(() => {
+        this.problemaForm.get('tipoProblema')?.reset();
+      });
+      this.problema();
+    }
+  
+    cancelarProblema() {
+      this.problemaModal.dismiss().then(() => {
+        this.problemaForm.get('tipoProblema')?.reset();
+      });
+    }
+    //*************************************************************//  
 
   async cerrarTicket() {
     const confirmar = await this.db.presentAlertConfirm('¿Estás seguro de que quieres cerrar todos los tickets de esta guía?', 'Sí', 'No');
@@ -576,69 +643,5 @@ export class DespachoformPage implements OnInit {
     }
   }
   
-  //************************* PROBLEMA AL ENTREGAR DESPACHO ************************************
-  async problema() {
-    const tipoProblema = this.problemaForm.get('tipoProblema')?.value;
-    var descripcionProblema = tipoProblema;
-  
-    if (tipoProblema === 'Otro') {
-      descripcionProblema = this.otroProblemaForm.get('otroProblema')?.value;
-    }
-    
-    for (const ticket of this.selectedGuia!.ticket) {
-      this.isLoading = true;
-      const loading = await this.Cargando();
 
-      this.api.setTicketNota(this.username, this.password, ticket.id, descripcionProblema).subscribe({
-        next: (response) =>{
-          console.log(response);
-          this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
-          this.isLoading = false;
-          this.ocultarCarga(loading);
-          this.busquedaGuias = true;
-          this.selectedGuia = null;
-          this.photos = [];
-          this.additionalPhotos = [];
-          this.db.presentAlertP("Problema al entregar enviado con exito!")
-        }
-      });
-    }
-  }
-
-  isAceptarEnabled(): boolean {
-    const tipoProblema = this.problemaForm.get('tipoProblema')!.value;
-    const otroProblema = this.otroProblemaForm.get('otroProblema')!.value;
-    
-    return (tipoProblema && (tipoProblema !== 'Otro' || (tipoProblema === 'Otro' && otroProblema.trim().length > 0)));
-  }
-
-  onInputText(): void {
-    this.isAceptarEnabled();
-  }
-
-  aceptarProblema() {
-    const tipoProblema = this.problemaForm.get('tipoProblema')!.value;
-    let descripcionProblema = tipoProblema;
-
-    if (tipoProblema === 'Otro') {
-      descripcionProblema = this.otroProblemaForm.get('otroProblema')!.value;
-      if (!descripcionProblema || descripcionProblema.trim() === '') {
-        this.db.presentAlertN('Por favor, escribe una descripción del problema.');
-        return;
-      }
-    }
-
-    this.problemaModal.dismiss().then(() => {
-      this.problemaForm.get('tipoProblema')?.reset();
-    });
-    this.problema();
-  }
-
-  cancelarProblema() {
-    this.problemaModal.dismiss().then(() => {
-      this.problemaForm.get('tipoProblema')?.reset();
-    });
-    this.db.presentAlertN('Operación cancelada');
-  }
-  //*************************************************************//  
 }

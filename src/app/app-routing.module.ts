@@ -42,6 +42,10 @@ const routes: Routes = [
     path: 'ayuda',
     loadChildren: () => import('./pages/ayuda/ayuda.module').then( m => m.AyudaPageModule)
   },
+  {
+    path: 'despachados',
+    loadChildren: () => import('./pages/despachados/despachados.module').then( m => m.DespachadosPageModule)
+  },
 
 
 ];

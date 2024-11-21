@@ -52,7 +52,7 @@ export class HomePage {
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           this.loginForm.reset();
-          this.navCtrl.navigateForward('/despachoform');
+          this.navCtrl.navigateForward('/inicio');
         }
       },
       (error) => {

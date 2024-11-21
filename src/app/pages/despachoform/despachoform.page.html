@@ -120,7 +120,7 @@
             name="images-outline" style="margin-left: 5px;"></ion-icon></ion-button>
       </ion-item>
       <ion-item class="ion-text-center">
-        <ion-button color="medium" style="width: 100%; height: 40px;" id="open-evidencia-modal">Subir evidencia adicional<ion-icon
+        <ion-button color="medium" style="width: 100%; height: 40px;" id="open-evidencia-modal">Adjuntar evidencia adicional<ion-icon style="margin-left: 5px;"
           name="images-outline"></ion-icon></ion-button>
       </ion-item>
     </ion-list>
@@ -166,7 +166,11 @@
               <ion-icon name="images-outline" style="margin-left: 5px;"></ion-icon>
             </ion-button>
           </ion-item>
-    
+          
+          <div class="alert-info">
+            <ion-icon name="information-circle-outline" style="margin-right: 5px; font-size: 20px;"></ion-icon>
+            Las imagenes adjuntas serán enviadas al momento de cerrar el ticket 
+          </div>
           <!-- Botones de Aceptar y Cancelar -->
           <div class="button-evidencia">
             <ion-button color="primary" style="width: 50%;" (click)="aceptarEvidencia()" [disabled]="additionalPhotos.length === 0">Aceptar</ion-button>
@@ -177,35 +181,36 @@
     </ion-modal>
     
 
-    <ion-modal id="problema-modal" #problemaModal trigger="open-problema-modal">
+    <ion-modal id="problema-modal" #problemaModal trigger="open-problema-modal" [ngClass]="{'expanded-modal': problemaForm.get('tipoProblema')?.value === 'Otro'}">
       <ng-template>
-        <div class="wrapper">
-          <h2>¿Cuál es el problema al entregar?</h2>
+        <ion-content fullscreen>
+          <div class="wrapper">
+            <h2>¿Cuál es el problema al entregar?</h2>
     
-          <form [formGroup]="problemaForm">
-            <ion-list>
-              
-              <ion-item>
-                <ion-label position="stacked" style="font-size: 18px; width: 100%;" >Selecciona una opción</ion-label>
-                <ion-select formControlName="tipoProblema" placeholder="Selecciona un problema..." [interface]="'popover'">
-                  <ion-select-option class="ion-text-wrap" *ngFor="let opcion of opciones">{{ opcion }}</ion-select-option>
-                </ion-select>
+            <form [formGroup]="problemaForm">
+              <ion-list>
+                <ion-item>
+                  <ion-label position="stacked" style="font-size: 18px; width: 100%;">Selecciona una opción</ion-label>
+                  <ion-select formControlName="tipoProblema" placeholder="Selecciona un problema..." [interface]="'popover'">
+                    <ion-select-option class="ion-text-wrap" *ngFor="let opcion of opciones">{{ opcion }}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+              </ion-list>
+            </form>
+    
+            <form [formGroup]="otroProblemaForm">
+              <ion-item *ngIf="problemaForm.get('tipoProblema')!.value === 'Otro'">
+                <ion-textarea placeholder="Describe el problema" formControlName="otroProblema" (ionInput)="onInputText()">
+                </ion-textarea>
               </ion-item>
-            </ion-list>
-          </form>
+            </form>
     
-          <form [formGroup]="otroProblemaForm">
-            <ion-item *ngIf="problemaForm.get('tipoProblema')!.value === 'Otro'">
-              <ion-textarea placeholder="Describe el problema" formControlName="otroProblema" (ionInput)="onInputText()">
-              </ion-textarea>
-            </ion-item>
-          </form>
-    
-          <div style="display: flex;">
-            <ion-button color="primary" style="width: 50%;" [disabled]="!isAceptarEnabled()" (click)="aceptarProblema()">Aceptar</ion-button>
-            <ion-button color="danger" style="width: 50%;" (click)="cancelarProblema()">Cancelar</ion-button>
+            <div style="display: flex;">
+              <ion-button color="primary" style="width: 50%;" [disabled]="!isAceptarEnabled()" (click)="aceptarProblema()">Aceptar</ion-button>
+              <ion-button color="danger" style="width: 50%;" (click)="cancelarProblema()">Cancelar</ion-button>
+            </div>
           </div>
-        </div>
+        </ion-content>
       </ng-template>
     </ion-modal>
     
@@ -214,12 +219,17 @@
     
     
     
+    
+    
+    
+    
+    
     <ion-item class="ion-text-center">
-      <ion-button style="width: 10%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon
-          name="arrow-back-outline">Volver a la lista</ion-icon></ion-button>
-      <ion-button style="width: 45%; height: 50px;" expand="block" color="warning" id="open-problema-modal" expand="block">Problema entrega</ion-button>
-      <ion-button style="width: 45%; height: 50px;" expand="block" color="danger" (click)="cerrarTicket()">Cerrar Ticket</ion-button>
-      
+      <ion-button style="width: 50%; height: 50px;" expand="block" color="warning" id="open-problema-modal" expand="block">Problema entrega</ion-button>
+      <ion-button style="width: 50%; height: 50px;" expand="block" color="danger" (click)="cerrarTicket()">Cerrar Ticket</ion-button>
+    </ion-item>
+    <ion-item class="ion-text-center">
+      <ion-button style="width: 100%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon style="margin-right: 5px; font-size: 20px;" name="arrow-back-circle-outline"></ion-icon>Volver a la lista</ion-button>
     </ion-item>
   </ion-list>
   <ion-infinite-scroll [disabled]="infiniteScrollDisabled" threshold="100px" (ionInfinite)="loadMoreTickets($event)">

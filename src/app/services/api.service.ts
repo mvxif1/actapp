@@ -44,6 +44,15 @@ export class ApiService {
     const body = `ACCION=getTicketsProveedor&token=${token}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
+
+  getListTicketsDespachados(username: string, password: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    const body = `ACCION=getTicketsProveedorDespachado&token=${token}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
   
   cerrarTicket(username: string, password: string, idticket: string, nombreArchivo: string, archivoBase64: string): Observable<any> {
     const token = btoa(`${username}:${password}`);

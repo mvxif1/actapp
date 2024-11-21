@@ -11,11 +11,6 @@ ion-card-title {
   font-weight: 500;
 }
 
-.custom-button {
-    background-color: #4CAF50; /* Color verde personalizado */
-    color: white;
-    font-weight: bold;
-  }
   
   .custom-alert {
     font-size: 1.2em;
@@ -40,13 +35,13 @@ ion-card-title {
   }
   
   .ticket-content {
-    max-width: 100%; /* Limita el ancho al 100% de la pantalla */
-    word-wrap: break-word; /* Asegura que las palabras largas se rompan si es necesario */
-    overflow-wrap: break-word; /* Para palabras muy largas */
-    white-space: normal; /* Asegura que el texto no se quede en una sola línea */
-    word-break: break-word; /* Opcional, para permitir que las palabras se dividan */
+    max-width: 100%; 
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+    white-space: normal; 
+    word-break: break-word; 
     padding: 10px;
-    font-size: 16px; /* Tamaño de fuente ajustable según necesidades */
+    font-size: 16px; 
   }
   
   ion-text {
@@ -57,11 +52,20 @@ ion-card-title {
  
   ion-modal#problema-modal {
     --width: 80%;
-    --height: 60%;
+    --height: 40%;
     --border-radius: 12px;
     --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     --background: rgb(255, 255, 255); /* Fondo semitransparente */
     --backdrop-opacity: 0.3; /* Ver un poco del fondo */
+    transition: all 0.3s ease; /* Suaviza el cambio de tamaño */
+  }
+  
+  ion-modal#problema-modal.expanded-modal {
+    --height: 60%; /* Aumenta la altura del modal cuando se selecciona "Otro" */
+  }
+
+  ion-modal#problema-modal.keyboard-active {
+    --height: 100%; /* Se ajusta al 100% cuando el teclado está visible */
   }
   
   ion-modal#problema-modal h2 {
@@ -73,9 +77,14 @@ ion-card-title {
   ion-modal#problema-modal .wrapper {
     padding: 20px;
   }
-
   
-
+  .wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: height 0.3s ease; /* Suaviza el cambio de altura */
+  }
 
   ion-modal#evidencia-modal {
     --width: 95%;
@@ -96,12 +105,9 @@ ion-card-title {
     padding: 20px;
   }
 
-  .wrapper {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Coloca los botones al final */
-  }
+
+  
+  
 
   .wrapper-evidencia {
     display: flex;
@@ -122,6 +128,18 @@ ion-card-title {
     padding: 10px 0;
     z-index: 10; /* Asegura que los botones se mantengan por encima del contenido */
     margin-inline: 10px;
+  }
+  
+  .alert-info {
+    display: flex;
+    align-items: center;
+    background-color: #f1d1d1;
+    color: #600c0c;
+    border: 1px solid #ebbebe;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 10px;
+    font-size: 14px;
   }
   
   
