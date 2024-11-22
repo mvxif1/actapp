@@ -12,7 +12,7 @@ interface Ticket {
   titulo: string;
   detalle: string;
   guia: string | null;
-  notas: Notas[];
+  notas: Notas[]; 
 }
 
 interface Notas {
@@ -43,7 +43,7 @@ export class DespachadosPage implements OnInit {
   password: string = '';
 
   guiaArray: Guia[] = [];
-
+  notasArray: Notas[] = [];
   // carga por 10 tickets
   displayGuias: Guia[] = [];
   numGuiasCarga: number = 10;
@@ -57,7 +57,7 @@ export class DespachadosPage implements OnInit {
   selectedGuia: Guia | null = null;
   selectedTicket: Ticket | null = null;
   busquedaGuias: boolean = true;
-
+  selectedNotas: any[] = [];
   // mostrar contenidos de botones
   mostrarDetalle = false;
   mostrarContenido = false;
@@ -140,40 +140,41 @@ export class DespachadosPage implements OnInit {
 
   async fetchTickets() {
     this.isLoading = true;
-    const loading = await this.Cargando();
-    this.api.getListTicketsDespachados(this.username, this.password).subscribe({
-      next: (response) => {
-        console.log("Datos originales: ",response);
-        this.guiaArray = response.tickets || [];
-        this.guiaArray.shift()
-        this.guiaArray = response.tickets.map((guia: any) => {
-          if (guia.ticket && typeof guia.ticket === 'object') {
-            guia.ticket = Object.values(guia.ticket);
-            if (guia.ticket.length > 0) {
-              guia.ticket.pop();
+  
+    // Realizar la suscripción al observable
+    this.api.getListTicketsDespachados(this.username, this.password).subscribe(
+      (response: any) => {
+        console.log(response); // Verifica la estructura de la respuesta
+  
+        // Suponiendo que 'response' tiene los datos que necesitas, 
+        // estructuramos el array de guiás con la información correspondiente
+  
+        this.guiaArray = response.tickets.map((ticketData: any) => {
+          return {
+            guia: ticketData.guia, // Aquí asignamos la guia
+            ticket: {
+              id: ticketData.id,      // ID del ticket
+              titulo: ticketData.titulo, // Título del ticket
+              detalle: ticketData.detalle, // Detalles del ticket
+              guia: ticketData.guia, // Guía asociada al ticket
+              notas: ticketData.notas // Notas del ticket
             }
-            guia.ticket.forEach((ticket: any) => {
-              ticket.notas = JSON.parse(guia.Notas) || [];
-            });
-            
-          }
-          
-          return guia;
-        }) || [];
-        console.log("Datos convertidos: ",this.guiaArray);
-        this.filtroTicketArray = this.guiaArray;
-        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+          };
+        });
+  
+        // Inicializar el filtro de tickets
+        this.filtroTicketArray = [...this.guiaArray];
+        this.displayGuias = this.guiaArray.slice(0, this.numGuiasCarga);
         this.currentBatchIndex = this.numGuiasCarga;
-        this.isLoading = false;
-        this.ocultarCarga(loading);
       },
-      error: (error) => {
-        console.error('Error al obtener los tickets:', error);
-        this.ocultarCarga(loading);
-      },
-    });
+      (error) => {
+        console.error('Error al obtener los tickets', error);
+      }
+    );
   }
   
+  
+    
 
   onGuiaSelect(guiaId: string) {
     this.selectedGuia = this.guiaArray.find((guia) => guia.guia === guiaId) || null;
@@ -189,9 +190,19 @@ export class DespachadosPage implements OnInit {
       this.mostrarDetalle = !this.mostrarDetalle;
     } else {
       this.selectedTicket = this.selectedGuia?.ticket.find((t) => t.id === ticketId) || null;
+      this.selectedNotas = this.selectedTicket ? this.selectedTicket.notas : [];
       this.mostrarDetalle = true;
     }
+  
   }
+
+  onNotasSelect(notasId: number) {
+    const selectedNota = this.selectedTicket?.notas.find(nota => nota.id === notasId);
+    if (selectedNota) {
+      console.log('Nota seleccionada:', selectedNota);
+    }
+  }
+  
 
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
