@@ -18,8 +18,12 @@
     <div>
       <ion-grid>
         <ion-row style="display: flex; align-items: center; justify-content: space-around;">
-          <ion-text style="font-weight: 600; font-size: 16px; margin-inline: 10px;">GUIAS DESPACHADAS:</ion-text>
-          <ion-text style="font-weight: 600; background-color: #ffb938; color: rgb(0, 0, 0); border-radius: 50px; padding: 0px 20px; font-size: 25px;">{{guiaArray.length}}</ion-text>
+          <ion-label style="font-weight: 600; font-size: 25px; margin-inline: 10px;">GUIAS DESPACHADAS:</ion-label>
+          <ion-badge color="success" style="font-weight: 600; font-size: 35px; padding: 0px 15px; color: black;">{{guiaArray.length}}</ion-badge>
+          <div class="alert-info">
+            <ion-icon name="information-circle-outline" style="margin-right: 5px; font-size: 20px;"></ion-icon>
+            Se consideran las guias de los ultimos 10 días
+          </div>
         </ion-row>
       </ion-grid>
     </div>
@@ -43,41 +47,49 @@
     </ion-item>
   </ion-list>
 
-  <ion-list class="ion-text-center" *ngIf="filtroTicketArray.length === 0 && !isLoading && !selectedGuia && displayGuias.length === 0">
-    <ion-text>No hay tickets disponibles</ion-text>
-  </ion-list>
-
   <ion-list *ngIf="selectedGuia && !isLoading">
-    <ion-card-title style="font-size: 18px; font-weight: 600; margin-top: 10px;">DETALLE GUIA: {{ selectedGuia?.guia }}</ion-card-title>
+    <ion-card-title style="font-size: 18px; font-weight: 600; margin-top: 10px;">DETALLE GUIA DESPACHADA: {{ selectedGuia?.guia }}</ion-card-title>
     <ion-text style="margin-top: 10px; text-align: center;"><strong>TICKETS ASOCIADOS</strong></ion-text>
-    
-    <div *ngFor="let ticket of selectedGuia?.ticket">
-      <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+    <div>
+      <div *ngFor="let ticket of selectedGuia?.ticket"
+        style="display: flex; justify-content: center; align-items: center; width: 100%;">
         <strong style="text-align: center; display: block;">{{ ticket.id }}</strong>
         <ion-button fill="clear" shape="round" style="margin-left: 10px;" (click)="onTicketSelect(ticket.id)">
-          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id === ticket.id && mostrarDetalle" name="eye-off"></ion-icon>
+          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id === ticket.id && mostrarDetalle"
+            name="eye-off"></ion-icon>
           <ion-icon slot="icon-only" *ngIf="selectedTicket?.id !== ticket.id || !mostrarDetalle" name="eye"></ion-icon>
         </ion-button>
-      </div>  
-
-      <!-- Mostrar las notas del ticket -->
-      <div *ngIf="selectedTicket && selectedTicket.id === ticket.id">
-        <div *ngFor="let nota of selectedNotas">
-          <p>Nota ID: {{ nota.id }}</p>
-          <p>Item Type: {{ nota.itemtype }}</p>
-          <p>Items ID: {{ nota.items_id }}</p>
-        </div>
       </div>
-    </div>
 
+      <ion-list *ngIf="selectedTicket && !isLoading && mostrarDetalle">
+        <ion-text class="btn-titulo" style="font-size: 18px; font-weight: 600;">DETALLE TICKET {{selectedTicket.id}}</ion-text>
+        <ion-item>
+          <ion-list>
+            <div><strong>ID:</strong> {{ selectedTicket.id }}</div>
+            <div><strong>TÍTULO: </strong><ion-text [innerHTML]="decodeHtml(selectedTicket.titulo)"></ion-text></div>
+            <div style="display: flex; align-items: center;"><strong>Contenido: </strong>
+              <ion-button style="margin-left: 5px;" fill="outline" (click)="despliegaContenido()">
+                {{ mostrarContenido ? 'Ocultar contenido' : 'Ver contenido' }}
+              </ion-button>
+            </div>
+            <div>
+              <ion-text *ngIf="mostrarContenido"
+                [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
+            </div>
+            <div><strong>GUIA:</strong> {{ selectedTicket.guia }}</div>
+          </ion-list>
+        </ion-item>
+      </ion-list>
+    </div>
+    <br>
     <ion-item class="ion-text-center">
-      <ion-button style="width: 100%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()">
-        <ion-icon style="margin-right: 5px; font-size: 20px;" name="arrow-back-circle-outline"></ion-icon>Volver a la lista
-      </ion-button>
+      <ion-button style="width: 100%; height: 50px;" *ngIf="selectedGuia" (click)="volverListTicket()"><ion-icon style="margin-right: 5px; font-size: 20px;" name="arrow-back-circle-outline"></ion-icon>Volver a la lista</ion-button>
     </ion-item>
   </ion-list>
+  
 
   <ion-infinite-scroll [disabled]="infiniteScrollDisabled" threshold="100px" (ionInfinite)="loadMoreTickets($event)">
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más guias..."></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 </ion-content>
+

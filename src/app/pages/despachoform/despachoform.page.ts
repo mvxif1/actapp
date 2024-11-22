@@ -137,30 +137,7 @@ export class DespachoformPage implements OnInit {
     if (this.displayGuias.length >= this.filtroTicketArray.length) {
       event.target.disabled = true;
     }
-  }
-
-  async fetchTickets() {
-    this.isLoading = true;
-    const loading = await this.Cargando();
-    this.api.getListTickets(this.username, this.password).subscribe({
-      next: (response) => {
-        console.log(response);
-        this.guiaArray = response.tickets || [];
-        this.guiaArray.shift();
-        this.filtroTicketArray = this.guiaArray;
-        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
-        this.isLoading = false;
-        this.ocultarCarga(loading);
-        
-      },
-      error: (error) => {
-        console.error('Error al obtener los tickets:', error);
-        this.ocultarCarga(loading);
-        this.isLoading = false;
-      },
-    });
-  }
-  
+  }  
 
   async filtrarTicket(event: any) {
     console.log('Evento de búsqueda:', event.target.value);  // Verifica el valor del input
@@ -191,6 +168,27 @@ export class DespachoformPage implements OnInit {
     }, 500);
   }
   
+  async fetchTickets() {
+    this.isLoading = true;
+    const loading = await this.Cargando();
+    this.api.getListTickets(this.username, this.password).subscribe(
+      (response: any) => {
+        console.log(response);
+        this.guiaArray = response.tickets || [];
+        this.guiaArray.shift();
+        this.filtroTicketArray = this.guiaArray;
+        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+        this.isLoading = false;
+        this.ocultarCarga(loading);
+        
+      },
+      (error) => {
+        console.error('Error al obtener los tickets:', error);
+        this.ocultarCarga(loading);
+        this.isLoading = false;
+      },
+    );
+  }
   
   onGuiaSelect(guiaId: string) {
     this.selectedGuia = this.guiaArray.find(guia => guia.guia === guiaId) || null;
@@ -469,7 +467,6 @@ export class DespachoformPage implements OnInit {
   aceptarEvidencia() {
     console.log('Evidencia Aceptada');
     this.evidenciaModal.dismiss();
-    this.db.presentAlertP("Evidencia guardada con exito!") 
   }
   
     // Lógica para cancelar la evidencia

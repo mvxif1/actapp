@@ -2,36 +2,38 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 
+interface Notas {
+  id: string;
+  itemtype: string;
+  items_id: string;
+  date: string;
+  users_id: string;
+  users_id_editor: string;
+  content: string;
+  is_private: string;
+  requesttypes_id: string;
+  date_mod: string;
+  date_creation: string;
+  timeline_position: string;
+  sourceitems_id: string;
+  sourceof_items_id: string;
+  links: any[];
+}
+
+interface Ticket {
+    id: string;
+    titulo: string;
+    detalle: string;
+    guia: string | null;
+    notas: Notas[]; 
+}
+
 interface Guia {
   guia: string;
   ticket: Ticket[];
 }
 
-interface Ticket {
-  id: string;
-  titulo: string;
-  detalle: string;
-  guia: string | null;
-  notas: Notas[]; 
-}
 
-interface Notas {
-  id: number;
-  itemtype: string;
-  items_id: number;
-  date: string;
-  users_id: number;
-  users_id_editor: number;
-  content: string;
-  is_private: number;
-  requesttypes_id: number;
-  date_mod: string;
-  date_creation: string;
-  timeline_position: number;
-  sourceitems_id: number;
-  sourceof_items_id: number;
-  links: any[];
-}
 
 @Component({
   selector: 'app-despachados',
@@ -140,36 +142,24 @@ export class DespachadosPage implements OnInit {
 
   async fetchTickets() {
     this.isLoading = true;
-  
-    // Realizar la suscripción al observable
+    const loading = await this.Cargando();
     this.api.getListTicketsDespachados(this.username, this.password).subscribe(
       (response: any) => {
-        console.log(response); // Verifica la estructura de la respuesta
-  
-        // Suponiendo que 'response' tiene los datos que necesitas, 
-        // estructuramos el array de guiás con la información correspondiente
-  
-        this.guiaArray = response.tickets.map((ticketData: any) => {
-          return {
-            guia: ticketData.guia, // Aquí asignamos la guia
-            ticket: {
-              id: ticketData.id,      // ID del ticket
-              titulo: ticketData.titulo, // Título del ticket
-              detalle: ticketData.detalle, // Detalles del ticket
-              guia: ticketData.guia, // Guía asociada al ticket
-              notas: ticketData.notas // Notas del ticket
-            }
-          };
-        });
-  
-        // Inicializar el filtro de tickets
-        this.filtroTicketArray = [...this.guiaArray];
-        this.displayGuias = this.guiaArray.slice(0, this.numGuiasCarga);
-        this.currentBatchIndex = this.numGuiasCarga;
+        
+        this.guiaArray = response.tickets || [];
+        this.guiaArray.shift();
+        console.log(this.guiaArray);
+        this.filtroTicketArray = this.guiaArray;
+        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+        this.isLoading = false;
+        this.ocultarCarga(loading);
+        
       },
       (error) => {
-        console.error('Error al obtener los tickets', error);
-      }
+        console.error('Error al obtener los tickets:', error);
+        this.ocultarCarga(loading);
+        this.isLoading = false;
+      },
     );
   }
   
@@ -177,32 +167,39 @@ export class DespachadosPage implements OnInit {
     
 
   onGuiaSelect(guiaId: string) {
-    this.selectedGuia = this.guiaArray.find((guia) => guia.guia === guiaId) || null;
+    this.selectedGuia = this.guiaArray.find(guia => guia.guia === guiaId) || null;
     this.infiniteScrollDisabled = true;
     this.busquedaGuias = false;
     if (this.selectedGuia) {
       this.displayGuias = [];
     }
+
+    console.log("Este es un selected guia: ",this.selectedGuia)
   }
 
   onTicketSelect(ticketId: string) {
     if (this.selectedTicket && this.selectedTicket.id === ticketId) {
       this.mostrarDetalle = !this.mostrarDetalle;
     } else {
-      this.selectedTicket = this.selectedGuia?.ticket.find((t) => t.id === ticketId) || null;
-      this.selectedNotas = this.selectedTicket ? this.selectedTicket.notas : [];
+      this.selectedTicket = this.selectedGuia?.ticket.find(t => t.id === ticketId) || null;
       this.mostrarDetalle = true;
     }
-  
-  }
+    
+    if (this.onNotasSelect("") as any) {
+      this.selectedNotas = this.selectedTicket!.notas;  // Aquí se guardan todas las notas del ticket
+    }
 
-  onNotasSelect(notasId: number) {
+    console.log("Estas son las notas del ticket: ", this.selectedNotas);
+    console.log("Este es un selected ticket: ", this.selectedTicket);
+  }
+  
+
+  onNotasSelect(notasId: string) {
     const selectedNota = this.selectedTicket?.notas.find(nota => nota.id === notasId);
     if (selectedNota) {
       console.log('Nota seleccionada:', selectedNota);
     }
   }
-  
 
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');

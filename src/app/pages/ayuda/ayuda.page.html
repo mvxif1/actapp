@@ -6,19 +6,20 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <div style="display: flex; margin-top: 5px; margin-left: 5px;">
-    <ion-button color="primary" (click)="volverAtras()"><ion-icon name="arrow-back-outline"></ion-icon></ion-button>
-  </div>
 
 
-  <ion-grid class="ion-text-center">
-    <ion-row>
+  <br>
+  <ion-grid *ngFor="let ayuda of displayAyuda">
+    <ion-row> 
       <ion-col>
-        <ion-card-title style="font-weight: 700; margin-top: 10px;">{{ayuda.titulo}}</ion-card-title>
+        <ion-card-title style="font-weight: 700; text-align: center;">{{ayuda.titulo}}</ion-card-title>
         <br>
-        <ion-text>{{ayuda.texto}}</ion-text>
+        <div style="margin-inline: 20px; white-space: pre-wrap; text-align: center;">{{ayuda.texto}}</div>
       </ion-col>
     </ion-row>
   </ion-grid>
-
+  <br>
+  <ion-item-divider>
+    <ion-button style="width: 100%; height: 50px;" (click)="volverAtras()"><ion-icon style="margin-right: 5px; font-size: 20px;" name="arrow-back-circle-outline"></ion-icon>Volver a la lista</ion-button>
+  </ion-item-divider>
 </ion-content>

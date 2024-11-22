@@ -17,3 +17,14 @@ ion-text {
   text-align: center;
   font-weight: 500;
 }
+.alert-info {
+  display: flex;
+  align-items: center;
+  background-color: #f1d1d1;
+  color: #600c0c;
+  border: 1px solid #ebbebe;
+  border-radius: 5px;
+  padding: 10px 35px;
+  margin: 10px 10px;
+  font-size: 14px;
+}

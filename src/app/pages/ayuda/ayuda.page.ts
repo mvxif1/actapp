@@ -3,6 +3,11 @@ import { NavController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { DbService } from 'src/app/services/db.service';
 
+interface Ayuda {
+  titulo: string;
+  texto: string;
+}
+
 @Component({
   selector: 'app-ayuda',
   templateUrl: './ayuda.page.html',
@@ -11,26 +16,22 @@ import { DbService } from 'src/app/services/db.service';
 export class AyudaPage implements OnInit {
   username: string = '';
   password: string = '';
-  ayuda: any= {};
+  displayAyuda: Ayuda[] = [];
   constructor(private api: ApiService, private db: DbService, private navCtrl: NavController) { }
 
   ngOnInit() {
-    this.getAyuda();
-  }
-  getAyuda() {
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
+    this.getAyuda();
+  }
+
+  getAyuda() {
     this.api.getAyuda(this.username, this.password).subscribe(
       (response: any) => {
         console.log(response);
-        const ayudaTexto = response.ayuda;
-        this.ayuda = ayudaTexto; // Asignamos el valor de la respuesta a la propiedad 'ayuda'
-      },
-      (error) => {
-        console.error('Error al obtener la ayuda:', error);
-        this.ayuda = 'Hubo un error al obtener la ayuda. Intenta nuevamente.';
-      }
-    );
+        this.displayAyuda = response.ayuda;
+        }
+    )
   }
 
   volverAtras() {

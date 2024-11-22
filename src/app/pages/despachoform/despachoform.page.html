@@ -18,10 +18,8 @@
     <div>
       <ion-grid>
         <ion-row style="display: flex; align-items: center; justify-content: space-around;">
-          <ion-text style="font-weight: 600; font-size: 16px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO:
-          </ion-text>
-          <ion-text
-            style="font-weight: 600; background-color: #ffb938; color: rgb(0, 0, 0); border-radius: 50px; padding: 0px 20px; font-size: 25px;">{{guiaArray.length}}</ion-text>
+          <ion-label style="font-weight: 600; font-size: 18px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO:</ion-label>
+          <ion-badge color="warning" style="font-weight: 600; font-size: 25px; padding: 0px 15px;">{{guiaArray.length}}</ion-badge>
         </ion-row>
       </ion-grid>
     </div>
@@ -77,8 +75,7 @@
               </ion-button>
             </div>
             <div>
-              <ion-text *ngIf="mostrarContenido"
-                [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
+                <ion-text *ngIf="mostrarContenido" [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
             </div>
             <div><strong>GUIA:</strong> {{ selectedTicket.guia }}</div>
           </ion-list>

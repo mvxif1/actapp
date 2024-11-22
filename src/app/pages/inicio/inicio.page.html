@@ -11,7 +11,13 @@
   <br>
   <!-- <ion-button expand="full" [routerLink]="['/ingresarform']">Ingresar Ticket</ion-button> -->
   <br>
-  <ion-button expand="block" [routerLink]="['/despachoform']">Mis Despachos Pendientes</ion-button>
+  <ion-button expand="block" [routerLink]="['/despachoform']">
+    <ion-icon name="time-outline" slot="end"></ion-icon> Mis Despachos Pendientes
+  </ion-button>
   <br>
-  <ion-button expand="block" [routerLink]="['/despachados']">Mis Despachos Pealizados</ion-button>
+  <ion-button expand="block" [routerLink]="['/despachados']">
+    <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Mis Despachos Realizados
+  </ion-button>
+  
+  
 </ion-content>
