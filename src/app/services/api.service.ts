@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://itsm.act.cl/ACTServicios/api/apiApp.php';
+  private baseUrl = 'https://desarrollo.act.cl/ACTServicios/api/apiApp.php';
   private usuario: { username: string; sessionToken: string } | null = null;
   constructor(private http: HttpClient) {}
   
