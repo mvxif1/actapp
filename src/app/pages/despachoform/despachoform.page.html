@@ -144,6 +144,7 @@
               <ion-row>
                 <ion-col size="6" *ngFor="let photo of additionalPhotos; let i = index" class="cuadroimagen">
                   <img [src]="photo" width="100%" height="auto" alt="Foto capturada">
+                  
                   <div class="ion-text-center">
                     <ion-button (click)="deletePhotoAditional(i)" fill="clear" class="delete-button">
                       <ion-icon name="trash-outline" style="color: white;"></ion-icon>
@@ -152,22 +153,27 @@
                 </ion-col>
               </ion-row>
             </ion-grid>
+
           </div>
-    
-          <!-- Botones para tomar una foto con la cámara o seleccionar desde la galería -->
-          <ion-item>
-            <ion-button color="success" style="width: 50%;" (click)="takeEvidencePhoto()">Cámara
+
+            <!-- Botones para tomar una foto con la cámara o seleccionar desde la galería -->
+          <div class="button-evidencia">
+            <ion-button color="success" style="width: 50%; height: 80%;" (click)="takeEvidencePhoto()">Cámara
               <ion-icon name="camera-outline" style="margin-left: 5px;"></ion-icon>
             </ion-button>
-            <ion-button color="secondary" style="width: 50%;" (click)="selectEvidenceFromGallery()">Galería
+            <ion-button color="secondary" style="width: 50%; height: 80%;" (click)="selectEvidenceFromGallery()">Galería
               <ion-icon name="images-outline" style="margin-left: 5px;"></ion-icon>
             </ion-button>
-          </ion-item>
+          </div>
           
           <div class="alert-info">
-            <ion-icon name="information-circle-outline" style="margin-right: 5px; font-size: 20px;"></ion-icon>
-            Las imagenes adjuntas serán enviadas al momento de cerrar el ticket 
+            <ion-icon name="warning-outline" style="margin-right: 5px; font-size: 35px;"></ion-icon>
+            <ul style="margin: 0; padding-left: 20px;">
+              <li>Las imágenes adjuntas serán enviadas al momento de cerrar el ticket</li>
+              <li>Se pueden adjuntar un máximo de 10 fotos</li>
+            </ul>
           </div>
+          
           <!-- Botones de Aceptar y Cancelar -->
           <div class="button-evidencia">
             <ion-button color="primary" style="width: 50%;" (click)="aceptarEvidencia()" [disabled]="additionalPhotos.length === 0">Aceptar</ion-button>

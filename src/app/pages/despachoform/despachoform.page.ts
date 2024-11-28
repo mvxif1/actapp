@@ -359,7 +359,7 @@ export class DespachoformPage implements OnInit {
     const loading = await this.loadingCtrl.create({
       message: 'Cargando imagen...',
       spinner: 'crescent',
-      backdropDismiss: false // Para evitar que el loading se cierre cuando toquen fuera
+      backdropDismiss: false 
     });
 
     await loading.present();
@@ -373,7 +373,7 @@ export class DespachoformPage implements OnInit {
 
   async takeEvidencePhoto() {
     this.loadingImageAdicional = true;
-    const loading = await this.showLoading(); // Mostrar loading cuando empieza a cargar la foto
+    const loading = await this.showLoading();
   
     const options: CameraOptions = {
       quality: 70,
@@ -383,15 +383,17 @@ export class DespachoformPage implements OnInit {
       saveToPhotoAlbum: false,
       correctOrientation: true,
     };
-
+  
+    if (this.additionalPhotos.length >= 10) {
+      this.loadingImageAdicional = false;
+      await this.hideLoading(loading);
+      return this.db.presentAlertN('Límite de fotos superado. n\ Solo puedes adjuntar un máximo de 10 fotos.');
+    }
+  
     this.camera.getPicture(options).then(async (imageData) => {
       const compressedImage = await this.compressImage('data:image/jpeg;base64,' + imageData);
       this.additionalPhotos.push(compressedImage);
   
-      if (this.additionalPhotos.length > 10) {
-        this.additionalPhotos.splice(0, 1); // Limita a 10 fotos
-      }
-
       this.cdr.detectChanges(); // Forzar detección de cambios
       this.loadingImageAdicional = false;
       await this.hideLoading(loading);
@@ -401,7 +403,7 @@ export class DespachoformPage implements OnInit {
       this.hideLoading(loading); 
     });
   }
-
+  
   async selectEvidenceFromGallery() {
     this.loadingImageAdicional = true;
     const loading = await this.showLoading();
@@ -412,15 +414,18 @@ export class DespachoformPage implements OnInit {
       sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
       saveToPhotoAlbum: false,
     };
-
+  
+    if (this.additionalPhotos.length >= 10) {
+      this.loadingImageAdicional = false;
+      await this.hideLoading(loading);
+      return this.db.presentAlertN('Límite de fotos superado. n\ Solo puedes adjuntar un máximo de 10 fotos.');
+      
+    }
+  
     this.camera.getPicture(options).then(async (imageData) => {
       const compressedImage = await this.compressImage('data:image/jpeg;base64,' + imageData);
       this.additionalPhotos.push(compressedImage);
   
-      if (this.additionalPhotos.length > 10) {
-        this.additionalPhotos.splice(0, 1); // Limita a 10 fotos
-      }
-
       this.cdr.detectChanges(); // Forzar detección de cambios
       this.loadingImageAdicional = false;
       await this.hideLoading(loading); // Ocultar loading después de cargar la imagen
@@ -469,14 +474,11 @@ export class DespachoformPage implements OnInit {
     this.evidenciaModal.dismiss();
   }
   
-    // Lógica para cancelar la evidencia
   cancelarEvidencia() {
     console.log('Operación Cancelada');
     this.additionalPhotos.splice(0, this.additionalPhotos.length);
     this.evidenciaModal.dismiss();
   }
-  
-  //*************************************************************//
 
   //************************* PROBLEMA AL ENTREGAR DESPACHO ************************************
   getProblema() {
