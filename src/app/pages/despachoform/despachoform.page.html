@@ -110,27 +110,32 @@
         </ion-item>
       </ion-grid>
 
-      <ion-item class="ion-text-center">
+      <ion-item-divider class="ion-text-center">
         <ion-button color="success" style="width: 50%;" (click)="takePhoto()">Cámara<ion-icon name="camera-outline"
             style="margin-left: 5px;"></ion-icon></ion-button>
         <ion-button color="secondary" style="width: 50%;" (click)="selectFromGallery()">Galería<ion-icon
             name="images-outline" style="margin-left: 5px;"></ion-icon></ion-button>
-      </ion-item>
-      <ion-item class="ion-text-center">
-        <ion-button color="medium" style="width: 100%; height: 40px;" id="open-evidencia-modal">Adjuntar evidencia adicional<ion-icon style="margin-left: 5px;"
-          name="images-outline"></ion-icon></ion-button>
-      </ion-item>
+      </ion-item-divider>
+      <ion-item-divider class="ion-text-center">
+        <ion-button color="medium" style="width: 100%; height: 40px;" id="open-evidencia-modal">Adjuntar evidencia adicional<ion-icon style="margin-left: 5px;" name="images-outline"></ion-icon><ion-badge color="light" style="font-weight: 600; font-size: 15px; margin-left: 20px; padding: 3px 3px;">{{additionalPhotos.length}}</ion-badge></ion-button>
+      </ion-item-divider>
     </ion-list>
 
     <ion-modal id="evidencia-modal" #evidenciaModal trigger="open-evidencia-modal">
       <ng-template>
         <div class="wrapper-evidencia">
-          <h2>Subir Evidencia Adicional</h2>
+
+          <ion-grid style="margin-top: 10px;">
+            <ion-row style="display: flex; align-items: center; justify-content: space-around;">
+              <ion-label style="font-weight: 600; font-size: 25px; margin-inline: 10px;">Subir Evidencia Adicional</ion-label>
+              <ion-badge color="warning" style="font-weight: 600; font-size: 25px;">{{additionalPhotos.length}}</ion-badge>
+            </ion-row>
+          </ion-grid>
     
           <!-- Contenedor con scroll para las fotos -->
           <div class="photos-container">
             <!-- Condicional para mostrar fotos o mensaje si no hay fotos -->
-            <ion-grid style="width: 100%; height: 100%;" *ngIf="additionalPhotos.length === 0">
+            <ion-grid style="height: 100%;" *ngIf="additionalPhotos.length === 0">
               <ion-row style="height: 100%;">
                 <ion-col size="12" style="background-color: white; border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                   <div style="color: gray; font-weight: 500;">
@@ -195,14 +200,14 @@
                 <ion-item>
                   <ion-label position="stacked" style="font-size: 18px; width: 100%;">Selecciona una opción</ion-label>
                   <ion-select formControlName="tipoProblema" placeholder="Selecciona un problema..." [interface]="'popover'">
-                    <ion-select-option class="ion-text-wrap" *ngFor="let opcion of opciones">{{ opcion }}</ion-select-option>
+                    <ion-select-option class="ion-text-wrap" *ngFor="let opcion of opciones" [value]="opcion.nombre">{{ opcion.nombre }}</ion-select-option>
                   </ion-select>
                 </ion-item>
               </ion-list>
             </form>
     
             <form [formGroup]="otroProblemaForm">
-              <ion-item *ngIf="problemaForm.get('tipoProblema')!.value === 'Otro'">
+              <ion-item *ngIf="problemaForm.get('tipoProblema')!.value === 'Otros'">
                 <ion-textarea placeholder="Describe el problema" formControlName="otroProblema" (ionInput)="onInputText()">
                 </ion-textarea>
               </ion-item>

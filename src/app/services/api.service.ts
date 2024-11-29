@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://desarrollo.act.cl/ACTServicios/api/apiApp.php';
+  private baseUrl = 'https://itsm.act.cl/ACTServicios/api/apiApp.php';
   private usuario: { username: string; sessionToken: string } | null = null;
   constructor(private http: HttpClient) {}
   
@@ -81,12 +81,12 @@ export class ApiService {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  setTicketNota(username: string, password: string, idticket: string, nota: string): Observable<any> {
+  setTicketNota(username: string, password: string, idticket: string, nota: string, notaid: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTicketNota&token=${token}&idticket=${idticket}&nota=${nota}`;
+    const body = `ACCION=setTicketNota&token=${token}&idticket=${idticket}&nota=${nota}&notaid=${notaid}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
   

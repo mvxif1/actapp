@@ -22,6 +22,11 @@ interface Guia {
   ticket: Ticket[];
 }
 
+interface Opciones{
+  id: string;
+  nombre: string;
+}
+
 @Component({
   selector: 'app-despachoform',
   templateUrl: './despachoform.page.html',
@@ -64,7 +69,7 @@ export class DespachoformPage implements OnInit {
 
 
   //problemas con entrega
-  opciones: string[] = []; // Propiedad para almacenar las opciones
+  opciones: Opciones[] = []; // Propiedad para almacenar las opciones
   selectedProblema: string | null = null;
   problemaForm!: FormGroup;
   otroProblemaForm!: FormGroup;
@@ -208,22 +213,24 @@ export class DespachoformPage implements OnInit {
     }
   }
   
-  
+  variablesVacias(){
+    this.selectedGuia = null;
+    this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
+    this.isLoading = false;
+    this.mostrarContenido = false;
+    this.mostrarDetalle = false;
+    this.photos = [];
+    this.additionalPhotos = [];
+    this.infiniteScrollDisabled = false;
+    this.busquedaGuias = true;
+  }
 
   async volverListTicket() {
     this.isLoading = true;
     const loading = await this.Cargando();
     setTimeout(() => {
-      this.selectedGuia = null;
-      this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
-      this.isLoading = false;
       this.ocultarCarga(loading);
-      this.mostrarContenido = false;
-      this.mostrarDetalle = false;
-      this.photos = [];
-      this.additionalPhotos = [];
-      this.infiniteScrollDisabled = false;
-      this.busquedaGuias = true;
+      this.variablesVacias();
     }, 500);
   }
   
@@ -484,11 +491,7 @@ export class DespachoformPage implements OnInit {
   getProblema() {
     this.api.getListTipoProblema(this.username, this.password).subscribe({
       next: (response) => {
-        if (response && response.opciones) {
-          this.opciones = response.opciones;
-        } else {
-          console.error('Respuesta inesperada:', response);
-        }
+        this.opciones = response.opciones || [];
       },
       error: (error) => {
         console.error('Error al obtener los problemas:', error);
@@ -500,25 +503,24 @@ export class DespachoformPage implements OnInit {
       const tipoProblema = this.problemaForm.get('tipoProblema')?.value;
       var descripcionProblema = tipoProblema;
     
-      if (tipoProblema === 'Otro') {
+      if (tipoProblema === 'Otros') {
         descripcionProblema = this.otroProblemaForm.get('otroProblema')?.value;
       }
+
+      //atraves de opcion.nombre se obtiene el id con opcionSeleccionadaId.id
+      const opcionSeleccionadaId = this.opciones.find(opcion => opcion.nombre === tipoProblema);
       
       for (const ticket of this.selectedGuia!.ticket) {
         this.isLoading = true;
         const loading = await this.Cargando();
   
-        this.api.setTicketNota(this.username, this.password, ticket.id, descripcionProblema).subscribe({
+        this.api.setTicketNota(this.username, this.password, ticket.id, descripcionProblema, opcionSeleccionadaId!.id).subscribe({
           next: (response) =>{
             console.log(response);
-            this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
-            this.isLoading = false;
             this.ocultarCarga(loading);
-            this.busquedaGuias = true;
-            this.selectedGuia = null;
-            this.photos = [];
-            this.additionalPhotos = [];
+            this.variablesVacias();
             this.db.presentAlertP("Problema al entregar enviado correctamente!")
+            
           }
         });
       }
@@ -623,14 +625,8 @@ export class DespachoformPage implements OnInit {
         if (index !== -1) {
           this.guiaArray.splice(index, 1);
         }
-  
-        this.photos = [];
-        this.additionalPhotos = [];
-        this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
-        this.isLoading = false;
         this.ocultarCarga(loading);
-        this.busquedaGuias = true;
-        this.selectedGuia = null;
+        this.variablesVacias();
       } catch (error) {
         console.error(error);
         this.db.presentAlertN('Hubo un error al cerrar los tickets o subir las fotos. Intenta de nuevo.');
