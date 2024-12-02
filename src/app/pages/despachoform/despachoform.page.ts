@@ -639,4 +639,86 @@ export class DespachoformPage implements OnInit {
   }
   
 
+//EJEMPLO
+async cerrarTicketPC() {
+  const confirmar = await this.db.presentAlertConfirm('¿Estás seguro de que quieres cerrar todos los tickets de esta guía?', 'Sí', 'No');
+  if (!confirmar) {
+    await this.db.presentAlertN('Operación cancelada');
+    return;
+  }
+
+  if (this.internet.type === 'none') {
+    await this.db.presentAlertN('No hay conexión a internet. Por favor, conéctese a internet para cerrar los tickets.');
+    return;
+  }
+
+  // Creamos un input file para seleccionar la foto
+  const inputFile = document.createElement('input');
+  inputFile.type = 'file';
+  inputFile.accept = 'image/*';
+  
+  // Cuando se selecciona un archivo, lo procesamos
+  inputFile.onchange = async (event) => {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64Image = `data:image/jpeg;base64,${reader.result?.toString().split(',')[1]}`; // prefijo para visualizar correctamente
+        const archivoBase64 = base64Image.split(',')[1];
+        
+        // Continuamos con el proceso de cerrar el ticket
+        this.isLoading = true;
+        const loading = await this.Cargando();
+
+        if (this.selectedGuia && this.selectedGuia.ticket.length > 0) {
+          const ticketPromises = this.selectedGuia.ticket.map(ticket => {
+            const fileType = file.type.split('/')[1]; // Obtener el tipo de archivo
+            const nombreArchivo = `_${this.selectedGuia!.guia}_${ticket.id}.${fileType}`;
+            
+            // Subir la foto principal
+            const cerrarTicketPromise = this.api.cerrarTicket(this.username, this.password, ticket.id, nombreArchivo, archivoBase64).toPromise()
+              .then(response => {
+                if (response.error !== 200) {
+                  throw new Error(`Error al cerrar el ticket ${ticket.id}: ${response.mensaje}`);
+                }
+                console.log(`Ticket ${ticket.id} cerrado correctamente`);
+              });
+
+            return cerrarTicketPromise;
+          });
+
+          try {
+            await Promise.all(ticketPromises); // Esperar a que todos los tickets se cierren
+            this.db.presentAlertP(`Todos los tickets de la guía ${this.selectedGuia?.guia} han sido cerrados exitosamente.`);
+
+            // Borrar la guía seleccionada y resetear variables
+            const index = this.guiaArray.findIndex(guia => guia.guia === this.selectedGuia?.guia);
+            if (index !== -1) {
+              this.guiaArray.splice(index, 1);
+            }
+            this.ocultarCarga(loading);
+            this.variablesVacias();
+          } catch (error) {
+            console.error(error);
+            this.db.presentAlertN('Hubo un error al cerrar los tickets o subir las fotos. Intenta de nuevo.');
+            this.isLoading = false;
+            this.ocultarCarga(loading);
+          }
+        } else {
+          this.db.presentAlertN('No se ha seleccionado una guía válida o no tiene tickets.');
+        }
+      };
+      
+      // Leer el archivo como base64
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Abrir el input para que el usuario seleccione una imagen
+  inputFile.click();
+}
+
+
+
 }
