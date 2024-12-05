@@ -10,14 +10,14 @@ export class ApiService {
   private usuario: { username: string; sessionToken: string } | null = null;
   constructor(private http: HttpClient) {}
   
-  iniciarSesion(username: string, password: string): Observable<any> {
+  iniciarSesion(username: string, password: string, uuid: string, platform: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=iniciarSesion&token=${token}`;
+    const body = `ACCION=iniciarSesion&token=${token}&uuid=${uuid}&platform=${platform}`;
     return this.http.post(this.baseUrl, body, { headers });
-  }
+  }  
 
   setUsuario(username: string, sessionToken: string): void {
     this.usuario = { username, sessionToken };
@@ -90,5 +90,13 @@ export class ApiService {
     return this.http.post(this.baseUrl, body, { headers });
   }
   
+  setTareaRetiro(username: string, password: string, idticket: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
 
 }

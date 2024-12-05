@@ -4,7 +4,7 @@ import { NavController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
 import { ApiService } from '../services/api.service';
 import { AppComponent } from '../app.component';
-
+import { Device } from '@capacitor/device';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -37,10 +37,16 @@ export class HomePage {
     const password = this.loginForm.value.password;
     const rememberMe = this.loginForm.value.rememberMe;
   
-    this.api.iniciarSesion(email, password).subscribe(
+    // Obtén información del dispositivo
+    const info = await Device.getInfo();
+    const id = await Device.getId();
+    const uuid = id.identifier || 'unknown';
+    const platform = info.platform || 'unknown';
+    
+    this.api.iniciarSesion(email, password, uuid, platform).subscribe(
       (response) => {
         const sessionToken = response.session_token;
-  
+        console.log(email, password, uuid, platform);
         if (sessionToken) {
           this.email = email;
           this.password = password;

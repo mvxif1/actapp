@@ -163,9 +163,6 @@ export class DespachadosPage implements OnInit {
     );
   }
   
-  
-    
-
   onGuiaSelect(guiaId: string) {
     this.selectedGuia = this.guiaArray.find(guia => guia.guia === guiaId) || null;
     this.infiniteScrollDisabled = true;

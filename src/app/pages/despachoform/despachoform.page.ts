@@ -20,6 +20,7 @@ interface Ticket {
 interface Guia {
   guia: string;
   ticket: Ticket[];
+  tareaid: any;
 }
 
 interface Opciones{
@@ -51,6 +52,7 @@ export class DespachoformPage implements OnInit {
   filtroTicketArray: Guia[] = [];
   searchTerm: string = '';
   selectedGuia: Guia | null = null;
+  selectedRetiro: any;
   selectedTicket: Ticket | null = null;
   busquedaGuias: boolean = true;
 
@@ -67,7 +69,7 @@ export class DespachoformPage implements OnInit {
 
   additionalPhotos: string[] = [];
 
-
+  id: string = '';
   //problemas con entrega
   opciones: Opciones[] = []; // Propiedad para almacenar las opciones
   selectedProblema: string | null = null;
@@ -119,15 +121,12 @@ export class DespachoformPage implements OnInit {
   
   //recarga tickets
   refreshTickets(event: any) {
-    this.selectedGuia = null;
-    this.displayGuias = this.guiaArray;
-    this.infiniteScrollDisabled = false;
-    this.mostrarContenido = false;
-    this.mostrarDetalle = false;
-    this.busquedaGuias = true;
-    this.fetchTickets();
-    event.target.complete();
+    this.variablesVacias(); // Esto reinicia las variables importantes
+    this.fetchTickets().then(() => {
+      event.target.complete(); // Marca el refresh como completo
+    });
   }
+  
 
   //carga tickets al hacer scroll
   loadMoreTickets(event: any) {
@@ -138,11 +137,13 @@ export class DespachoformPage implements OnInit {
   
     event.target.complete();
   
-    // Desactivar el scroll si todos los tickets están cargados
+    // Desactiva el scroll infinito si todas las guías han sido cargadas
     if (this.displayGuias.length >= this.filtroTicketArray.length) {
       event.target.disabled = true;
+      this.infiniteScrollDisabled = true;
     }
-  }  
+  }
+  
 
   async filtrarTicket(event: any) {
     console.log('Evento de búsqueda:', event.target.value);  // Verifica el valor del input
@@ -181,11 +182,12 @@ export class DespachoformPage implements OnInit {
         console.log(response);
         this.guiaArray = response.tickets || [];
         this.guiaArray.shift();
-        this.filtroTicketArray = this.guiaArray;
+        this.filtroTicketArray = [...this.guiaArray];
         this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga);
+        this.currentBatchIndex = this.numGuiasCarga; //ajuste de índice al nuevo batch cargado
+        this.infiniteScrollDisabled = this.displayGuias.length >= this.filtroTicketArray.length;
         this.isLoading = false;
         this.ocultarCarga(loading);
-        
       },
       (error) => {
         console.error('Error al obtener los tickets:', error);
@@ -193,6 +195,10 @@ export class DespachoformPage implements OnInit {
         this.isLoading = false;
       },
     );
+  }
+  
+  get guiasConTareaId(): number {
+    return this.guiaArray.filter(guia => guia.tareaid !== undefined && guia.tareaid !== null).length;
   }
   
   onGuiaSelect(guiaId: string) {
@@ -204,6 +210,29 @@ export class DespachoformPage implements OnInit {
     }
   }
   
+  async retirarDespacho(guiaId: string) {
+    this.isLoading = true;
+    const loading = await this.Cargando();
+    this.selectedRetiro = this.guiaArray.find(guia => guia.guia === guiaId) || null;
+    if (this.selectedRetiro && this.selectedRetiro.ticket && this.selectedRetiro.ticket.length > 0) {
+      for (const ticket of this.selectedRetiro.ticket) {
+        this.api.setTareaRetiro(this.username, this.password, ticket.id).subscribe(
+          (response) => {
+            this.isLoading = false;
+            this.ocultarCarga(loading);
+            this.db.presentAlertP("Despacho retirado con exito!")
+            this.fetchTickets();
+            console.log(`Retiro de despacho para ticket ${ticket.id} exitoso`, response);
+          },
+          (error) => {
+            console.error(`Error al retirar despacho para ticket ${ticket.id}`, error);
+          }
+        );
+      }
+    }
+  }
+  
+  
   onTicketSelect(ticketId: string) {
     if (this.selectedTicket && this.selectedTicket.id === ticketId) {
       this.mostrarDetalle = !this.mostrarDetalle;
@@ -213,25 +242,24 @@ export class DespachoformPage implements OnInit {
     }
   }
   
-  variablesVacias(){
+  variablesVacias() {
     this.selectedGuia = null;
-    this.displayGuias = this.filtroTicketArray.slice(0, this.numGuiasCarga); 
+    this.displayGuias = [];
+    this.filtroTicketArray = [];
+    this.currentBatchIndex = 0;
+    this.infiniteScrollDisabled = false;
     this.isLoading = false;
     this.mostrarContenido = false;
     this.mostrarDetalle = false;
     this.photos = [];
     this.additionalPhotos = [];
-    this.infiniteScrollDisabled = false;
     this.busquedaGuias = true;
   }
+  
 
   async volverListTicket() {
-    this.isLoading = true;
-    const loading = await this.Cargando();
-    setTimeout(() => {
-      this.ocultarCarga(loading);
-      this.variablesVacias();
-    }, 500);
+    await this.fetchTickets();
+    this.variablesVacias();
   }
   
 

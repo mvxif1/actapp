@@ -17,11 +17,16 @@
   <div *ngIf="!selectedGuia && filtroTicketArray.length > 0 && !isLoading" class="ion-text-center">
     <div>
       <ion-grid>
-        <ion-row style="display: flex; align-items: center; justify-content: space-around;">
+        <ion-row style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+          <ion-label style="font-weight: 600; font-size: 18px; margin-inline: 10px;">GUIAS POR RETIRAR:</ion-label>
+          <ion-badge color="warning" style="font-weight: 600; font-size: 25px; padding: 0px 15px; margin-inline: 10px;">{{ guiaArray.length - guiasConTareaId}}</ion-badge>
+        </ion-row>
+        <ion-row style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 10px;">
           <ion-label style="font-weight: 600; font-size: 18px; margin-inline: 10px;">GUIAS PENDIENTES DESPACHO:</ion-label>
-          <ion-badge color="warning" style="font-weight: 600; font-size: 25px; padding: 0px 15px;">{{guiaArray.length}}</ion-badge>
+          <ion-badge color="warning" style="font-weight: 600; font-size: 25px; padding: 0px 15px; margin-inline: 10px; width: 60px;">{{ guiasConTareaId }}</ion-badge>
         </ion-row>
       </ion-grid>
+      
     </div>
     <ion-card-title style="font-size: 18px; font-weight: 600;">SELECCIONE UNA GUIA</ion-card-title>
   </div>
@@ -35,7 +40,8 @@
               <ion-text style="font-size: 20px;"><strong>GUIA:</strong> {{ ticket.guia }}</ion-text>
             </ion-col>
             <ion-col class="ion-text-center">
-              <ion-button size="default" shape="round" (click)="onGuiaSelect(ticket.guia)">Despachar</ion-button>
+              <ion-button size="default" shape="round" (click)="onGuiaSelect(ticket.guia)"><ion-icon name="arrow-redo-outline"></ion-icon></ion-button>
+              <ion-button size="default" *ngIf="!ticket.tareaid" shape="round" (click)="retirarDespacho(ticket.guia)" style="color: rgb(255, 255, 255); --background: #006600;" ><ion-icon name="cart-outline"></ion-icon></ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>
