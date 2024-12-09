@@ -24,10 +24,13 @@
             <div>Ingrese un usuario. </div>
           </div>
 
-          <ion-item>
-            <ion-label position="floating">Contraseña <ion-icon name="lock-closed-outline" slot="end"></ion-icon></ion-label>
-            <ion-input formControlName="password" type="password" placeholder="Ingresa tu Contraseña" (keydown.enter)="onEnterKeyPress()"></ion-input>
+          <ion-item style="align-items: center;">
+            <ion-label position="floating">
+              Contraseña <ion-icon name="lock-closed-outline" slot="end"></ion-icon></ion-label>
+            <ion-input formControlName="password" [type]="showPassword ? 'text' : 'password'" placeholder="Ingresa tu Contraseña" (keydown.enter)="onEnterKeyPress()"></ion-input>
+            <ion-icon slot="end" [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" (click)="togglePasswordVisibility()" style="cursor: pointer; color: #0054e9;"></ion-icon>
           </ion-item>
+          
           <div style="color: red; margin-left: 10px;" *ngIf="loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched">
             Ingrese una contraseña.
           </div>

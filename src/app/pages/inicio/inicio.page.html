@@ -6,17 +6,17 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-
-
   <br>
-  <!-- <ion-button expand="full" [routerLink]="['/ingresarform']">Ingresar Ticket</ion-button> -->
-  <br>
-  <ion-button expand="block" [routerLink]="['/despachoform']">
+  <ion-button *ngIf="noTecnico" expand="block" [routerLink]="['/despachoform']">
     <ion-icon name="time-outline" slot="end"></ion-icon> Mis Despachos Pendientes
   </ion-button>
-  <br>
-  <ion-button expand="block" [routerLink]="['/despachados']">
+  <br *ngIf="noTecnico">
+  <ion-button *ngIf="noTecnico" expand="block" [routerLink]="['/despachados']">
     <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Mis Despachos Realizados
+  </ion-button>
+  <br *ngIf="noTecnico">
+  <ion-button *ngIf="isTecnico" expand="block" [routerLink]="['/despachados']">
+    <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Casos Asignados
   </ion-button>
   
   

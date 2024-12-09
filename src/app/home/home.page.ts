@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 import { DbService } from 'src/app/services/db.service';
-import { ApiService } from '../services/api.service';
 import { AppComponent } from '../app.component';
 import { Device } from '@capacitor/device';
+import { Apiv4Service } from '../services/apiv4.service';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
@@ -13,10 +13,11 @@ import { Device } from '@capacitor/device';
 export class HomePage {
   loginForm!: FormGroup;
   mensajeError: String = '';
-  email: string = '';  // Agrega propiedad username
+  email: string = '';
   password: string = '';
+  showPassword: boolean = false;
 
-  constructor(private formBuilder: FormBuilder, private dbservice: DbService, private navCtrl: NavController, private api: ApiService, private appComponent: AppComponent) {
+  constructor(private formBuilder: FormBuilder, private dbservice: DbService, private navCtrl: NavController, private api: Apiv4Service, private appComponent: AppComponent) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required]],
       password: ['', Validators.required],
@@ -25,6 +26,9 @@ export class HomePage {
   }
 
   ngOnInit() {
+    localStorage.setItem('email', '');
+    localStorage.setItem('password', '');
+    localStorage.setItem('userType', '');
     this.checkRememberedSession();
   }
   onEnterKeyPress(){
@@ -46,7 +50,8 @@ export class HomePage {
     this.api.iniciarSesion(email, password, uuid, platform).subscribe(
       (response) => {
         const sessionToken = response.session_token;
-        console.log(email, password, uuid, platform);
+        const isTecnico = response.EsTecnico;
+        console.log(email, password, uuid, platform, isTecnico);
         if (sessionToken) {
           this.email = email;
           this.password = password;
@@ -54,11 +59,13 @@ export class HomePage {
           if (rememberMe) {
             localStorage.setItem('email', email);
             localStorage.setItem('password', password);
+            localStorage.setItem('userType', isTecnico);
           }
+          localStorage.setItem('userType', isTecnico);
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           this.loginForm.reset();
-          this.navCtrl.navigateForward('/inicio');
+          this.navCtrl.navigateRoot('/inicio');
           this.dbservice.presentAlertP("Has ingresado correctamente!");
         }
       },
@@ -70,7 +77,9 @@ export class HomePage {
     );
   }
   
-  
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword; // Alterna entre true y false
+  }
 
 
   private checkRememberedSession() {
