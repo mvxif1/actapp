@@ -60,12 +60,11 @@
     <div>
       <div *ngFor="let ticket of selectedGuia?.ticket"
         style="display: flex; justify-content: center; align-items: center; width: 100%;">
-        <strong style="text-align: center; display: block;">{{ ticket.id }}</strong>
-        <ion-button fill="clear" shape="round" style="margin-left: 10px;" (click)="onTicketSelect(ticket.id)">
-          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id === ticket.id && mostrarDetalle"
-            name="eye-off"></ion-icon>
-          <ion-icon slot="icon-only" *ngIf="selectedTicket?.id !== ticket.id || !mostrarDetalle" name="eye"></ion-icon>
-        </ion-button>
+        <strong style="text-align: center; display: block; margin-right: 10px;">{{ ticket.id }}</strong>
+        <ion-button style="--background: #ffffff00; color: #0054e9; --box-shadow: 0px 0px 0px #ffffff00;" (click)="onTicketSelect(ticket.id)">
+          <ion-icon [name]="isTicketVisible(ticket.id) ? 'eye-off' : 'eye'"></ion-icon>
+        </ion-button>        
+        
       </div>
 
       <ion-list *ngIf="selectedTicket && !isLoading && mostrarDetalle">
@@ -80,9 +79,15 @@
                 {{ mostrarContenido ? 'Ocultar contenido' : 'Ver contenido' }}
               </ion-button>
             </div>
-            <div>
-                <ion-text *ngIf="mostrarContenido" [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
-            </div>
+            <ion-grid>
+              <ion-row>
+                <ion-col>
+                  <ion-text *ngIf="mostrarContenido" [innerHTML]="decodeHtml(selectedTicket.detalle)" class="contenido-text"></ion-text>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+            
+            
             <div><strong>GUIA:</strong> {{ selectedTicket.guia }}</div>
           </ion-list>
         </ion-item>

@@ -1,0 +1,37 @@
+<ion-content [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+
+  <br>
+  <ion-grid *ngFor="let i of displayIncidencia">
+    <ion-row> 
+      <ion-col>
+        <ion-card color="light">
+          <ion-card-header>
+            <ion-row style="align-items: center;">
+            <ion-col><ion-card-title><strong>ID: {{i.id}}</strong></ion-card-title></ion-col>
+            </ion-row>
+            
+            <ion-card-subtitle style="margin-bottom: 10px;">{{i.name}}</ion-card-subtitle>
+            <ion-text><i class="bi bi-calendar-date" style="margin-bottom: 5px;"></i> {{ formatDate(i.begin) }}</ion-text>
+          </ion-card-header>
+        
+          <ion-card-content>
+            <ion-text [innerHTML]="decodeHtml(i.content)" color="medium"></ion-text>
+          </ion-card-content>
+          <div style="display: flex; margin-inline: 10px; margin-bottom: 10px;">
+            <ion-button color="primary" style="width: 50%;">Detalle</ion-button>
+            <ion-button color="danger" style="width: 50%;">Cerrar Ticket</ion-button>
+          </div>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <br>
+</ion-content>

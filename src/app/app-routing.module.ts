@@ -46,6 +46,14 @@ const routes: Routes = [
     path: 'despachados',
     loadChildren: () => import('./pages/despachados/despachados.module').then( m => m.DespachadosPageModule)
   },
+  {
+    path: 'solicitudes',
+    loadChildren: () => import('./pages/solicitudes/solicitudes.module').then( m => m.SolicitudesPageModule)
+  },
+  {
+    path: 'incidencias',
+    loadChildren: () => import('./pages/incidencias/incidencias.module').then( m => m.IncidenciasPageModule)
+  },
 
 
 ];
