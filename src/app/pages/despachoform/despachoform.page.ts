@@ -241,6 +241,10 @@ export class DespachoformPage implements OnInit {
       this.mostrarDetalle = true;
     }
   }
+
+  isTicketVisible(ticketId: string): boolean {
+    return this.selectedTicket?.id === ticketId && this.mostrarDetalle;
+  }
   
   variablesVacias() {
     this.selectedGuia = null;

@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://desarrollo.act.cl/ACTServicios/api/apiApp.php';
+  private baseUrl = 'https://desarrollo.act.cl/ACTServicios/apiv4/apiApp.php';
   private usuario: { username: string; sessionToken: string } | null = null;
   constructor(private http: HttpClient) {}
   
@@ -98,5 +98,15 @@ export class ApiService {
     const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
+
+  getTicketTecnico(username: string, password: string, tipo: number): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=getTicketTecnico&token=${token}&tipo=${tipo}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
 
 }
