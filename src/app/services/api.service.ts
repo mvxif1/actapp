@@ -99,14 +99,6 @@ export class ApiService {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  getTicketTecnico(username: string, password: string, tipo: number): Observable<any> {
-    const token = btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
-    const body = `ACCION=getTicketTecnico&token=${token}&tipo=${tipo}`;
-    return this.http.post(this.baseUrl, body, { headers });
-  }
 
 
 }

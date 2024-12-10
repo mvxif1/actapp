@@ -2,13 +2,29 @@ import { Component, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { DatePipe } from '@angular/common';
+import { Apiv4Service } from 'src/app/services/apiv4.service';
 
 interface Incidencia {
-  id: string;
-  name: string;
-  begin: string;
-  content: string;
-  status: string;
+  begin: any;
+  content: any;
+  id: any;
+  itilcategories_id: any;
+  state: any;
+  title: any;
+  type: any;
+  urgency: any;
+}
+
+interface Actividad {
+  begin: any;
+  content: any;
+  id: any;
+  itilcategories_id: any;
+  state: any;
+  title: any;
+  type: any;
+  urgency: any;
+  
 }
 
 @Component({
@@ -22,13 +38,18 @@ export class IncidenciasPage implements OnInit {
   username: string = ''; 
   password: string = '';
   tipo: number = 1;
+
   displayIncidencia: Incidencia[] = [];
-  constructor(private loadingCtrl: LoadingController, private api: ApiService, private datePipe: DatePipe) { }
+  filtroIncidenciaArray: Incidencia[] = [];
+
+  idticketSelect: any;
+  detalleTicket: Actividad[]= [];
+  constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe) { }
 
   ngOnInit() {
+    this.fetchTickets();
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
-    this.fetchTickets();
   }
 
   //carga
@@ -52,12 +73,34 @@ export class IncidenciasPage implements OnInit {
     return this.datePipe.transform(date, 'd \'de\' MMMM \'de\' y - HH:mm') || '';
   }
 
+  refreshIncidencias(event: any) {
+    this.displayIncidencia = []; // Limpia la lista actual
+    this.fetchTickets().then(() => {
+      event.target.complete(); // Marca el refresco como completado
+    });
+  }
+
+  // Método de búsqueda y filtrado
+  async filtrarIncidencias(event: any) {
+    const query = event.target.value?.toLowerCase() || ''; // Obtiene la búsqueda en minúsculas
+    if (query === '') {
+      this.displayIncidencia = [...this.filtroIncidenciaArray]; // Restaura la lista original
+    } else {
+      this.displayIncidencia = this.filtroIncidenciaArray.filter((incidencia) =>
+        incidencia.id.toString().includes(query) || // Filtrar por ID
+        incidencia.content?.toLowerCase().includes(query) // Filtrar por contenido
+      );
+    }
+  }
+
+
   async fetchTickets() {
     const loading = await this.Cargando();
-    this.api.getTicketTecnico(this.username, this.password, this.tipo).subscribe(
+    this.apiv4.getTicketTecnico(this.username, this.password, this.tipo).subscribe(
       (response: any) => {
         console.log(response);
         this.displayIncidencia = response.data || [];
+        this.filtroIncidenciaArray = [...this.displayIncidencia];
         this.ocultarCarga(loading);
       },
       (error) => {
@@ -66,6 +109,18 @@ export class IncidenciasPage implements OnInit {
       },
     );
   }
+
+  getUrgencyColor(urgency: any): string {
+    const value = parseInt(urgency, 10); // Convierte a número
+    switch (value) {
+      case 4: return 'red';    // Alta urgencia
+      case 3: return 'orange'; // Media urgencia
+      case 2: return 'green';  // Baja urgencia
+      default: return 'transparent'; // Por defecto sin color
+    }
+  }
+  
+  
 
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
@@ -79,6 +134,40 @@ export class IncidenciasPage implements OnInit {
 
     // Devolver el HTML con el estilo aplicado
     return wrapper.outerHTML;
+  }
+
+  sanitizeNull(value: any): string {
+  return value === null || value === undefined ? '' : value;
+  }
+
+  getDetalleTicket(idticket: string){
+    this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
+      (response) => {
+        console.log(response);
+        this.detalleTicket = response.actividad || [];
+        if (this.detalleTicket) {
+          this.displayIncidencia = [];
+        }
+      },
+      (error) => {
+        console.error('Error al obtener los tickets:', error);
+      },
+    );
+  }
+
+  getItemsTicket(idticket: string){
+    this.apiv4.getItemsTicket(this.username, this.password, idticket).subscribe(
+      (response) => {
+        console.log(response);
+        this.detalleTicket = response.actividad || [];
+        if (this.detalleTicket) {
+          this.displayIncidencia = [];
+        }
+      },
+      (error) => {
+        console.error('Error al obtener los tickets:', error);
+      },
+    );
   }
 
 }

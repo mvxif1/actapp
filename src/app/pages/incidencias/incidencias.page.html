@@ -7,18 +7,33 @@
     </ion-toolbar>
   </ion-header>
 
+  <ion-refresher slot="fixed" (ionRefresh)="refreshIncidencias($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Barra de búsqueda -->
+  <ion-searchbar [debounce]="1000" (ionChange)="filtrarIncidencias($event)" placeholder="Buscar por ID o contenido" style="margin-top: 10px;"></ion-searchbar>
+
+
 
   <br>
   <ion-grid *ngFor="let i of displayIncidencia">
     <ion-row> 
       <ion-col>
         <ion-card color="light">
+          <div 
+          [ngStyle]="{
+            'height': '5px',
+            'background-color': getUrgencyColor(i.urgency)
+          }">
+        </div>
+        
           <ion-card-header>
             <ion-row style="align-items: center;">
             <ion-col><ion-card-title><strong>ID: {{i.id}}</strong></ion-card-title></ion-col>
             </ion-row>
             
-            <ion-card-subtitle style="margin-bottom: 10px;">{{i.name}}</ion-card-subtitle>
+            <ion-card-subtitle style="margin-bottom: 10px;"><ion-text [innerHTML]="decodeHtml(i.title)"></ion-text></ion-card-subtitle>
             <ion-text><i class="bi bi-calendar-date" style="margin-bottom: 5px;"></i> {{ formatDate(i.begin) }}</ion-text>
           </ion-card-header>
         
@@ -26,12 +41,27 @@
             <ion-text [innerHTML]="decodeHtml(i.content)" color="medium"></ion-text>
           </ion-card-content>
           <div style="display: flex; margin-inline: 10px; margin-bottom: 10px;">
-            <ion-button color="primary" style="width: 50%;">Detalle</ion-button>
+            <ion-button color="primary" style="width: 50%;" (click)="getDetalleTicket(i.id)">Detalle</ion-button>
             <ion-button color="danger" style="width: 50%;">Cerrar Ticket</ion-button>
           </div>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
+
+
+  <ion-card *ngFor="let f of detalleTicket">
+
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-thumbnail slot="start" style="--border-radius: 100px">
+          <img alt="Silhouette of mountains" src="https://danielsurf.com/wp-content/uploads/2023/02/account.png" />
+        </ion-thumbnail>
+        <ion-card-title>{{ f.title }}</ion-card-title>
+      </ion-item>
+
+      <ion-text [innerHTML]="decodeHtml(f.content)" color="medium"></ion-text>
+    </ion-card-content>
+  </ion-card>
   <br>
 </ion-content>

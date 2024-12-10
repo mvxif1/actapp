@@ -35,67 +35,31 @@ export class Apiv4Service {
     const body = `ACCION=getAyuda&token=${token}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
-  
-  getListTickets(username: string, password: string): Observable<any> {
+
+  getTicketTecnico(username: string, password: string, tipo: number): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=getTicketsProveedor&token=${token}`;
+    const body = `ACCION=getTicketTecnico&token=${token}&tipo=${tipo}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  getListTicketsDespachados(username: string, password: string): Observable<any> {
-    const token = btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-    const body = `ACCION=getTicketsProveedorDespachado&token=${token}`;
-    return this.http.post(this.baseUrl, body, { headers });
-  }
-  
-  cerrarTicket(username: string, password: string, idticket: string, nombreArchivo: string, archivoBase64: string): Observable<any> {
+  getDetalleTicket(username: string, password: string, idticket: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=uploadDocumentApp&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}`;
+    const body = `ACCION=getDetalleTicket&token=${token}&idticket=${idticket}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  cerrarTicketAdicional(username: string, password: string, idticket: string, nombreArchivo: string, archivoBase64: string): Observable<any> {
+  getItemsTicket(username: string, password: string, idticket: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=uploadEvidencia&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}`;
-    return this.http.post(this.baseUrl, body, { headers });
-  }
-
-  getListTipoProblema(username: string, password: string): Observable<any>{
-    const token = btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
-    const body = `ACCION=getTipoProblema&token=${token}`;
-    return this.http.post(this.baseUrl, body, { headers });
-  }
-
-  setTicketNota(username: string, password: string, idticket: string, nota: string, notaid: string): Observable<any> {
-    const token = btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
-    const body = `ACCION=setTicketNota&token=${token}&idticket=${idticket}&nota=${nota}&notaid=${notaid}`;
-    return this.http.post(this.baseUrl, body, { headers });
-  }
-  
-  setTareaRetiro(username: string, password: string, idticket: string): Observable<any> {
-    const token = btoa(`${username}:${password}`);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/x-www-form-urlencoded',
-    });
-    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}`;
+    const body = `ACCION=getItemsTicket&token=${token}&idticket=${idticket}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
 

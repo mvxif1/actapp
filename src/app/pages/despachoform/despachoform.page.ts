@@ -118,15 +118,6 @@ export class DespachoformPage implements OnInit {
   async ocultarCarga(loading: any) {
     await loading.dismiss();
   }
-  
-  //recarga tickets
-  refreshTickets(event: any) {
-    this.variablesVacias(); // Esto reinicia las variables importantes
-    this.fetchTickets().then(() => {
-      event.target.complete(); // Marca el refresh como completo
-    });
-  }
-  
 
   //carga tickets al hacer scroll
   loadMoreTickets(event: any) {
@@ -142,6 +133,14 @@ export class DespachoformPage implements OnInit {
       event.target.disabled = true;
       this.infiniteScrollDisabled = true;
     }
+  }
+
+    //recarga tickets
+  refreshTickets(event: any) {
+    this.variablesVacias(); // Esto reinicia las variables importantes
+    this.fetchTickets().then(() => {
+      event.target.complete(); // Marca el refresh como completo
+    });
   }
   
 
