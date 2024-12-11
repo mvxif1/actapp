@@ -18,12 +18,13 @@ interface Incidencia {
 interface Actividad {
   begin: any;
   content: any;
+  date: any;
+  end: any;
   id: any;
-  itilcategories_id: any;
+  name: any;
   state: any;
-  title: any;
-  type: any;
-  urgency: any;
+  tipo: any;
+  users_id: any;
   
 }
 
@@ -42,7 +43,7 @@ export class IncidenciasPage implements OnInit {
   displayIncidencia: Incidencia[] = [];
   filtroIncidenciaArray: Incidencia[] = [];
 
-  idticketSelect: any;
+  idticketSelect: string | null = null; 
   detalleTicket: Actividad[]= [];
   constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe) { }
 
@@ -64,6 +65,12 @@ export class IncidenciasPage implements OnInit {
     return loading;
   }
 
+  variablesVacias(){
+    this.idticketSelect = null;
+    this.detalleTicket = [];
+    this.displayIncidencia = [];
+    this.filtroIncidenciaArray = [];
+  }
   // Método para ocultar el loading
   async ocultarCarga(loading: any) {
     await loading.dismiss();
@@ -74,7 +81,7 @@ export class IncidenciasPage implements OnInit {
   }
 
   refreshIncidencias(event: any) {
-    this.displayIncidencia = []; // Limpia la lista actual
+    this.variablesVacias();
     this.fetchTickets().then(() => {
       event.target.complete(); // Marca el refresco como completado
     });
@@ -82,9 +89,9 @@ export class IncidenciasPage implements OnInit {
 
   // Método de búsqueda y filtrado
   async filtrarIncidencias(event: any) {
-    const query = event.target.value?.toLowerCase() || ''; // Obtiene la búsqueda en minúsculas
+    const query = event.target.value?.toLowerCase() || '';
     if (query === '') {
-      this.displayIncidencia = [...this.filtroIncidenciaArray]; // Restaura la lista original
+      this.displayIncidencia = [...this.filtroIncidenciaArray];
     } else {
       this.displayIncidencia = this.filtroIncidenciaArray.filter((incidencia) =>
         incidencia.id.toString().includes(query) || // Filtrar por ID
@@ -119,6 +126,18 @@ export class IncidenciasPage implements OnInit {
       default: return 'transparent'; // Por defecto sin color
     }
   }
+
+  getTipoColor(tipo: string): string {
+    if (tipo === 'NOTA') {
+      return '#e0e0e0'; 
+    } else if (tipo === 'TAREA') {
+      return '#ffd580'; 
+    }
+    return '#f9f9f9';
+  }
+  
+  
+  
   
   
 
@@ -140,19 +159,32 @@ export class IncidenciasPage implements OnInit {
   return value === null || value === undefined ? '' : value;
   }
 
-  getDetalleTicket(idticket: string){
+  async getDetalleTicket(idticket: string){
+    const loading = await this.Cargando();
+    this.idticketSelect = idticket;
     this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
       (response) => {
         console.log(response);
         this.detalleTicket = response.actividad || [];
-        if (this.detalleTicket) {
+        this.detalleTicket.forEach(ticket => {
+          ticket.tipo = ticket.tipo;  // Guardar tipo en cada ticket
+        });
+  
+        if (this.detalleTicket.length > 0) {
           this.displayIncidencia = [];
         }
+        this.ocultarCarga(loading);
       },
       (error) => {
+        this.ocultarCarga(loading);
         console.error('Error al obtener los tickets:', error);
       },
     );
+  }
+
+  volverAtras() {
+    this.variablesVacias();
+    this.fetchTickets();
   }
 
   getItemsTicket(idticket: string){

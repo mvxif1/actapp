@@ -12,11 +12,8 @@
   </ion-refresher>
 
   <!-- Barra de búsqueda -->
-  <ion-searchbar [debounce]="1000" (ionChange)="filtrarIncidencias($event)" placeholder="Buscar por ID o contenido" style="margin-top: 10px;"></ion-searchbar>
+  <ion-searchbar *ngIf="displayIncidencia.length > 0" [debounce]="1000" (ionChange)="filtrarIncidencias($event)" placeholder="Buscar por ID o contenido" style="margin-top: 10px;"></ion-searchbar>
 
-
-
-  <br>
   <ion-grid *ngFor="let i of displayIncidencia">
     <ion-row> 
       <ion-col>
@@ -26,7 +23,7 @@
             'height': '5px',
             'background-color': getUrgencyColor(i.urgency)
           }">
-        </div>
+          </div>
         
           <ion-card-header>
             <ion-row style="align-items: center;">
@@ -49,19 +46,37 @@
     </ion-row>
   </ion-grid>
 
+  
+    <ion-button size="small" *ngIf="detalleTicket.length > 0 || idticketSelect" style="display: flex; position: fixed; top: 60px; left: 10px; z-index: 1000; --border-radius: 100px; height: 45px;" (click)="volverAtras()">
+      <ion-icon slot="icon-only" name="arrow-back-circle-outline"></ion-icon>
+    </ion-button>
+  <div class="ion-text-center" *ngIf="detalleTicket.length > 0 || idticketSelect">
+    <br>
+    <ion-card-title class="tituloP" style="font-size: 18px; font-weight: 600;">DETALLE TICKET: {{ idticketSelect }}</ion-card-title>
+  </div>
+  
+  <div *ngFor="let f of detalleTicket">
+    <ion-card [ngStyle]="{ 'background-color': getTipoColor(f.tipo) }" style="padding: 0; margin-bottom: 20px; border: 1px solid rgba(0, 0, 0, 0.150);">
+      <ion-card-content [ngStyle]="{ 'background-color': getTipoColor(f.tipo) }" style="padding: 0;">
+        <ion-list [ngStyle]="{ 'background-color': getTipoColor(f.tipo) }">
+          <!-- Encabezado del mensaje -->
+          <ion-item [ngStyle]="{ '--background': getTipoColor(f.tipo) }" lines="none" class="ion-text-start" style="align-items: center; ">
+            <img style="width: 25px; height: 25px; border-radius: 50%;" alt="User avatar" src="https://danielsurf.com/wp-content/uploads/2023/02/account.png" />
+            <ion-card-title style="margin-left: 10px; font-size: 12px; color: var(--ion-text-color);">
+              {{ f.name }}
+            </ion-card-title>
+          </ion-item>
+          
+          <!-- Contenido del mensaje -->
+          <ion-item [ngStyle]="{ '--background': getTipoColor(f.tipo) }" lines="none" style=" padding: 0;">
+            <ion-text [innerHTML]="decodeHtml(f.content)" color="medium"></ion-text>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  
 
-  <ion-card *ngFor="let f of detalleTicket">
-
-    <ion-card-content>
-      <ion-item lines="none">
-        <ion-thumbnail slot="start" style="--border-radius: 100px">
-          <img alt="Silhouette of mountains" src="https://danielsurf.com/wp-content/uploads/2023/02/account.png" />
-        </ion-thumbnail>
-        <ion-card-title>{{ f.title }}</ion-card-title>
-      </ion-item>
-
-      <ion-text [innerHTML]="decodeHtml(f.content)" color="medium"></ion-text>
-    </ion-card-content>
-  </ion-card>
+  
   <br>
 </ion-content>
