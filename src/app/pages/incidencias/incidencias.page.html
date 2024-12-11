@@ -39,7 +39,9 @@
           </ion-card-content>
           <div style="display: flex; margin-inline: 10px; margin-bottom: 10px;">
             <ion-button color="primary" style="width: 50%;" (click)="getDetalleTicket(i.id)">Detalle</ion-button>
-            <ion-button color="danger" style="width: 50%;">Cerrar Ticket</ion-button>
+            <ion-button color="danger" style="width: 50%;" (click)="actualizarUbicacion(i)">{{ i.movimiento }}
+            </ion-button>
+            
           </div>
         </ion-card>
       </ion-col>
@@ -47,7 +49,7 @@
   </ion-grid>
 
   
-    <ion-button size="small" *ngIf="detalleTicket.length > 0 || idticketSelect" style="display: flex; position: fixed; top: 60px; left: 10px; z-index: 1000; --border-radius: 100px; height: 45px;" (click)="volverAtras()">
+    <ion-button size="small" *ngIf="detalleTicket.length > 0 || idticketSelect" style="display: flex; position: fixed; top: 65px; left: 10px; z-index: 1000; --border-radius: 100px; height: 45px;" (click)="volverAtras()">
       <ion-icon slot="icon-only" name="arrow-back-circle-outline"></ion-icon>
     </ion-button>
   <div class="ion-text-center" *ngIf="detalleTicket.length > 0 || idticketSelect">
@@ -61,15 +63,20 @@
         <ion-list [ngStyle]="{ 'background-color': getTipoColor(f.tipo) }">
           <!-- Encabezado del mensaje -->
           <ion-item [ngStyle]="{ '--background': getTipoColor(f.tipo) }" lines="none" class="ion-text-start" style="align-items: center; ">
-            <img style="width: 25px; height: 25px; border-radius: 50%;" alt="User avatar" src="https://danielsurf.com/wp-content/uploads/2023/02/account.png" />
-            <ion-card-title style="margin-left: 10px; font-size: 12px; color: var(--ion-text-color);">
+            <img style="width: 20px; height: 20px; border-radius: 50%;" alt="User avatar" src="https://danielsurf.com/wp-content/uploads/2023/02/account.png" />
+            <ion-card-title style="margin-left: 10px; font-size: 13px; color: var(--ion-text-color);">
               {{ f.name }}
             </ion-card-title>
+            <ion-label slot="end" style="font-size: 12px;"> {{formatDate(f.date)}} </ion-label>
           </ion-item>
           
           <!-- Contenido del mensaje -->
           <ion-item [ngStyle]="{ '--background': getTipoColor(f.tipo) }" lines="none" style=" padding: 0;">
-            <ion-text [innerHTML]="decodeHtml(f.content)" color="medium"></ion-text>
+            <ion-text [innerHTML]="decodeHtml(f.content)"></ion-text>
+          </ion-item>
+          <ion-item *ngIf="f.begin !== '.'" lines="none" style="padding: 10px; --background: rgba(0, 0, 0, 0.100); --border-radius: 5px; margin-top: 10px;">
+            <ion-label slot="start" style="font-size: 10px;">Inicio: {{ f.begin }}</ion-label>
+            <ion-label slot="end" style="font-size: 10px;">Fin: {{f.end}}</ion-label>
           </ion-item>
         </ion-list>
       </ion-card-content>

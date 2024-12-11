@@ -63,4 +63,12 @@ export class Apiv4Service {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
+  setUbicacionGps(username: string, password: string, tipo: string, longitud: any, latitud: any, idticket: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setUbicacionGps&token=${token}&tipo=${tipo}&longitud=${longitud}&latitud=${latitud}&idticket=${idticket}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
 }

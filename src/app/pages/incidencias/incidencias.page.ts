@@ -9,6 +9,7 @@ interface Incidencia {
   content: any;
   id: any;
   itilcategories_id: any;
+  movimiento:  any;
   state: any;
   title: any;
   type: any;
@@ -89,6 +90,8 @@ export class IncidenciasPage implements OnInit {
 
   // Método de búsqueda y filtrado
   async filtrarIncidencias(event: any) {
+    const loading = await this.Cargando();
+
     const query = event.target.value?.toLowerCase() || '';
     if (query === '') {
       this.displayIncidencia = [...this.filtroIncidenciaArray];
@@ -98,6 +101,10 @@ export class IncidenciasPage implements OnInit {
         incidencia.content?.toLowerCase().includes(query) // Filtrar por contenido
       );
     }
+
+    setTimeout(() => {
+      this.ocultarCarga(loading);
+    }, 500);
   }
 
 
@@ -108,6 +115,16 @@ export class IncidenciasPage implements OnInit {
         console.log(response);
         this.displayIncidencia = response.data || [];
         this.filtroIncidenciaArray = [...this.displayIncidencia];
+        this.displayIncidencia.forEach((i: Incidencia) => {
+          if (!i.movimiento) {
+            i.movimiento = 'En Camino';
+          } else if (i.movimiento === 'En Camino') { 
+            i.movimiento = 'En Cliente';
+          } else if (i.movimiento === 'En Cliente') { 
+            i.movimiento = 'Generar PDF';
+          }
+        });
+        
         this.ocultarCarga(loading);
       },
       (error) => {
@@ -135,12 +152,55 @@ export class IncidenciasPage implements OnInit {
     }
     return '#f9f9f9';
   }
+
+  async actualizarUbicacion(i: Incidencia) {
+    const loading = await this.Cargando();
+  
+    let estadoActual = i.movimiento;
+    let enviarMovimiento = '';
+    let cambiarMovimiento = '';
+  
+    if (estadoActual === 'En Camino') {
+      enviarMovimiento = 'En Camino';
+      cambiarMovimiento = 'En Cliente';
+      
+    } else 
+    if (estadoActual === 'En Cliente') {
+      enviarMovimiento = 'En Cliente';
+      cambiarMovimiento = 'Generar PDF';
+    } else 
+    if (estadoActual === 'Generar PDF') {
+      enviarMovimiento = 'Generar PDF';
+    }
+  
+    // Lógica para actualizar el estado y ubicación
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const latitud = position.coords.latitude;
+      const longitud = position.coords.longitude;
+  
+      this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, i.id).subscribe(
+        (response: any) => {
+          console.log('Ubicación actualizada:', response);
+          this.ocultarCarga(loading);
+          i.movimiento = cambiarMovimiento; 
+        },
+        (error) => {
+          console.error('Error al actualizar la ubicación:', error);
+        }
+      );
+    },
+    (error) => {
+      console.error('Error al obtener la geolocalización:', error);
+      alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+    });
+  }
   
   
   
   
   
 
+  
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
     txt.innerHTML = html;
@@ -202,4 +262,6 @@ export class IncidenciasPage implements OnInit {
     );
   }
 
+  async setUbicacionGps(ticket: any) {
+  }
 }
