@@ -41,6 +41,7 @@ export class AppComponent {
     localStorage.setItem('email', '');
     localStorage.setItem('password', '');
     localStorage.setItem('userType', '');
+    console.log(localStorage.getItem('userType'));
     this.navCtrl.navigateForward('/home'); 
     this.db.presentAlertP("Has cerrado sesión con éxito!");
   }

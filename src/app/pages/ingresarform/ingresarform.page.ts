@@ -38,6 +38,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-ingresarform',
@@ -91,7 +92,6 @@ export class IngresarformPage {
   //Barra de carga
   loading: boolean = false; // Variable para controlar la visibilidad de la barra de carga
   loadingImage: boolean = false;
-  usuario!: any;
 
   pattern = {
     numeros: /^\d{1,9}$/,
@@ -105,7 +105,7 @@ export class IngresarformPage {
   
   
 
-  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer) {
+  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router) {
     this.ingresarform = this.formBuilder.group({
       //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
@@ -178,17 +178,22 @@ export class IngresarformPage {
 
 
   ngOnInit() {
-    this.db.getUsuarioActual().subscribe((usuario) => {
-      this.usuario = usuario;
-    });
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 140;
-    console.log(canvas.width, ' - ', canvas.height);
     if (this.signaturePad) {
       this.signaturePad.clear();
     }
+    this.route.queryParams.subscribe(params => {
+      const idTicket = params['id'];
+      console.log('ID del ticket:', idTicket);
+    });
   }
+
+  volverAtras() {
+    this.router.navigate(['/incidencias']), { replaceUrl: true };  // Esto redirige al usuario de vuelta a 'incidencias.html'
+  }
+  
 
   fechaHoy() {
     const today = new Date();
@@ -797,8 +802,6 @@ export class IngresarformPage {
       if (this.signatureImage) {
         pdf.addImage(this.signatureImage, 'PNG', 300, 705, 100, 50);
       }
-      pdf.text(this.usuario.nombre + ' ' + this.usuario.apellido, 80, 690);
-      pdf.text(this.usuario.rut, 80, 700);
       console.log(pdf.getFontList());
       pdf.save();
       const imgWidth = 565;
@@ -816,8 +819,8 @@ export class IngresarformPage {
         pdf.addImage(imageData, 'JPEG', x, y, imgWidth, imgHeight);
       }
 
-      const pdfBase64 = pdf.output('datauristring'); // Convertir PDF a base64
-      const pdfData = pdfBase64.split(',')[1]; // Eliminar el prefijo 'data:application/pdf;base64,'
+      const pdfBase64 = pdf.output('datauristring'); 
+      const pdfData = pdfBase64.split(',')[1]; 
 
       const fileName = eventoCliente + ".pdf";
       const path = `${fileName}`;

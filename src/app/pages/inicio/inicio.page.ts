@@ -19,8 +19,8 @@ export class InicioPage implements OnInit {
     if(userType === '1'){
       this.isTecnico = true;
       this.noTecnico = false;
-    }else{
-      if(userType === '0')
+    }else 
+    if(userType === '0'){
       this.isTecnico = false;
       this.noTecnico = true;
     }

@@ -3,6 +3,8 @@ import { LoadingController } from '@ionic/angular';
 import { ApiService } from 'src/app/services/api.service';
 import { DatePipe } from '@angular/common';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
+import { Router } from '@angular/router';
+import DOMPurify from 'dompurify';
 
 interface Incidencia {
   begin: any;
@@ -29,6 +31,7 @@ interface Actividad {
   
 }
 
+
 @Component({
   selector: 'app-incidencias',
   templateUrl: './incidencias.page.html',
@@ -46,12 +49,18 @@ export class IncidenciasPage implements OnInit {
 
   idticketSelect: string | null = null; 
   detalleTicket: Actividad[]= [];
-  constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe) { }
+ 
+  constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe, private router: Router) { }
 
   ngOnInit() {
-    this.fetchTickets();
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
+    this.fetchTickets();
+    
+  }
+
+  sanitizeContent(content: string): string {
+    return DOMPurify.sanitize(content);
   }
 
   //carga
@@ -159,6 +168,12 @@ export class IncidenciasPage implements OnInit {
     let estadoActual = i.movimiento;
     let enviarMovimiento = '';
     let cambiarMovimiento = '';
+
+    if (estadoActual === 'Generar PDF') {
+      this.router.navigate(['/ingresarform'], { queryParams: { id: i.id } });
+      this.ocultarCarga(loading);
+      return;
+    }
   
     if (estadoActual === 'En Camino') {
       enviarMovimiento = 'En Camino';
@@ -168,9 +183,6 @@ export class IncidenciasPage implements OnInit {
     if (estadoActual === 'En Cliente') {
       enviarMovimiento = 'En Cliente';
       cambiarMovimiento = 'Generar PDF';
-    } else 
-    if (estadoActual === 'Generar PDF') {
-      enviarMovimiento = 'Generar PDF';
     }
   
     // Lógica para actualizar el estado y ubicación
@@ -194,12 +206,6 @@ export class IncidenciasPage implements OnInit {
       alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
     });
   }
-  
-  
-  
-  
-  
-
   
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
@@ -246,22 +252,6 @@ export class IncidenciasPage implements OnInit {
     this.variablesVacias();
     this.fetchTickets();
   }
-
-  getItemsTicket(idticket: string){
-    this.apiv4.getItemsTicket(this.username, this.password, idticket).subscribe(
-      (response) => {
-        console.log(response);
-        this.detalleTicket = response.actividad || [];
-        if (this.detalleTicket) {
-          this.displayIncidencia = [];
-        }
-      },
-      (error) => {
-        console.error('Error al obtener los tickets:', error);
-      },
-    );
-  }
-
-  async setUbicacionGps(ticket: any) {
-  }
+  
+  
 }

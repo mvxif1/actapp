@@ -7,7 +7,10 @@
     </ion-toolbar>
   </ion-header>
 
-  
+  <ion-button size="small" style="display: flex; position: fixed; top: 65px; left: 10px; z-index: 1000; --border-radius: 100px; height: 45px;" (click)="volverAtras()">
+    <ion-icon slot="icon-only" name="arrow-back-circle-outline"></ion-icon>
+  </ion-button>
+
   <form [formGroup]="ingresarform">
     <ion-card id="form">
       <ion-img style="width: 25%; margin-bottom: 5px; margin-left: 75%;" src="/assets/logo.png"></ion-img>

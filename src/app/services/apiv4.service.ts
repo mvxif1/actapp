@@ -54,14 +54,15 @@ export class Apiv4Service {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  getItemsTicket(username: string, password: string, idticket: string): Observable<any> {
+  getItemsTicket(username: string, password: string, idticket: string, itilcategories_id: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=getItemsTicket&token=${token}&idticket=${idticket}`;
+    const body = `ACCION=getItemsTicket&token=${token}&idticket=${idticket}&itilcategories_id=${itilcategories_id}`;
+    
     return this.http.post(this.baseUrl, body, { headers });
-  }
+  }  
 
   setUbicacionGps(username: string, password: string, tipo: string, longitud: any, latitud: any, idticket: string): Observable<any> {
     const token = btoa(`${username}:${password}`);

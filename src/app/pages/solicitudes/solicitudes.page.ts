@@ -130,20 +130,7 @@ export class SolicitudesPage implements OnInit {
     );
   }
 
-  getItemsTicket(idticket: string){
-    this.apiv4.getItemsTicket(this.username, this.password, idticket).subscribe(
-      (response) => {
-        console.log(response);
-        this.detalleTicket = response.actividad || [];
-        if (this.detalleTicket) {
-          this.displaySolicitud = [];
-        }
-      },
-      (error) => {
-        console.error('Error al obtener los tickets:', error);
-      },
-    );
-  }
+
 
 }
 
