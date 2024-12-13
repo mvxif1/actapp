@@ -39,7 +39,7 @@
           </ion-card-content>
           <div style="display: flex; margin-inline: 10px; margin-bottom: 10px;">
             <ion-button color="primary" style="width: 50%;" (click)="getDetalleTicket(i.id)">Detalle</ion-button>
-            <ion-button color="danger" style="width: 50%;" (click)="actualizarUbicacion(i)">{{ i.movimiento.length > 0 ? i.movimiento[0].movimiento : 'En Camino' }}
+            <ion-button color="danger" style="width: 50%;" (click)="actualizarUbicacion(i)">{{ i.movimiento }}
             </ion-button>
             
           </div>
@@ -72,7 +72,7 @@
           
           <!-- Contenido del mensaje -->
           <ion-item [ngStyle]="{ '--background': getTipoColor(f.tipo) }" lines="none" style="padding: 0;">
-            <ion-text [innerHTML]="decodeHtml(f.content)"></ion-text>
+            <ion-text [innerHTML]="sanitizeContent(f.content)"></ion-text>
           </ion-item>          
           <ion-item *ngIf="f.begin !== '.'" lines="none" style="padding: 10px; --background: rgba(0, 0, 0, 0.100); --border-radius: 5px; margin-top: 10px;">
             <ion-label slot="start" style="font-size: 10px;">Inicio: {{ f.begin }}</ion-label>
