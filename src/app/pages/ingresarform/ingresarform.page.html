@@ -19,7 +19,7 @@
       <ion-list>
         <ion-item>
           <ion-label position="stacked">Evento ACT S.A</ion-label>
-          <ion-input id="eventoCliente" formControlName="eventocliente" type="number"></ion-input>
+          <ion-input id="eventoCliente" formControlName="eventocliente" type="number" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('eventocliente')?.invalid && (ingresarform.get('eventocliente')?.dirty || ingresarform.get('eventocliente')?.touched)">
@@ -29,10 +29,7 @@
 
         <ion-item>
           <ion-label position="stacked">Tipo de servicio</ion-label>
-          <ion-select id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio">
-            <ion-select-option value="Incidente">Incidente</ion-select-option>
-            <ion-select-option value="Solicitud">Solicitud</ion-select-option>
-          </ion-select>
+          <ion-input id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('tiposervicio')?.invalid && (ingresarform.get('tiposervicio')?.dirty || ingresarform.get('tiposervicio')?.touched)">
@@ -43,14 +40,12 @@
 
         <ion-item>
           <ion-text style="font-size: 12px;">Fecha: </ion-text>
-          <ion-input id="fecha" [value]="fechaHoy()" readonly style="margin-left: 10px;"></ion-input>
+          <ion-input id="fecha" formControlName="fecha" readonly style="margin-left: 10px;"></ion-input>
         </ion-item>
 
         <ion-item>
           <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
-          <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio"
-            (ionInput)="formatearhora($event)" placeholer="Ingresa la fecha de inicio"></ion-input>
-          <ion-text id="ampm" style="margin-right: 40%;"></ion-text>
+          <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio" placeholer="Ingresa la fecha de inicio"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
