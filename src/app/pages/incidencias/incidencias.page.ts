@@ -5,17 +5,27 @@ import { DatePipe } from '@angular/common';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
 import { Router } from '@angular/router';
 import DOMPurify from 'dompurify';
+import { identity } from 'rxjs';
 
 interface Incidencia {
   begin: any;
   content: any;
   id: any;
   itilcategories_id: any;
-  movimiento:  any;
+  movimiento:  Movimiento[];
   state: any;
   title: any;
   type: any;
   urgency: any;
+}
+interface Movimiento{
+  fecha: any;
+  id: any;
+  idticket: any;
+  latitud: any;
+  longitud: any;
+  movimiento: any;
+  users_id: any;
 }
 
 interface Actividad {
@@ -45,10 +55,12 @@ export class IncidenciasPage implements OnInit {
   tipo: number = 1;
 
   displayIncidencia: Incidencia[] = [];
+  movimiento: any;
   filtroIncidenciaArray: Incidencia[] = [];
 
   idticketSelect: string | null = null; 
   detalleTicket: Actividad[]= [];
+  fecha: any;
  
   constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe, private router: Router) { }
 
@@ -121,17 +133,33 @@ export class IncidenciasPage implements OnInit {
     const loading = await this.Cargando();
     this.apiv4.getTicketTecnico(this.username, this.password, this.tipo).subscribe(
       (response: any) => {
-        console.log(response);
         this.displayIncidencia = response.data || [];
         this.filtroIncidenciaArray = [...this.displayIncidencia];
+        
         this.displayIncidencia.forEach((i: Incidencia) => {
-          if (!i.movimiento) {
-            i.movimiento = 'En Camino';
-          } else if (i.movimiento === 'En Camino') { 
-            i.movimiento = 'En Cliente';
-          } else if (i.movimiento === 'En Cliente') { 
-            i.movimiento = 'Generar PDF';
+          const movimientos = Array.isArray(i.movimiento) ? i.movimiento : [i.movimiento];
+          const fechas = Array.isArray(i.movimiento) ? i.movimiento : [i.movimiento];
+          
+          //recorre movimientos
+          if (movimientos.length === 0 || !movimientos[0].movimiento) {
+            i.movimiento = [{ movimiento: 'En Camino', fecha: null, id: null, idticket: null, latitud: null, longitud: null, users_id: null }];
+          } else {
+            movimientos.forEach((movimiento: Movimiento) => {
+              if (movimiento.movimiento === 'En Camino') { 
+                movimiento.movimiento = 'En Cliente';
+              } else if (movimiento.movimiento === 'En Cliente') { 
+                movimiento.movimiento = 'Generar PDF';
+              }
+            });
+            i.movimiento = movimientos;
           }
+          //recorre fechas
+          fechas.forEach((fecha: Movimiento)=>{
+            if (fecha.fecha) {
+              i.movimiento[0].fecha = fecha.fecha; 
+            }
+          });
+
         });
         
         this.ocultarCarga(loading);
@@ -142,6 +170,9 @@ export class IncidenciasPage implements OnInit {
       },
     );
   }
+  
+  
+  
 
   getUrgencyColor(urgency: any): string {
     const value = parseInt(urgency, 10); // Convierte a número
@@ -165,12 +196,17 @@ export class IncidenciasPage implements OnInit {
   async actualizarUbicacion(i: Incidencia) {
     const loading = await this.Cargando();
   
-    let estadoActual = i.movimiento;
+    let estadoActual = i.movimiento[0].movimiento;
     let enviarMovimiento = '';
     let cambiarMovimiento = '';
 
     if (estadoActual === 'Generar PDF') {
-      this.router.navigate(['/ingresarform'], { queryParams: { id: i.id } });
+      this.router.navigate(['/ingresarform'], {
+        queryParams: { id: i.id, fecha: i.movimiento[0].fecha},
+        fragment: 'info',
+        replaceUrl: true,
+        state: {itilcategories_id: i.itilcategories_id, tipoServicio: this.tipo}
+      });
       this.ocultarCarga(loading);
       return;
     }
@@ -194,7 +230,7 @@ export class IncidenciasPage implements OnInit {
         (response: any) => {
           console.log('Ubicación actualizada:', response);
           this.ocultarCarga(loading);
-          i.movimiento = cambiarMovimiento; 
+          i.movimiento[0].movimiento = cambiarMovimiento; 
         },
         (error) => {
           console.error('Error al actualizar la ubicación:', error);

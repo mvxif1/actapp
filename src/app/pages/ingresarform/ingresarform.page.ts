@@ -110,6 +110,7 @@ export class IngresarformPage {
       //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
       tiposervicio: ['', [Validators.required]],
+      fecha: [''],
       horainicio: ['', [Validators.required, this.validarHoras]],
       //SECCION: Información de cliente
       cliente: ['', [Validators.required]],
@@ -186,12 +187,35 @@ export class IngresarformPage {
     }
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
-      console.log('ID del ticket:', idTicket);
+      const fechaCompleta= params['fecha'];
+      if (fechaCompleta) {
+        // Dividir la fecha y la hora
+        const [fecha, horaInicio] = fechaCompleta.split(' ');
+        const horaFormateada = this.formatearhoraDirecto(horaInicio);
+        // Asignar los valores separados
+        this.ingresarform.patchValue({ eventocliente: idTicket });
+        this.ingresarform.patchValue({ fecha });
+        this.ingresarform.patchValue({ horainicio: horaFormateada });
+      } 
+      console.log(fechaCompleta);
+      this.ingresarform.patchValue({eventocliente: idTicket})
+
     });
+    
+    // datos enviados de incidencias o solicitudes
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras.state as { itilcategories_id: string, tipoServicio: any } ;
+
+    if(state?.tipoServicio === 1){
+      this.ingresarform.patchValue({tiposervicio : 'Incidente'})
+    } else{
+      this.ingresarform.patchValue({tiposervicio : 'Solicitud'})
+    }
+
   }
 
   volverAtras() {
-    this.router.navigate(['/incidencias']), { replaceUrl: true };  // Esto redirige al usuario de vuelta a 'incidencias.html'
+    this.router.navigate(['/incidencias']), { replaceUrl: true };
   }
   
 
@@ -235,34 +259,26 @@ export class IngresarformPage {
 
 
 
-  formatearhora(event: any) {
-    const input = event.target;
-    let value = input.value.replace(/[^0-9]/g, ''); // Eliminar caracteres no numéricos
-    if (value.length > 4) {
-      value = value.slice(0, 4); // Limitar la longitud a 4 caracteres
-    }
+  formatearhoraDirecto(hora: string): string {
+    let [horas, minutos] = hora.split(':').map(Number);
+    const ampm = horas >= 12 ? 'PM' : 'AM';
+  
+    // Convertir a formato de 24 horas
+    if (horas > 24) horas -= 24;
+    if (horas === 0) horas = 24;
+  
+    // Retornar la hora formateada con AM/PM
+    return `${this.pad(horas)}:${this.pad(minutos)} ${ampm}`;
+  }
+  
+  obtenerAMPM(hora: string): string {
+    const horas = parseInt(hora.split(':')[0], 10);
+    return horas >= 24 ? 'PM' : 'AM';
+  }
 
-    let dosdigitosprincipales = parseInt(value.slice(0, 2), 10);
-    let dosdigitosfinales = parseInt(value.slice(2), 10);
-    if (dosdigitosprincipales > 23) {
-      value = '23' + value.slice(2);
-      dosdigitosprincipales = 23;
-    }
-    if (dosdigitosfinales > 59) {
-      value = value.slice(0, 2) + '59'; // Limitar los minutos a 59
-      dosdigitosfinales = 59;
-    }
-    // Insertar ":" en la tercera posición si hay al menos tres caracteres
-    if (value.length >= 3) {
-      value = value.slice(0, 2) + ':' + value.slice(2);
-    }
-    let ampm = "AM";
-    if (dosdigitosprincipales >= 12) {
-      ampm = "PM";
-    }
-    (document.getElementById('ampm') as HTMLIonTextElement).innerText = ampm;
-
-    input.value = value;
+  // Función para agregar un cero a números menores de 10
+  pad(num: number): string {
+    return num < 10 ? `0${num}` : `${num}`;
   }
 
   validateRutFormat(control: FormControl) {
