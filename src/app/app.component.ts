@@ -22,7 +22,6 @@ export class AppComponent {
   initializeBackButtonCustomHandler() {
     this.platform.backButton.subscribeWithPriority(10, () => {
       if (this.router.url === '/home') {
-        // Si el usuario está en la página de login, salir de la app
         App.exitApp();
       }
     });
@@ -38,11 +37,12 @@ export class AppComponent {
 
   cerrarsesion() {
     this.logueado = false;
+    const userType = 0;
     localStorage.setItem('email', '');
     localStorage.setItem('password', '');
-    localStorage.setItem('userType', '');
+    localStorage.setItem('userType', userType.toString());
     console.log(localStorage.getItem('userType'));
-    this.navCtrl.navigateForward('/home'); 
+    this.navCtrl.navigateRoot('/home'); 
     this.db.presentAlertP("Has cerrado sesión con éxito!");
   }
 }

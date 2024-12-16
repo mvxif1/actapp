@@ -7,14 +7,14 @@
     </ion-toolbar>
   </ion-header>
   <br>
-  <ion-button *ngIf="noTecnico" expand="block" [routerLink]="['/despachoform']">
+  <ion-button *ngIf="noTecnico || tieneDespachos" expand="block" [routerLink]="['/despachoform']">
     <ion-icon name="time-outline" slot="end"></ion-icon> Mis Despachos Pendientes
   </ion-button>
-  <br *ngIf="noTecnico">
-  <ion-button *ngIf="noTecnico" expand="block" [routerLink]="['/despachados']">
+  <br *ngIf="noTecnico || tieneDespachos">
+  <ion-button *ngIf="noTecnico || tieneDespachos" expand="block" [routerLink]="['/despachados']">
     <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Mis Despachos Realizados
   </ion-button>
-  <br *ngIf="noTecnico">
+  <br *ngIf="noTecnico || tieneDespachos">
   <ion-button *ngIf="isTecnico" expand="block" [routerLink]="['/incidencias']">
     <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Incidencias Asignados
   </ion-button>
@@ -22,6 +22,4 @@
   <ion-button *ngIf="isTecnico" expand="block" [routerLink]="['/solicitudes']">
     <ion-icon name="checkmark-circle-outline" slot="end"></ion-icon> Solicitudes Asignadas
   </ion-button>
-  
-  
 </ion-content>

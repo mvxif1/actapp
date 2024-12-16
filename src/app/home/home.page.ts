@@ -56,12 +56,13 @@ export class HomePage {
           this.email = email;
           this.password = password;
           this.appComponent.logueado = true;
+          const userType = isTecnico ? 1 : 0;
           if (rememberMe) {
             localStorage.setItem('email', email);
             localStorage.setItem('password', password);
-            localStorage.setItem('userType', isTecnico);
+            localStorage.setItem('userType', userType.toString()); 
           }
-          localStorage.setItem('userType', isTecnico);
+          localStorage.setItem('userType', userType.toString()); 
           localStorage.setItem('email', email);
           localStorage.setItem('password', password);
           this.loginForm.reset();
