@@ -45,7 +45,7 @@
 
         <ion-item>
           <ion-text style="font-size: 12px;">Hora de Inicio: </ion-text>
-          <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio" placeholer="Ingresa la fecha de inicio"></ion-input>
+          <ion-input id="horaInicio" style="margin-left: 10px; width: 100%;" formControlName="horainicio" placeholer="Ingresa la fecha de inicio" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
@@ -61,10 +61,10 @@
       </ion-list>
 
       <ion-card-title style="font-size: 13px;">INFORMACIÓN DEL CLIENTE</ion-card-title>
-      <ion-list>
+      <ion-list  >
         <ion-item>
           <ion-label position="stacked">Cliente</ion-label>
-          <ion-input id="cliente" formControlName="cliente"></ion-input>
+          <ion-input id="cliente" formControlName="cliente" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('cliente')?.invalid && (ingresarform.get('cliente')?.dirty || ingresarform.get('cliente')?.touched)">
@@ -74,7 +74,7 @@
 
         <ion-item>
           <ion-label position="stacked">Dirección</ion-label>
-          <ion-input id="direccion" formControlName="direccion"></ion-input>
+          <ion-input id="direccion" formControlName="direccion" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('direccion')?.invalid && (ingresarform.get('direccion')?.dirty || ingresarform.get('direccion')?.touched)">
@@ -84,12 +84,12 @@
         </div>
 
         <ion-item>
-          <ion-label position="stacked">Ciudad</ion-label>
-          <ion-input id="ciudad" formControlName="ciudad"></ion-input>
+          <ion-label position="stacked">Región</ion-label>
+          <ion-input id="region" formControlName="region" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
-          *ngIf="ingresarform.get('ciudad')?.invalid && (ingresarform.get('ciudad')?.dirty || ingresarform.get('ciudad')?.touched)">
-          <div *ngIf="ingresarform.get('ciudad')?.hasError('required')">Este campo es obligatorio.</div>
+          *ngIf="ingresarform.get('region')?.invalid && (ingresarform.get('region')?.dirty || ingresarform.get('region')?.touched)">
+          <div *ngIf="ingresarform.get('region')?.hasError('required')">Este campo es obligatorio.</div>
         </div>
 
         <ion-item>

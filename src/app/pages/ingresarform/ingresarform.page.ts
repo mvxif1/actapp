@@ -1,5 +1,8 @@
 const RutValidator = {
   validaRut(rutCompleto: string): boolean {
+    if (!rutCompleto) {
+      return false;
+    }
     // Reemplaza el guion largo incorrecto
     rutCompleto = rutCompleto.replace('‐', '-');
 
@@ -32,14 +35,30 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import SignaturePad from 'signature_pad';
 import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Apiv4Service } from 'src/app/services/apiv4.service';
 
+interface Cliente{
+  region: any;
+  ciudad: any;
+  direccion: any;
+  firstname: any;
+  idlocations_id: any;
+  name: any;
+}
+
+interface Detalle{
+  begin_date: any;
+  duration: any;
+  name: any;
+  num: any;
+}
 @Component({
   selector: 'app-ingresarform',
   templateUrl: './ingresarform.page.html',
@@ -47,6 +66,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class IngresarformPage {
   photos: string[] = [];
+  username: string = '';
+  password: string = '';
+
+  detalle: Detalle[] = [];
+  cliente: Cliente[] = [];
+
   @ViewChild('equipoEspera') equipoEspera!: IonRadioGroup;
   @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
   @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
@@ -105,7 +130,7 @@ export class IngresarformPage {
   
   
 
-  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router) {
+  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router, private apiv4: Apiv4Service) {
     this.ingresarform = this.formBuilder.group({
       //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
@@ -115,7 +140,7 @@ export class IngresarformPage {
       //SECCION: Información de cliente
       cliente: ['', [Validators.required]],
       direccion: ['', [Validators.required, Validators.maxLength(35)]],
-      ciudad: ['', [Validators.required]],
+      region: ['', [Validators.required]],
       contacto: ['', [Validators.required]],
       telefono: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9), Validators.pattern(this.pattern.numeros)]],
       correo: ['', [Validators.required, Validators.pattern(this.pattern.correo)]],
@@ -177,8 +202,42 @@ export class IngresarformPage {
 
   }
 
+  clearFormValues(formGroup: FormGroup | FormArray) {
+    // Si el control es un FormGroup
+    if (formGroup instanceof FormGroup) {
+      Object.keys(formGroup.controls).forEach(key => {
+        const control = formGroup.get(key);
+        if (control instanceof FormGroup || control instanceof FormArray) {
+          // Llamar recursivamente si el control es un FormGroup o FormArray
+          this.clearFormValues(control);
+        } else {
+          // Asignar valor vacío a los controles de tipo FormControl
+          control?.setValue('');
+        }
+      });
+    }
+    // Si el control es un FormArray
+    else if (formGroup instanceof FormArray) {
+      formGroup.controls.forEach(control => {
+        if (control instanceof FormGroup || control instanceof FormArray) {
+          // Llamar recursivamente si el control es un FormGroup o FormArray
+          this.clearFormValues(control);
+        } else {
+          // Asignar valor vacío a los controles de tipo FormControl
+          control.setValue('');
+        }
+      });
+    }
+  }
+  
+  
+  
+  
+  ionViewWillEnter() {
+    this.clearFormValues(this.ingresarform);
+    this.username = localStorage.getItem('email')!;
+    this.password = localStorage.getItem('password')!;
 
-  ngOnInit() {
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight - 140;
@@ -188,6 +247,8 @@ export class IngresarformPage {
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
       const fechaCompleta= params['fecha'];
+      const contrato = params['contrato'];
+      this.getDatosContrato(contrato);
       if (fechaCompleta) {
         // Dividir la fecha y la hora
         const [fecha, horaInicio] = fechaCompleta.split(' ');
@@ -204,8 +265,8 @@ export class IngresarformPage {
     
     // datos enviados de incidencias o solicitudes
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { itilcategories_id: string, tipoServicio: any } ;
-
+    const state = navigation?.extras.state as { itilcategories_id: string, tipoServicio: any, contrato: any } ;
+    
     if(state?.tipoServicio === 1){
       this.ingresarform.patchValue({tiposervicio : 'Incidente'})
     } else{
@@ -213,6 +274,23 @@ export class IngresarformPage {
     }
 
   }
+
+  getDatosContrato(idcontrato: any) {
+    this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(
+      (response) => {
+        this.cliente = [response.cliente];
+        this.detalle = [response.detalle];
+        console.log('Respuesta completa:', this.cliente, this.detalle);
+        this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
+        this.ingresarform.patchValue({ direccion: (this.cliente[0].direccion + ', ' + this.cliente[0].ciudad) });
+        this.ingresarform.patchValue({ region: (this.cliente[0].region)});
+      },
+      (error) => {
+        console.error('Error al obtener datos del contrato:', error);
+      }
+    );
+  }
+  
 
   volverAtras() {
     this.router.navigate(['/incidencias']), { replaceUrl: true };
@@ -606,7 +684,7 @@ export class IngresarformPage {
   isInformacionClienteCompleta(): boolean | undefined{
     return this.ingresarform.get('cliente')?.valid &&
            this.ingresarform.get('direccion')?.valid &&
-           this.ingresarform.get('ciudad')?.valid &&
+           this.ingresarform.get('region')?.valid &&
            this.ingresarform.get('contacto')?.valid &&
            this.ingresarform.get('telefono')?.valid &&
            this.ingresarform.get('correo')?.valid;
@@ -678,7 +756,7 @@ export class IngresarformPage {
       const contacto = (document.getElementById('contacto') as HTMLInputElement)?.value || '';
       const telefono = (document.getElementById('telefono') as HTMLInputElement)?.value || '';
       const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
-      const ciudad = (document.getElementById('ciudad') as HTMLInputElement)?.value || '';
+      const region = (document.getElementById('region') as HTMLInputElement)?.value || '';
 
       const tipoequipo = (document.getElementById('tipoequipo') as HTMLSelectElement)?.value || '';
 
@@ -735,7 +813,7 @@ export class IngresarformPage {
 
       pdf.text(cliente, 110, 126);
       pdf.text(direccion, 110, 140);
-      pdf.text(ciudad, 110, 156);
+      pdf.text(region, 110, 156);
       pdf.text(contacto, 372, 122);
       pdf.text(telefono, 372, 138);
       pdf.text(correo, 372, 152);

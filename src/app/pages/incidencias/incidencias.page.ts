@@ -5,7 +5,8 @@ import { DatePipe } from '@angular/common';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
 import { Router } from '@angular/router';
 import DOMPurify from 'dompurify';
-import { identity } from 'rxjs';
+import { identity, TimeoutError } from 'rxjs';
+import { DbService } from 'src/app/services/db.service';
 
 interface Incidencia {
   begin: any;
@@ -62,7 +63,8 @@ export class IncidenciasPage implements OnInit {
   detalleTicket: Actividad[]= [];
   fecha: any;
  
-  constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe, private router: Router) { }
+  contrato: any;
+  constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe, private router: Router, private db: DbService) { }
 
   ngOnInit() {
     this.username = localStorage.getItem('email')!;
@@ -135,7 +137,6 @@ export class IncidenciasPage implements OnInit {
       (response: any) => {
         this.displayIncidencia = response.data || [];
         this.filtroIncidenciaArray = [...this.displayIncidencia];
-        
         this.displayIncidencia.forEach((i: Incidencia) => {
           const movimientos = Array.isArray(i.movimiento) ? i.movimiento : [i.movimiento];
           const fechas = Array.isArray(i.movimiento) ? i.movimiento : [i.movimiento];
@@ -199,14 +200,20 @@ export class IncidenciasPage implements OnInit {
     let estadoActual = i.movimiento[0].movimiento;
     let enviarMovimiento = '';
     let cambiarMovimiento = '';
-
+  
+    // Validar contrato si el estado actual es "Generar PDF"
     if (estadoActual === 'Generar PDF') {
-      this.router.navigate(['/ingresarform'], {
-        queryParams: { id: i.id, fecha: i.movimiento[0].fecha},
-        fragment: 'info',
-        replaceUrl: true,
-        state: {itilcategories_id: i.itilcategories_id, tipoServicio: this.tipo}
-      });
+      const detalle = await this.checkContrato(i.id); // Obtener detalles del ticket
+      if (detalle && detalle.contrato) {
+        this.router.navigate(['/ingresarform'], {
+          queryParams: { id: i.id, fecha: i.movimiento[0].fecha, contrato: detalle.contrato },
+          fragment: 'info',
+          replaceUrl: true,
+          state: { itilcategories_id: i.itilcategories_id, tipoServicio: this.tipo}
+        });
+      } else {
+        this.db.presentAlertN("Este ticket no tiene contrato asociado.");
+      }
       this.ocultarCarga(loading);
       return;
     }
@@ -214,34 +221,37 @@ export class IncidenciasPage implements OnInit {
     if (estadoActual === 'En Camino') {
       enviarMovimiento = 'En Camino';
       cambiarMovimiento = 'En Cliente';
-      
-    } else 
-    if (estadoActual === 'En Cliente') {
+    } else if (estadoActual === 'En Cliente') {
       enviarMovimiento = 'En Cliente';
       cambiarMovimiento = 'Generar PDF';
     }
   
     // Lógica para actualizar el estado y ubicación
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const latitud = position.coords.latitude;
-      const longitud = position.coords.longitude;
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitud = position.coords.latitude;
+        const longitud = position.coords.longitude;
   
-      this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, i.id).subscribe(
-        (response: any) => {
-          console.log('Ubicación actualizada:', response);
-          this.ocultarCarga(loading);
-          i.movimiento[0].movimiento = cambiarMovimiento; 
-        },
-        (error) => {
-          console.error('Error al actualizar la ubicación:', error);
-        }
-      );
-    },
-    (error) => {
-      console.error('Error al obtener la geolocalización:', error);
-      alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
-    });
+        this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, i.id).subscribe(
+          (response: any) => {
+            console.log('Ubicación actualizada:', response);
+            this.ocultarCarga(loading);
+            i.movimiento[0].movimiento = cambiarMovimiento;
+            this.db.presentAlertP("Se registró correctamente!");
+            this.fetchTickets();
+          },
+          (error) => {
+            console.error('Error al actualizar la ubicación:', error);
+          }
+        );
+      },
+      (error) => {
+        console.error('Error al obtener la geolocalización:', error);
+        alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+      }
+    );
   }
+  
   
   decodeHtml(html: string): string {
     const txt = document.createElement('textarea');
@@ -267,9 +277,10 @@ export class IncidenciasPage implements OnInit {
     this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
       (response) => {
         console.log(response);
+        this.contrato = response.contrato;
         this.detalleTicket = response.actividad || [];
         this.detalleTicket.forEach(ticket => {
-          ticket.tipo = ticket.tipo;  // Guardar tipo en cada ticket
+          ticket.tipo = ticket.tipo;
         });
   
         if (this.detalleTicket.length > 0) {
@@ -283,6 +294,23 @@ export class IncidenciasPage implements OnInit {
       },
     );
   }
+
+  async checkContrato(idticket: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
+        (response) => {
+          this.contrato = response.contrato;
+          resolve(response);
+        },
+        (error) => {
+          console.error('Error al obtener los detalles del ticket:', error);
+          reject(error);
+        }
+      );
+    });
+  }
+  
+  
 
   volverAtras() {
     this.variablesVacias();
