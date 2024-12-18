@@ -254,7 +254,7 @@
           <ion-item>
             <ion-label position="stacked">Problema reportado:</ion-label>
             <ion-textarea id="problemareport" formControlName="problemareport" rows="4" [maxlength]="maxChars"
-              [(ngModel)]="role" placeholder="Escribe el problema reportado..."></ion-textarea>
+              [(ngModel)]="role" placeholder="Escribe el problema reportado..." readonly></ion-textarea>
           </ion-item>
           <ion-text style="float: right; margin-right: 10px;">Caracteres restantes:
             {{role.length}}/{{maxChars}}</ion-text>

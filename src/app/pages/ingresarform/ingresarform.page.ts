@@ -203,27 +203,21 @@ export class IngresarformPage {
   }
 
   clearFormValues(formGroup: FormGroup | FormArray) {
-    // Si el control es un FormGroup
     if (formGroup instanceof FormGroup) {
       Object.keys(formGroup.controls).forEach(key => {
         const control = formGroup.get(key);
         if (control instanceof FormGroup || control instanceof FormArray) {
-          // Llamar recursivamente si el control es un FormGroup o FormArray
           this.clearFormValues(control);
         } else {
-          // Asignar valor vacío a los controles de tipo FormControl
           control?.setValue('');
         }
       });
     }
-    // Si el control es un FormArray
     else if (formGroup instanceof FormArray) {
       formGroup.controls.forEach(control => {
         if (control instanceof FormGroup || control instanceof FormArray) {
-          // Llamar recursivamente si el control es un FormGroup o FormArray
           this.clearFormValues(control);
         } else {
-          // Asignar valor vacío a los controles de tipo FormControl
           control.setValue('');
         }
       });
@@ -248,18 +242,18 @@ export class IngresarformPage {
       const idTicket = params['id'];
       const fechaCompleta= params['fecha'];
       const contrato = params['contrato'];
+      const problemaReport = params['problemaReport'];
+
+      const sanitizedProblemaReport = this.stripHTML(problemaReport);
+      
+      const [fecha, horaInicio] = fechaCompleta.split(' ');
+      const horaFormateada = this.formatearhoraDirecto(horaInicio);
+
       this.getDatosContrato(contrato);
-      if (fechaCompleta) {
-        // Dividir la fecha y la hora
-        const [fecha, horaInicio] = fechaCompleta.split(' ');
-        const horaFormateada = this.formatearhoraDirecto(horaInicio);
-        // Asignar los valores separados
-        this.ingresarform.patchValue({ eventocliente: idTicket });
-        this.ingresarform.patchValue({ fecha });
-        this.ingresarform.patchValue({ horainicio: horaFormateada });
-      } 
-      console.log(fechaCompleta);
-      this.ingresarform.patchValue({eventocliente: idTicket})
+      this.ingresarform.patchValue({ eventocliente: idTicket });
+      this.ingresarform.patchValue({ fecha });
+      this.ingresarform.patchValue({ horainicio: horaFormateada });
+      this.ingresarform.patchValue({ problemareport: sanitizedProblemaReport });
 
     });
     
@@ -274,6 +268,12 @@ export class IngresarformPage {
     }
 
   }
+
+  private stripHTML(html: string): string {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
+}
 
   getDatosContrato(idcontrato: any) {
     this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(

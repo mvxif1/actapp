@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
-import { ApiService } from 'src/app/services/api.service';
 import { DatePipe } from '@angular/common';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
 import { Router } from '@angular/router';
 import DOMPurify from 'dompurify';
-import { identity, TimeoutError } from 'rxjs';
 import { DbService } from 'src/app/services/db.service';
 
 interface Incidencia {
@@ -206,7 +204,7 @@ export class IncidenciasPage implements OnInit {
       const detalle = await this.checkContrato(i.id); // Obtener detalles del ticket
       if (detalle && detalle.contrato) {
         this.router.navigate(['/ingresarform'], {
-          queryParams: { id: i.id, fecha: i.movimiento[0].fecha, contrato: detalle.contrato },
+          queryParams: { id: i.id, fecha: i.movimiento[0].fecha, contrato: detalle.contrato, problemaReport: i.title },
           fragment: 'info',
           replaceUrl: true,
           state: { itilcategories_id: i.itilcategories_id, tipoServicio: this.tipo}
