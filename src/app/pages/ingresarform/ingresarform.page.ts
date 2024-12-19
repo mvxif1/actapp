@@ -72,12 +72,12 @@ export class IngresarformPage {
   detalle: Detalle[] = [];
   cliente: Cliente[] = [];
 
-  @ViewChild('equipoEspera') equipoEspera!: IonRadioGroup;
   @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
-  @ViewChild('equipoBackup') equipoBackup!: IonRadioGroup;
-  @ViewChild('equipoEsperaBackup') equipoEsperaBackup!: IonRadioGroup;
+  @ViewChild('solicitaRepuesto') solicitaRepuesto!: IonRadioGroup;
+  @ViewChild('solicitarBackup') solicitarBackup!: IonRadioGroup;
 
   @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
+  @ViewChild('validaCoordinadora') validaCoordinadora!: IonRadioGroup;
 
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
@@ -96,6 +96,7 @@ export class IngresarformPage {
   backupform!: FormGroup;
   utilizoRepuestosform!: FormGroup;
   repuestosOperativoform!: FormGroup;
+  validaCoordinadoraForm!: FormGroup;
 
   repuestosactivado: boolean = false;
   equipoactivado: boolean = false;
@@ -103,7 +104,8 @@ export class IngresarformPage {
   esperabackupactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
   utilizaRepuestosInactivo: boolean = false;
-
+  validarCoordinadora: boolean = false;
+  repuestosFormActivo: boolean = false;
 
 
   otramarcaActiva: boolean = false;
@@ -157,10 +159,9 @@ export class IngresarformPage {
       solucionreport: ['', [Validators.required, Validators.maxLength(500)]],
 
       //SECCION: Status de servicio
-      equipoEspera: ['', [Validators.required]],
       equipoOperativo: ['', [Validators.required]],
-      equipoBackup: ['', [Validators.required]],
-      equipoEsperaBackup: ['', [Validators.required]],
+      solicitaRepuesto: ['', [Validators.required]],
+      solicitarBackup: ['', [Validators.required]],
 
       //SECCION: Datos cliente
       nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
@@ -199,6 +200,10 @@ export class IngresarformPage {
       nparteRepuesto: ['', [Validators.required, Validators.pattern(this.pattern.letrasynum)]],
       estadoRepuesto: ['SOLICITUD'],
     });
+
+    this.validaCoordinadoraForm = this.formBuilder.group({
+      validaCoordinadora: ['', [Validators.required]]
+    })
 
   }
 
@@ -374,27 +379,27 @@ export class IngresarformPage {
   }
 
   isGenerarPDFDisabled() {
-    const { equipoEspera, equipoOperativo, equipoBackup, equipoEsperaBackup } = this.ingresarform.value;
+    const { solicitaBackup, equipoOperativo, solicitaRepuesto, solicitarBackup } = this.ingresarform.value;
     //----Desactivar botón si todos los valores son 'no'----//
-    const todasNo = equipoEspera === 'no' && equipoOperativo === 'no' && equipoBackup === 'no' && equipoEsperaBackup === 'no' ;
+    const todasNo = solicitaBackup === 'no' && equipoOperativo === 'no' && solicitaRepuesto === 'no' && solicitarBackup === 'no' ;
     if (todasNo) return true;
 
     // Activar botón si equipoOperativo es 'si'
     if (equipoOperativo === 'si' && this.utilizaRepuestosActivo && this.repuestosOperativo.length > 0) return false;
     if (equipoOperativo === 'si' && this.utilizaRepuestosInactivo) return false;
 
-    // Activar botón si equipoBackup es válido
+    // Activar botón si solicitaRepuesto es válido
     if (this.backupform.valid && this.backupactivado) {
       return false;
     }
       
 
-    // Activar botón si hay repuestos y equipoEspera es 'si'
-    if (equipoEspera === 'si' && this.repuestos.length > 0) return false;
+    // Activar botón si hay repuestos y solicitaBackup es 'si'
+    if (solicitaBackup === 'si' && this.repuestos.length > 0) return false;
 
-    if (equipoEsperaBackup === 'no'){
+    if (solicitarBackup === 'no'){
       return true;
-    } else if (equipoEsperaBackup === 'si'){
+    } else if (solicitarBackup === 'si'){
       return false;
     }
     return true;
@@ -452,74 +457,55 @@ export class IngresarformPage {
   onSelected(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
-
+  
     // Actualizar los valores del formulario
     this.ingresarform.patchValue({
-      equipoEspera:       this.equipoEspera.value,
-      equipoOperativo:    this.equipoOperativo.value,
-      equipoBackup:       this.equipoBackup.value,
-      equipoEsperaBackup: this.equipoEsperaBackup.value
+      equipoOperativo: this.equipoOperativo.value,
+      solicitaRepuesto: this.solicitaRepuesto.value,
+      solicitarBackup: this.solicitarBackup.value
     });
-
+  
     // Verificar si todas las opciones están en "NO"
     const todasNo = Object.values(this.ingresarform.value).every(val => val === 'no');
-
-    if (todasNo) { // Si todas las opciones están en "NO", establecer una de ellas en "SI"
-      if (radioGroup !== this.equipoEspera) {
-        this.equipoEspera.value = 'si';
-      } else if (radioGroup !== this.equipoOperativo) {
+  
+    if (todasNo) {
+      // Si todas las opciones están en "NO", establecer una de ellas en "SI"
+      if (radioGroup !== this.equipoOperativo) {
         this.equipoOperativo.value = 'si';
-        this.equipoactivado = true;
-      } else if (radioGroup !== this.equipoBackup) {
-        this.equipoBackup.value = 'si';
-        this.backupactivado = true;
-      } else if (radioGroup !== this.equipoEsperaBackup){
-        this.equipoEsperaBackup.value = 'si';
-        this.esperabackupactivado = true;
+      } else if (radioGroup !== this.solicitaRepuesto) {
+        this.solicitaRepuesto.value = 'si';
+      } else if (radioGroup !== this.solicitarBackup) {
+        this.solicitarBackup.value = 'si';
       }
-      
-    } else if (value === 'si') { // Si se selecciona "SI", establecer los otros grupos en "NO"
-      if (radioGroup !== this.equipoEspera) {
-        this.equipoEspera.value = 'no';
-      }
+    } else if (value === 'si') {
+      // Si se selecciona "SI", establecer los otros grupos en "NO"
       if (radioGroup !== this.equipoOperativo) {
         this.equipoOperativo.value = 'no';
-        this.equipoactivado = false;
       }
-      if (radioGroup !== this.equipoBackup) {
-        this.equipoBackup.value = 'no';
-        this.backupactivado = false;
-        
+      if (radioGroup !== this.solicitaRepuesto) {
+        this.solicitaRepuesto.value = 'no';
       }
-      if (radioGroup !== this.equipoEsperaBackup) {
-        this.equipoEsperaBackup.value = 'no';
-        this.esperabackupactivado = false;
+      if (radioGroup !== this.solicitarBackup) {
+        this.solicitarBackup.value = 'no';
       }
     }
-
-    if (this.equipoBackup.value === 'si'){
-      this.backupactivado = true;
-      this.backupform
-    } else if (this.equipoBackup.value === 'no'){
-      this.backupactivado = false;
+  
+    // Controlar el estado de backup
+    if (this.solicitaRepuesto.value === 'si') {
+    } else if (this.solicitaRepuesto.value === 'no') {
     }
-
-    if (this.equipoEsperaBackup.value === 'si'){
-      this.esperabackupactivado = true;
-    } else if (this.equipoEsperaBackup.value === 'no'){
-      this.esperabackupactivado = false;
+  
+    // Controlar el estado de espera backup
+    if (this.solicitarBackup.value === 'si') {
+    } else if (this.solicitarBackup.value === 'no') {
     }
-
+  
+    // Controlar el estado de operativo
     if (this.equipoOperativo.value === 'si') {
-      this.equipoactivado = true;
-      this.utilizaRepuestosInactivo = false;
     } else if (this.equipoOperativo.value === 'no') {
-      this.utilizaRepuestosActivo = false;
-      this.utilizaRepuestosInactivo = true;
-      this.equipoactivado = false;
     }
-
   }
+  
   seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
@@ -538,10 +524,27 @@ export class IngresarformPage {
     }
   }
 
+  selectValidaCoordinadora(radioGroup: IonRadioGroup, value: string) {
+    // Establecer el valor del grupo actual
+    radioGroup.value = value;
+
+    // Actualizar los valores del formulario
+    this.validaCoordinadoraForm.patchValue({
+      validaCoordinadora: this.validaCoordinadora.value
+    });
+
+    if (this.validaCoordinadora.value === 'si') {
+      this.validarCoordinadora = true;
+    } else if(this.validaCoordinadora.value === 'no'){
+      this.validarCoordinadora = false;
+      this.db.presentAlertN("Debes validar con coordinadora");
+    }
+  }
+  //Solicitar repuesto y validado por coordinadora
   agregarRepuesto(nombre: any, numeroParte: any, estado: any) {
     this.repuestos.push({ nombre: nombre, numeroParte: numeroParte, estado: estado });
     this.repuestosactivado = true;
-    this.db.presentAlertP("Repuesta agregado correctamente!");
+    this.db.presentAlertP("Repuesta agregado solicitado correctamente!");
   }
   borrarRepuesto(index: number) {
     this.repuestos.splice(index, 1);
@@ -704,10 +707,10 @@ export class IngresarformPage {
   }
 
   isStatusServicioCompleta(): boolean | undefined{
-    return (this.ingresarform.get('equipoEspera')?.value === 'si') ||
-           (this.ingresarform.get('equipoBackup')?.value === 'si') ||
+    return (this.ingresarform.get('solicitaBackup')?.value === 'si') ||
+           (this.ingresarform.get('solicitaRepuesto')?.value === 'si') ||
            (this.ingresarform.get('equipoOperativo')?.value === 'si') ||
-           (this.ingresarform.get('equipoEsperaBackup')?.value === 'si');
+           (this.ingresarform.get('solicitarBackup')?.value === 'si');
   }
   isStatusServicioEquipoOperativo(): boolean | undefined{
     return (this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === '')
@@ -718,11 +721,11 @@ export class IngresarformPage {
   }
 
   mostrarErrorBackup(): boolean {
-    return this.ingresarform.get('equipoBackup')?.value === 'si' && !this.backupform.valid;
+    return this.ingresarform.get('solicitaRepuesto')?.value === 'si' && !this.backupform.valid;
   }
 
   mostrarErrorRepuestos(): boolean {
-    return this.ingresarform.get('equipoEspera')?.value === 'si' && !this.repuestosform.valid;
+    return this.ingresarform.get('solicitaBackup')?.value === 'si' && !this.repuestosform.valid;
   }
 
   mostrarErrorRepuestosOperativoNohayrepuestos(): boolean {
@@ -730,7 +733,7 @@ export class IngresarformPage {
   }
 
   mostrarErrorRepuestosNohayrepuestos(): boolean {
-    return this.ingresarform.get('equipoEspera')?.value === 'si' && (this.repuestos && this.repuestos.length === 0);
+    return this.ingresarform.get('solicitaBackup')?.value === 'si' && (this.repuestos && this.repuestos.length === 0);
   }
 
   isDatosClienteCompleta(): boolean | undefined{
@@ -742,7 +745,6 @@ export class IngresarformPage {
 
   async generarPDF() {
     try {
-      this.loading = true;
       const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
       const tiposervicio = (document.getElementById('tipoServicio') as HTMLSelectElement)?.value || '';
       const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
@@ -773,10 +775,11 @@ export class IngresarformPage {
       const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
       const solucionreport = (document.getElementById('solucionreport') as HTMLTextAreaElement)?.value || '';
 
-      const equipoEspera = (document.getElementById('equipoEspera') as HTMLIonRadioGroupElement)?.value || '';
+      const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
       const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
-      const equipoBackup = (document.getElementById('equipoBackup') as HTMLIonRadioGroupElement)?.value || '';
-      const equipoEsperaBackup = (document.getElementById('equipoEsperaBackup') as HTMLIonRadioGroupElement)?.value || '';
+      const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
+      const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
+      const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
 
       const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
       const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
@@ -790,6 +793,18 @@ export class IngresarformPage {
 
       const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
       const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
+
+      //Generacion de PDF con GLPI
+      if(utilizoRepuestos == 'no'){
+        console.log("mandar cerrar ticket");
+        return;
+      }else 
+      if(utilizoRepuestos == 'si'){
+        console.log("mandar cerrar ticket estado 5");
+        return;
+      }else{
+
+      };
 
       // Crear el documento PDF
       const pdf = new jsPDF('p', 'pt', 'letter');
@@ -866,13 +881,13 @@ export class IngresarformPage {
       pdf.text(nseriebackup, 367, 500);
       pdf.text(ipbackup, 367, 514);
       pdf.text(contadorbackup, 367, 528);
-      if (equipoEspera === 'si') {
+      if (solicitaBackup === 'si') {
         pdf.circle(217, 466, 7, "F");
         pdf.circle(257, 482, 7, "F");
         pdf.circle(257, 498, 7, "F");
         pdf.circle(257, 514, 7, "F");
       }
-      if (equipoEsperaBackup === 'si') {
+      if (solicitarBackup === 'si') {
         pdf.circle(257, 466, 7, "F");
         pdf.circle(217, 482, 7, "F");
         pdf.circle(257, 498, 7, "F");
@@ -884,7 +899,7 @@ export class IngresarformPage {
         pdf.circle(217, 498, 7, "F");
         pdf.circle(257, 514, 7, "F");
       }
-      if (equipoBackup === 'si') {
+      if (solicitaRepuesto === 'si') {
         pdf.circle(257, 466, 7, "F");
         pdf.circle(257, 482, 7, "F");
         pdf.circle(257, 498, 7, "F");
@@ -934,37 +949,10 @@ export class IngresarformPage {
       //================================================//
       this.db.presentAlertP("Archivo guardado correctamente");
 
-      //=============== ENVIAR CORREO====================//
-      /*const correocliente = (document.getElementById('correocli') as HTMLInputElement)?.value || '';
-      const email = {
-        to: correocliente, // El correo electrónico introducido por el usuario
-        attachments: [archivoGuardado.uri],  //Adjuntar el archivo guardado
-        subject: 'Copia - Orden de servicio ACT ',
-        body: 'Se adjunta copia de orden de servicio',
-        isHtml: true,
-      };
-      const result = await this.emailComposer.open(email);
-      console.log('Correo electrónico enviado', result);
-      //================================================//
-      */
-      
-
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title: 'Archivo guardado correctamente.',
-            body: 'Ticket guardado en documentos.',
-            id: 1,
-            schedule: { at: new Date(Date.now() + 1000) },
-          },
-        ],
-      });
 
       console.log('Archivo guardado en descargas:', archivoGuardado.uri);
-      this.loading = false;
     } catch (error) {
       console.error('Error al guardar el archivo:', error);
-      this.loading = false;
     }
   }
 
