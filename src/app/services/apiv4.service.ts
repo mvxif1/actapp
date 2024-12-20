@@ -81,5 +81,16 @@ export class Apiv4Service {
     const body = `ACCION=getDatosContrato&token=${token}&idcontrato=${idcontrato}`;
     
     return this.http.post(this.baseUrl, body, { headers });
-  }  
+  }
+
+  getItemsBackUp(username: string, password: string, idcontrato: any, tipoitem: any, locations_id: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=getItemsBackUp&token=${token}&idcontrato=${idcontrato}&tipoitem=${tipoitem}&locations_id=${locations_id}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  } 
+
 }

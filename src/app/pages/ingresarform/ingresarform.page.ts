@@ -99,14 +99,12 @@ export class IngresarformPage {
   validaCoordinadoraForm!: FormGroup;
 
   repuestosactivado: boolean = false;
-  equipoactivado: boolean = false;
-  backupactivado: boolean = false;
-  esperabackupactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
   utilizaRepuestosInactivo: boolean = false;
   validarCoordinadora: boolean = false;
-  repuestosFormActivo: boolean = false;
 
+  tipoitem: string = 'Printer';
+  locations_id: any;
 
   otramarcaActiva: boolean = false;
   //Caracteres restantes
@@ -260,6 +258,7 @@ export class IngresarformPage {
       this.ingresarform.patchValue({ horainicio: horaFormateada });
       this.ingresarform.patchValue({ problemareport: sanitizedProblemaReport });
 
+      this.getItemsBackUp(contrato);
     });
     
     // datos enviados de incidencias o solicitudes
@@ -296,6 +295,16 @@ export class IngresarformPage {
     );
   }
   
+  getItemsBackUp(idcontrato: any) {
+    this.apiv4.getItemsBackUp(this.username, this.password, idcontrato, this.tipoitem, this.locations_id).subscribe(
+      (response) => {
+        console.log('Respuesta getItemsBackup:', response);
+      },
+      (error) => {
+        console.error('Error al obtener datos del contrato:', error);
+      }
+    );
+  }
 
   volverAtras() {
     this.router.navigate(['/incidencias']), { replaceUrl: true };
@@ -376,33 +385,6 @@ export class IngresarformPage {
     const inputValue = event.target.value;
     event.target.value = inputValue.toUpperCase();
     this.ingresarform.get('nserie')!.setValue(inputValue.toUpperCase());
-  }
-
-  isGenerarPDFDisabled() {
-    const { solicitaBackup, equipoOperativo, solicitaRepuesto, solicitarBackup } = this.ingresarform.value;
-    //----Desactivar botón si todos los valores son 'no'----//
-    const todasNo = solicitaBackup === 'no' && equipoOperativo === 'no' && solicitaRepuesto === 'no' && solicitarBackup === 'no' ;
-    if (todasNo) return true;
-
-    // Activar botón si equipoOperativo es 'si'
-    if (equipoOperativo === 'si' && this.utilizaRepuestosActivo && this.repuestosOperativo.length > 0) return false;
-    if (equipoOperativo === 'si' && this.utilizaRepuestosInactivo) return false;
-
-    // Activar botón si solicitaRepuesto es válido
-    if (this.backupform.valid && this.backupactivado) {
-      return false;
-    }
-      
-
-    // Activar botón si hay repuestos y solicitaBackup es 'si'
-    if (solicitaBackup === 'si' && this.repuestos.length > 0) return false;
-
-    if (solicitarBackup === 'no'){
-      return true;
-    } else if (solicitarBackup === 'si'){
-      return false;
-    }
-    return true;
   }
 
   marca(){

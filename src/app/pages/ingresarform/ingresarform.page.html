@@ -600,7 +600,7 @@
            Completa el formulario para Backup instalado.
         </div>
       </div>
-      <ion-button expand="full" [disabled]="isGenerarPDFDisabled() || !isFormularioCompleto() || !firmaIngresada || tipoconexion() || marca()" (click)="generarPDF()">Generar PDF</ion-button>
+      <ion-button expand="full" [disabled]="!isFormularioCompleto() || !firmaIngresada || tipoconexion() || marca()" (click)="generarPDF()">Generar PDF</ion-button>
       <br>
     </ion-card>
   </form>
