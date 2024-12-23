@@ -43,6 +43,7 @@ import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
+import { Subscription } from 'rxjs';
 
 interface Cliente{
   region: any;
@@ -58,6 +59,20 @@ interface Detalle{
   duration: any;
   name: any;
   num: any;
+}
+
+interface Modelo{
+  detalle: DetalleM[];
+  direccion: any;
+  id: any;
+  items_id: any;
+  itemtype: any
+}
+
+interface DetalleM{
+  contact_num: any;
+  serial: any;
+  name: any;
 }
 @Component({
   selector: 'app-ingresarform',
@@ -77,7 +92,8 @@ export class IngresarformPage {
   @ViewChild('solicitarBackup') solicitarBackup!: IonRadioGroup;
 
   @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
-  @ViewChild('validaCoordinadora') validaCoordinadora!: IonRadioGroup;
+  @ViewChild('validaCoordinadoraRespuesto') validaCoordinadoraRespuesto!: IonRadioGroup;
+  @ViewChild('validaCoordinadoraBackup') validaCoordinadoraBackup!: IonRadioGroup;
 
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
@@ -96,15 +112,21 @@ export class IngresarformPage {
   backupform!: FormGroup;
   utilizoRepuestosform!: FormGroup;
   repuestosOperativoform!: FormGroup;
-  validaCoordinadoraForm!: FormGroup;
+  validaCoordinadoraRepuestoForm!: FormGroup;
+  validaCoordinadoraBackupForm!: FormGroup;
 
   repuestosactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
   utilizaRepuestosInactivo: boolean = false;
-  validarCoordinadora: boolean = false;
+  validarCoordinadoraRepuesto: boolean = false;
+  validarCoordinadoraBackup: boolean = false;
 
-  tipoitem: string = 'Printer';
+  contrato: string = '';
+  tipoitem: string = '';
   locations_id: any;
+  subscriptions: Subscription = new Subscription();
+  modelosImpresoras: Modelo[] = [];
+  modelosComputadoras: Modelo[] = [];
 
   otramarcaActiva: boolean = false;
   //Caracteres restantes
@@ -139,7 +161,7 @@ export class IngresarformPage {
       horainicio: ['', [Validators.required, this.validarHoras]],
       //SECCION: Información de cliente
       cliente: ['', [Validators.required]],
-      direccion: ['', [Validators.required, Validators.maxLength(35)]],
+      direccion: ['', [Validators.required]],
       region: ['', [Validators.required]],
       contacto: ['', [Validators.required]],
       telefono: ['', [Validators.required, Validators.minLength(9), Validators.maxLength(9), Validators.pattern(this.pattern.numeros)]],
@@ -160,6 +182,9 @@ export class IngresarformPage {
       equipoOperativo: ['', [Validators.required]],
       solicitaRepuesto: ['', [Validators.required]],
       solicitarBackup: ['', [Validators.required]],
+
+      tipoequipobackup: [''],
+      modeloBackup: [''],
 
       //SECCION: Datos cliente
       nombrecli: ['', [Validators.required, Validators.pattern(this.pattern.letras)]],
@@ -199,9 +224,13 @@ export class IngresarformPage {
       estadoRepuesto: ['SOLICITUD'],
     });
 
-    this.validaCoordinadoraForm = this.formBuilder.group({
-      validaCoordinadora: ['', [Validators.required]]
-    })
+    this.validaCoordinadoraRepuestoForm = this.formBuilder.group({
+      validaCoordinadoraRespuesto: ['', [Validators.required]]
+    });
+
+    this.validaCoordinadoraBackupForm = this.formBuilder.group({
+      validaCoordinadoraBackup: ['', [Validators.required]]
+    });
 
   }
 
@@ -246,7 +275,7 @@ export class IngresarformPage {
       const fechaCompleta= params['fecha'];
       const contrato = params['contrato'];
       const problemaReport = params['problemaReport'];
-
+      this.contrato = contrato;
       const sanitizedProblemaReport = this.stripHTML(problemaReport);
       
       const [fecha, horaInicio] = fechaCompleta.split(' ');
@@ -258,7 +287,16 @@ export class IngresarformPage {
       this.ingresarform.patchValue({ horainicio: horaFormateada });
       this.ingresarform.patchValue({ problemareport: sanitizedProblemaReport });
 
-      this.getItemsBackUp(contrato);
+      this.subscriptions.add(
+        this.ingresarform.get('tipoequipobackup')?.valueChanges.subscribe((tipoItem) => {
+          if (tipoItem === 'Printer') {
+            this.getItemsBackUp(this.contrato, tipoItem);
+          } else 
+          if (tipoItem === 'Computer') {
+            this.getItemsBackUp(this.contrato, tipoItem);
+          }
+        })
+      );
     });
     
     // datos enviados de incidencias o solicitudes
@@ -286,7 +324,7 @@ export class IngresarformPage {
         this.detalle = [response.detalle];
         console.log('Respuesta completa:', this.cliente, this.detalle);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
-        this.ingresarform.patchValue({ direccion: (this.cliente[0].direccion + ', ' + this.cliente[0].ciudad) });
+        this.ingresarform.patchValue({ direccion: (this.cliente[0].direccion) });
         this.ingresarform.patchValue({ region: (this.cliente[0].region)});
       },
       (error) => {
@@ -295,17 +333,33 @@ export class IngresarformPage {
     );
   }
   
-  getItemsBackUp(idcontrato: any) {
-    this.apiv4.getItemsBackUp(this.username, this.password, idcontrato, this.tipoitem, this.locations_id).subscribe(
+  getItemsBackUp(idcontrato: any, tipoItem: any) {
+    this.apiv4.getItemsBackUp(this.username, this.password, idcontrato, tipoItem, this.locations_id).subscribe(
       (response) => {
-        console.log('Respuesta getItemsBackup:', response);
+        if (tipoItem === 'Printer') {
+          this.modelosImpresoras = response.map((printer: any) => {
+            if (!Array.isArray(printer.detalle)) {
+              printer.detalle = [printer.detalle]; // Convertir a array
+            }
+            return printer;
+          });
+          console.log(this.modelosImpresoras);
+        } else if (tipoItem === 'computer') {
+          this.modelosComputadoras = response;
+        }
       },
       (error) => {
         console.error('Error al obtener datos del contrato:', error);
       }
     );
   }
+  
 
+  ngOnDestroy() {
+    // Cancelar suscripciones para evitar fugas de memoria
+    this.subscriptions.unsubscribe();
+  }
+  
   volverAtras() {
     this.router.navigate(['/incidencias']), { replaceUrl: true };
   }
@@ -437,8 +491,24 @@ export class IngresarformPage {
   
 
   onSelected(radioGroup: IonRadioGroup, value: string) {
-    // Establecer el valor del grupo actual
-    radioGroup.value = value;
+    if (value === 'si') {
+      if (radioGroup === this.equipoOperativo) {
+        this.utilizaRepuestosActivo = false;
+        this.validarCoordinadoraRepuesto = false;
+        this.solicitaRepuesto.value = 'no';
+        this.solicitarBackup.value = 'no';
+      } else if (radioGroup === this.solicitaRepuesto) {
+        this.utilizaRepuestosActivo = false;
+        this.validarCoordinadoraRepuesto = false;
+        this.equipoOperativo.value = 'no';
+        this.solicitarBackup.value = 'no';
+      } else if (radioGroup === this.solicitarBackup) {
+        this.utilizaRepuestosActivo = false;
+        this.validarCoordinadoraRepuesto = false;
+        this.equipoOperativo.value = 'no';
+        this.solicitaRepuesto.value = 'no';
+      }
+    }
   
     // Actualizar los valores del formulario
     this.ingresarform.patchValue({
@@ -447,45 +517,7 @@ export class IngresarformPage {
       solicitarBackup: this.solicitarBackup.value
     });
   
-    // Verificar si todas las opciones están en "NO"
-    const todasNo = Object.values(this.ingresarform.value).every(val => val === 'no');
-  
-    if (todasNo) {
-      // Si todas las opciones están en "NO", establecer una de ellas en "SI"
-      if (radioGroup !== this.equipoOperativo) {
-        this.equipoOperativo.value = 'si';
-      } else if (radioGroup !== this.solicitaRepuesto) {
-        this.solicitaRepuesto.value = 'si';
-      } else if (radioGroup !== this.solicitarBackup) {
-        this.solicitarBackup.value = 'si';
-      }
-    } else if (value === 'si') {
-      // Si se selecciona "SI", establecer los otros grupos en "NO"
-      if (radioGroup !== this.equipoOperativo) {
-        this.equipoOperativo.value = 'no';
-      }
-      if (radioGroup !== this.solicitaRepuesto) {
-        this.solicitaRepuesto.value = 'no';
-      }
-      if (radioGroup !== this.solicitarBackup) {
-        this.solicitarBackup.value = 'no';
-      }
-    }
-  
-    // Controlar el estado de backup
-    if (this.solicitaRepuesto.value === 'si') {
-    } else if (this.solicitaRepuesto.value === 'no') {
-    }
-  
-    // Controlar el estado de espera backup
-    if (this.solicitarBackup.value === 'si') {
-    } else if (this.solicitarBackup.value === 'no') {
-    }
-  
-    // Controlar el estado de operativo
-    if (this.equipoOperativo.value === 'si') {
-    } else if (this.equipoOperativo.value === 'no') {
-    }
+
   }
   
   seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string) {
@@ -506,22 +538,42 @@ export class IngresarformPage {
     }
   }
 
-  selectValidaCoordinadora(radioGroup: IonRadioGroup, value: string) {
+  selectValidaCoordinadoraRepuesto(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
     radioGroup.value = value;
 
     // Actualizar los valores del formulario
-    this.validaCoordinadoraForm.patchValue({
-      validaCoordinadora: this.validaCoordinadora.value
+    this.validaCoordinadoraRepuestoForm.patchValue({
+      validaCoordinadoraRespuesto: this.validaCoordinadoraRespuesto.value
     });
 
-    if (this.validaCoordinadora.value === 'si') {
-      this.validarCoordinadora = true;
-    } else if(this.validaCoordinadora.value === 'no'){
-      this.validarCoordinadora = false;
+    if (this.validaCoordinadoraRespuesto.value === 'si') {
+      this.validarCoordinadoraRepuesto = true;
+    } else if(this.validaCoordinadoraRespuesto.value === 'no'){
+      this.validarCoordinadoraRepuesto = false;
       this.db.presentAlertN("Debes validar con coordinadora");
+    }else{
+      this.validarCoordinadoraRepuesto = false;
     }
   }
+
+  selectValidaCoordinadoraBackup(radioGroup: IonRadioGroup, value: string){
+    radioGroup.value = value;
+    
+    this.validaCoordinadoraBackupForm.patchValue({
+      validaCoordinadoraBackup: this.validaCoordinadoraBackup.value
+    });
+
+    if (this.validaCoordinadoraBackup.value === 'si') {
+      this.validarCoordinadoraBackup = true;
+    } else if(this.validaCoordinadoraBackup.value === 'no'){
+      this.validarCoordinadoraBackup = false;
+      this.db.presentAlertN("Debes validar con coordinadora");
+    }else{
+      this.validarCoordinadoraBackup = false;
+    }
+  }
+  
   //Solicitar repuesto y validado por coordinadora
   agregarRepuesto(nombre: any, numeroParte: any, estado: any) {
     this.repuestos.push({ nombre: nombre, numeroParte: numeroParte, estado: estado });
@@ -759,9 +811,13 @@ export class IngresarformPage {
 
       const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
       const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
-      const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
-      const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
       const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
+      
+      const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
+      const validaCoordinadoraRespuesto = (document.getElementById('validaCoordinadoraRespuesto') as HTMLIonRadioGroupElement)?.value || '';
+      const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
+      const validaCoordinadoraBackup = (document.getElementById('validaCoordinadoraBackup') as HTMLIonRadioGroupElement)?.value || '';
+
 
       const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
       const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
@@ -777,16 +833,24 @@ export class IngresarformPage {
       const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
 
       //Generacion de PDF con GLPI
-      if(utilizoRepuestos == 'no'){
-        console.log("mandar cerrar ticket");
+      if(equipoOperativo == 'si' &&  utilizoRepuestos == 'no'){
+        console.log("mandar repuestos y cerrar ticket estado 5");
         return;
       }else 
-      if(utilizoRepuestos == 'si'){
+      if(equipoOperativo == 'si' && utilizoRepuestos == 'si'){
         console.log("mandar cerrar ticket estado 5");
         return;
-      }else{
-
       };
+
+      if(solicitaRepuesto == 'si' && validaCoordinadoraRespuesto == 'si'){
+        console.log("1- valida con coordinadora, 2- crea tarea para gestionar repuestos y 3- genera ticket de despacho asignado a coordinadora");
+        return;
+      }
+
+      if(solicitaRepuesto == 'si' && validaCoordinadoraBackup == 'si'){
+        console.log("");
+        return;
+      }
 
       // Crear el documento PDF
       const pdf = new jsPDF('p', 'pt', 'letter');

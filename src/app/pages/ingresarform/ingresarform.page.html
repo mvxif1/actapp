@@ -314,10 +314,11 @@
           </ion-radio-group>
         </ion-list>
 
-        <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' || ingresarform.get('solicitarBackup')?.value === 'si'">
-          <ion-card-title style="font-size: 13px;">VALIDACIÓN</ion-card-title>
-          <form [formGroup]="validaCoordinadoraForm">
-            <ion-radio-group id="validaCoordinadora" #validaCoordinadora (ionChange)="selectValidaCoordinadora(validaCoordinadora, validaCoordinadora.value)">
+        <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si'" >
+          <ion-card-title style="font-size: 13px;">VALIDACIÓN REPUESTO</ion-card-title>
+          <form [formGroup]="validaCoordinadoraRepuestoForm">
+            <ion-radio-group id="validaCoordinadoraRespuesto" #validaCoordinadoraRespuesto 
+            (ionChange)="selectValidaCoordinadoraRepuesto(validaCoordinadoraRespuesto, validaCoordinadoraRespuesto.value)">
               <ion-item>
                 <ion-label>¿Validó con coordinadora?</ion-label>
                 <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
@@ -327,8 +328,24 @@
               </ion-item>
             </ion-radio-group>
           </form>
-      </div>
-          <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validarCoordinadora">
+        </div>
+        <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si'" >
+          <ion-card-title style="font-size: 13px;">VALIDACIÓN BACKUP</ion-card-title>
+          <form [formGroup]="validaCoordinadoraBackupForm">
+            <ion-radio-group id="validaCoordinadoraBackup" #validaCoordinadoraBackup 
+            (ionChange)="selectValidaCoordinadoraBackup(validaCoordinadoraBackup, validaCoordinadoraBackup.value)">
+              <ion-item>
+                <ion-label>¿Validó con coordinadora?</ion-label>
+                <ion-label slot="end" style="margin-left: 5px;">SI</ion-label>
+                <ion-radio slot="end" style="margin-left: 5px;" value="si"></ion-radio>
+                <ion-label slot="end" style="margin-left: 20px;">NO</ion-label>
+                <ion-radio slot="end" style="margin-left: 5px;" value="no"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </form>
+        </div>
+
+          <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validarCoordinadoraRepuesto">
             <form [formGroup]="repuestosform">
               <ion-card-title style="font-size: 13px;">SOLICITAR REPUESTOS</ion-card-title>
               <ion-item>
@@ -388,6 +405,34 @@
               <br><br><br>
             </form>
           </div>
+          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup">
+          <ion-card-title style="font-size: 13px;">SOLICITAR BACKUP</ion-card-title>
+          <ion-list>
+            <ion-item>
+              <ion-label position="stacked">Tipo de equipo</ion-label>
+              <ion-select id="tipoequipobackup" formControlName="tipoequipobackup" placeholder="Selecciona el tipo de equipo">
+                <ion-select-option value="Printer">Impresión</ion-select-option>
+                <ion-select-option value="computer">PC</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+          </div>
+          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup && ingresarform.get('tipoequipobackup')?.value ">
+            <ion-card-title style="font-size: 13px;">MODELOS BACKUP</ion-card-title>
+            <ion-item>
+                <div *ngIf="ingresarform.get('tipoequipobackup')!.value === 'Printer' || ingresarform.get('tipoequipobackup')!.value === 'computer' ">
+                  <ion-radio-group formControlName="modeloBackup">
+                    <ion-item *ngFor="let printer of modelosImpresoras">
+                      <ion-label>{{ printer.itemtype }} - {{ printer.detalle[0]?.name }}</ion-label>
+                      <ion-radio slot="start" [value]="printer.id"></ion-radio>
+                    </ion-item>
+                  </ion-radio-group>
+                </div>
+            </ion-item>
+          </div>
+
+          
+
 
 
         <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si'">
