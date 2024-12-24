@@ -417,19 +417,39 @@
             </ion-item>
           </ion-list>
           </div>
-          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup && ingresarform.get('tipoequipobackup')?.value ">
+
+          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup && ingresarform.get('tipoequipobackup')?.value">
             <ion-card-title style="font-size: 13px;">MODELOS BACKUP</ion-card-title>
-            <ion-item>
-                <div *ngIf="ingresarform.get('tipoequipobackup')!.value === 'Printer' || ingresarform.get('tipoequipobackup')!.value === 'computer' ">
-                  <ion-radio-group formControlName="modeloBackup">
-                    <ion-item *ngFor="let printer of modelosImpresoras">
-                      <ion-label>{{ printer.itemtype }} - {{ printer.detalle[0]?.name }}</ion-label>
-                      <ion-radio slot="start" [value]="printer.id"></ion-radio>
-                    </ion-item>
-                  </ion-radio-group>
-                </div>
-            </ion-item>
+            <div style="overflow-x: auto; white-space: nowrap;">
+              <ion-radio-group formControlName="modeloBackup">
+                <table style="border-collapse: collapse; width: 100%; min-width: 600px;">
+                  <thead class="ion-text-center">
+                    <tr>
+                      <th style="border: 1px solid #ddd; padding: 8px;">ID</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Modelo</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Serie</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Tipo de equipo</th>
+                      <th style="border: 1px solid #ddd; padding: 8px;">Seleccionar</th>
+                    </tr>
+                  </thead>
+                  <tbody class="ion-text-center">
+                    <tr *ngFor="let printer of modelosImpresoras">
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.id }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.name }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.serial }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.itemtype }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">
+                        <ion-radio [value]="printer.id"></ion-radio>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ion-radio-group>
+            </div>
           </div>
+          
+          
+          
 
           
 

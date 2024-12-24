@@ -203,11 +203,22 @@ export class IncidenciasPage implements OnInit {
     if (estadoActual === 'Generar PDF') {
       const detalle = await this.checkContrato(i.id); // Obtener detalles del ticket
       if (detalle && detalle.contrato) {
+        // Almacenar la ruta actual antes de navegar
+        localStorage.setItem('previousUrl', this.router.url); // Guarda la URL actual
+    
         this.router.navigate(['/ingresarform'], {
-          queryParams: { id: i.id, fecha: i.movimiento[0].fecha, contrato: detalle.contrato, problemaReport: i.title },
+          queryParams: { 
+            id: i.id, 
+            fecha: i.movimiento[0].fecha, 
+            contrato: detalle.contrato, 
+            problemaReport: i.title 
+          },
           fragment: 'info',
           replaceUrl: true,
-          state: { itilcategories_id: i.itilcategories_id, tipoServicio: this.tipo}
+          state: { 
+            itilcategories_id: i.itilcategories_id, 
+            tipoServicio: this.tipo 
+          }
         });
       } else {
         this.db.presentAlertN("Este ticket no tiene contrato asociado.");
@@ -215,6 +226,7 @@ export class IncidenciasPage implements OnInit {
       this.ocultarCarga(loading);
       return;
     }
+    
   
     if (estadoActual === 'En Camino') {
       enviarMovimiento = 'En Camino';

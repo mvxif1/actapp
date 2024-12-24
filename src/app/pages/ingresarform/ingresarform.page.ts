@@ -36,7 +36,7 @@ import SignaturePad from 'signature_pad';
 import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { IonRadioGroup } from '@ionic/angular';
+import { IonRadioGroup, LoadingController } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
@@ -152,7 +152,7 @@ export class IngresarformPage {
   
   
 
-  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router, private apiv4: Apiv4Service) {
+  constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router, private apiv4: Apiv4Service, private loadingCtrl: LoadingController) {
     this.ingresarform = this.formBuilder.group({
       //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
@@ -256,7 +256,17 @@ export class IngresarformPage {
     }
   }
   
+    //carga
+    async Cargando() {
+      const loading = await this.loadingCtrl.create({
+        message: 'Espere un momento...',
+        spinner: 'crescent',
+        backdropDismiss: false // Para evitar que el loading se cierre cuando toquen fuera
+      });
   
+      await loading.present();
+      return loading;
+    }
   
   
   ionViewWillEnter() {
@@ -343,25 +353,30 @@ export class IngresarformPage {
             }
             return printer;
           });
+          
           console.log(this.modelosImpresoras);
         } else if (tipoItem === 'computer') {
           this.modelosComputadoras = response;
         }
-      },
+        
+      }
+      ,
+
       (error) => {
         console.error('Error al obtener datos del contrato:', error);
       }
     );
   }
   
-
   ngOnDestroy() {
-    // Cancelar suscripciones para evitar fugas de memoria
     this.subscriptions.unsubscribe();
   }
   
   volverAtras() {
-    this.router.navigate(['/incidencias']), { replaceUrl: true };
+    const previousUrl = localStorage.getItem('previousUrl');
+    if (previousUrl) {
+      this.router.navigate([previousUrl]);
+    }
   }
   
 
@@ -495,16 +510,19 @@ export class IngresarformPage {
       if (radioGroup === this.equipoOperativo) {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
+        this.validarCoordinadoraBackup = false;
         this.solicitaRepuesto.value = 'no';
         this.solicitarBackup.value = 'no';
       } else if (radioGroup === this.solicitaRepuesto) {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
+        this.validarCoordinadoraBackup = false;
         this.equipoOperativo.value = 'no';
         this.solicitarBackup.value = 'no';
       } else if (radioGroup === this.solicitarBackup) {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
+        this.validarCoordinadoraBackup = false;
         this.equipoOperativo.value = 'no';
         this.solicitaRepuesto.value = 'no';
       }
