@@ -91,6 +91,69 @@ export class Apiv4Service {
     const body = `ACCION=getItemsBackUp&token=${token}&idcontrato=${idcontrato}&tipoitem=${tipoitem}&locations_id=${locations_id}`;
     
     return this.http.post(this.baseUrl, body, { headers });
-  } 
+  }
+  
+  cierraTarea(username: string, password: string, idtarea: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=CierraTarea&token=${token}&idtarea=${idtarea}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
 
+  setTareaRetiro(username: string, password: string, idticket: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  //Genera tarea asignado a coordinadora para retiro de maquina a laboratorio
+  setTareaCoordinadora(username: string, password: string, idticket: any, idcategoria: any, texto: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&idcategoria=${idcategoria}&texto=${texto}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  setTicketNota(username: string, password: string, idticket: any, nota: any, notaid: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&nota=${nota}&notaid=${notaid}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  //Genera ticket de despacho asignado a coordinadora como subticket
+  setTicket(username: string, password: string, idticket: any, titulo: any, contenido: any, itilcategories_id: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&titulo=${titulo}&contenido=${contenido}&itilcategories_id=${itilcategories_id}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
+  //Sube evidencias y pdf (1 cierra y 0 no cierra)
+  uploadDocumentTecnico(username: string, password: string, idticket: any, nombreArchivo: any, archivoBase64: any, tipoDocumento: any, cierra: any): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${archivoBase64}&tipoDocumento=${tipoDocumento}&cierra=${cierra}`;
+    
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+  
 }

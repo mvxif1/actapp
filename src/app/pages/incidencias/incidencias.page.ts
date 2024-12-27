@@ -208,7 +208,8 @@ export class IncidenciasPage implements OnInit {
     
         this.router.navigate(['/ingresarform'], {
           queryParams: { 
-            id: i.id, 
+            id: i.id,
+            itilcategories: i.itilcategories_id,
             fecha: i.movimiento[0].fecha, 
             contrato: detalle.contrato, 
             problemaReport: i.title 
@@ -221,7 +222,7 @@ export class IncidenciasPage implements OnInit {
           }
         });
       } else {
-        this.db.presentAlertN("Este ticket no tiene contrato asociado.");
+        this.db.presentAlertN("Este ticket no tiene contrato asociado. Comuniquelo a la coordinadora");
       }
       this.ocultarCarga(loading);
       return;
@@ -280,6 +281,8 @@ export class IncidenciasPage implements OnInit {
   sanitizeNull(value: any): string {
   return value === null || value === undefined ? '' : value;
   }
+
+
 
   async getDetalleTicket(idticket: string){
     const loading = await this.Cargando();

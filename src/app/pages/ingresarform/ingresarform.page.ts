@@ -33,7 +33,6 @@ const RutValidator = {
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import SignaturePad from 'signature_pad';
-import jsPDF from 'jspdf';
 import { DbService } from 'src/app/services/db.service';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IonRadioGroup, LoadingController } from '@ionic/angular';
@@ -44,6 +43,8 @@ import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
 import { Subscription } from 'rxjs';
+import { jsPDF } from 'jspdf';
+
 
 interface Cliente{
   region: any;
@@ -74,6 +75,28 @@ interface DetalleM{
   serial: any;
   name: any;
 }
+
+interface ItemTicket{
+  detalle: DetalleItemTicket[];
+  id: any;
+  itemtype: any;
+  items_id: any;
+  tickets_id: any;
+  itilcategoria: any;
+  modelo: ModeloItemTicket[];
+  
+}
+
+interface DetalleItemTicket{
+  name: any;
+  serial: any;
+}
+
+interface ModeloItemTicket{
+  comment: any;
+  name: any;
+}
+
 @Component({
   selector: 'app-ingresarform',
   templateUrl: './ingresarform.page.html',
@@ -87,9 +110,9 @@ export class IngresarformPage {
   detalle: Detalle[] = [];
   cliente: Cliente[] = [];
 
-  @ViewChild('equipoOperativo') equipoOperativo!: IonRadioGroup;
-  @ViewChild('solicitaRepuesto') solicitaRepuesto!: IonRadioGroup;
-  @ViewChild('solicitarBackup') solicitarBackup!: IonRadioGroup;
+  @ViewChild('equipoOperativo', { static: false }) equipoOperativo!: IonRadioGroup;
+  @ViewChild('solicitaRepuesto', { static: false }) solicitaRepuesto!: IonRadioGroup;
+  @ViewChild('solicitarBackup', { static: false }) solicitarBackup!: IonRadioGroup;
 
   @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
   @ViewChild('validaCoordinadoraRespuesto') validaCoordinadoraRespuesto!: IonRadioGroup;
@@ -127,7 +150,8 @@ export class IngresarformPage {
   subscriptions: Subscription = new Subscription();
   modelosImpresoras: Modelo[] = [];
   modelosComputadoras: Modelo[] = [];
-
+  detalleHardwareReport: ItemTicket[] = [];
+  lugarBackup: string = '';
   otramarcaActiva: boolean = false;
   //Caracteres restantes
   maxChars = 200;
@@ -271,6 +295,18 @@ export class IngresarformPage {
   
   ionViewWillEnter() {
     this.clearFormValues(this.ingresarform);
+    if (this.equipoOperativo) {
+      this.equipoOperativo.value = ''; 
+    }
+
+    if (this.solicitaRepuesto) {
+      this.solicitaRepuesto.value = ''; 
+    }
+
+    if (this.solicitarBackup) {
+      this.solicitarBackup.value = ''; 
+    }
+
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
 
@@ -282,6 +318,7 @@ export class IngresarformPage {
     }
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
+      const itilcategories = params['itilcategories'];
       const fechaCompleta= params['fecha'];
       const contrato = params['contrato'];
       const problemaReport = params['problemaReport'];
@@ -290,7 +327,7 @@ export class IngresarformPage {
       
       const [fecha, horaInicio] = fechaCompleta.split(' ');
       const horaFormateada = this.formatearhoraDirecto(horaInicio);
-
+      this.getItemsTicket(idTicket, itilcategories);
       this.getDatosContrato(contrato);
       this.ingresarform.patchValue({ eventocliente: idTicket });
       this.ingresarform.patchValue({ fecha });
@@ -325,14 +362,24 @@ export class IngresarformPage {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
     return tempDiv.textContent || tempDiv.innerText || '';
-}
+  }
+
+  variablesVacios(){
+    this.repuestosactivado = false;
+    this.utilizaRepuestosActivo = false;
+    this.utilizaRepuestosInactivo = false;
+    this.validarCoordinadoraRepuesto = false;
+    this.validarCoordinadoraBackup = false;
+    this.firmaIngresada = false;
+    this.mostrarErrorFirma = false;
+  }
 
   getDatosContrato(idcontrato: any) {
     this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(
       (response) => {
         this.cliente = [response.cliente];
         this.detalle = [response.detalle];
-        console.log('Respuesta completa:', this.cliente, this.detalle);
+        console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
         this.ingresarform.patchValue({ direccion: (this.cliente[0].direccion) });
         this.ingresarform.patchValue({ region: (this.cliente[0].region)});
@@ -341,6 +388,26 @@ export class IngresarformPage {
         console.error('Error al obtener datos del contrato:', error);
       }
     );
+  }
+  getItemsTicket(idticket: any, itilcategories_id: any){
+    this.apiv4.getItemsTicket(this.username, this.password, idticket, itilcategories_id).subscribe(
+      (response)=>{
+        this.detalleHardwareReport = response.map((printer: any) => {
+          if (!Array.isArray(printer.detalle)) {
+            printer.detalle = [printer.detalle];
+          }
+          return printer;
+        });
+        console.log(this.detalleHardwareReport);
+        if(this.detalleHardwareReport[0].itemtype = 'Printer'){
+          this.ingresarform.patchValue({ tipoequipo: 'impresion' });
+          this.ingresarform.patchValue({ tipoequipobackup: 'Printer' });
+        }
+        this.ingresarform.patchValue({marca: this.detalleHardwareReport[0].modelo[0].comment});
+        this.ingresarform.patchValue({modelo: this.detalleHardwareReport[0].modelo[0].name});
+        this.ingresarform.patchValue({nserie: this.detalleHardwareReport[0].detalle[0].serial});
+
+      })
   }
   
   getItemsBackUp(idcontrato: any, tipoItem: any) {
@@ -355,7 +422,7 @@ export class IngresarformPage {
           });
           
           console.log(this.modelosImpresoras);
-        } else if (tipoItem === 'computer') {
+        } else if (tipoItem === 'Computer') {
           this.modelosComputadoras = response;
         }
         
@@ -537,6 +604,15 @@ export class IngresarformPage {
   
 
   }
+
+  getUbicacion(printer: any): string {
+    if (this.cliente[0].direccion === printer) {
+      return "En Cliente";
+    } else {
+      return "En Bodega";
+    }
+  }
+  
   
   seleccionarutilizarepuestos(radioGroup: IonRadioGroup, value: string) {
     // Establecer el valor del grupo actual
@@ -841,32 +917,83 @@ export class IngresarformPage {
       const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
       const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
 
-      const marcabackup = (document.getElementById('marcabackup') as HTMLInputElement)?.value || '';
-      const modelobackup = (document.getElementById('modelobackup') as HTMLInputElement)?.value || '';
-      const nseriebackup = (document.getElementById('nseriebackup') as HTMLInputElement)?.value || '';
-      const ipbackup = (document.getElementById('ipbackup') as HTMLInputElement)?.value || '';
-      const contadorbackup = (document.getElementById('contadorbackup') as HTMLInputElement)?.value || '';
-
       const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
       const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
 
       //Generacion de PDF con GLPI
+
+      //*********************Operativo sin problemas*********************
       if(equipoOperativo == 'si' &&  utilizoRepuestos == 'no'){
-        console.log("mandar repuestos y cerrar ticket estado 5");
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        console.log(" cierre ticket estado 5, cierre tarea original");
         return;
-      }else 
-      if(equipoOperativo == 'si' && utilizoRepuestos == 'si'){
-        console.log("mandar cerrar ticket estado 5");
+      }else
+      //*********************Operativo con utilizacion de repuestos*********************
+      if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestos && this.repuestos.length > 0){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        //recorre repuestos
+        let repuestosToUse;
+        if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
+          repuestosToUse = this.repuestosOperativo;
+        }
+        if (repuestosToUse) {
+          const maxRepuestos = Math.min(repuestosToUse.length, 5);
+          let yPosition = 587;
+          for (let i = 0; i < maxRepuestos; i++) {
+            const repuesto = repuestosToUse[i];
+            //pdf.text(repuesto.nombre, 75, yPosition);
+            //pdf.text(repuesto.numeroParte, 215, yPosition);
+            //pdf.text(repuesto.estado, 360, yPosition);
+            yPosition += 10;
+          }
+        }
         return;
       };
 
+      //****************Solicita repuesto del equipo*********************
       if(solicitaRepuesto == 'si' && validaCoordinadoraRespuesto == 'si'){
-        console.log("1- valida con coordinadora, 2- crea tarea para gestionar repuestos y 3- genera ticket de despacho asignado a coordinadora");
+        //recorre repuestos
+        let repuestosToUse;
+        if (this.repuestos && this.repuestos.length > 0) {
+          repuestosToUse = this.repuestos;
+        }
+        if (repuestosToUse) {
+          const maxRepuestos = Math.min(repuestosToUse.length, 5);
+          let yPosition = 587;
+          for (let i = 0; i < maxRepuestos; i++) {
+            const repuesto = repuestosToUse[i];
+            //pdf.text(repuesto.nombre, 75, yPosition);
+            //pdf.text(repuesto.numeroParte, 215, yPosition);
+            //pdf.text(repuesto.estado, 360, yPosition);
+            yPosition += 10;
+          }
+        }
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        this.apiv4.setTareaCoordinadora
+        this.apiv4.setTicket
+        return;
+      }
+      //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
+      if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        this.apiv4.setTareaCoordinadora
+        this.apiv4.setTicket
         return;
       }
 
-      if(solicitaRepuesto == 'si' && validaCoordinadoraBackup == 'si'){
-        console.log("");
+      //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
+      if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        this.apiv4.setTareaCoordinadora
+        //ticket de despacho backup
+        this.apiv4.setTicket
+        //ticket de retiro backup
+        this.apiv4.setTicket
         return;
       }
 
@@ -922,29 +1049,7 @@ export class IngresarformPage {
       pdf.text(problemareportLines, 145, 316);
       pdf.text(solucionreportLines, 90, 352);
       pdf.setFontSize(8);
-      let repuestosToUse;
-      if (this.repuestos && this.repuestos.length > 0) {
-        repuestosToUse = this.repuestos;
-      } else if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
-        repuestosToUse = this.repuestosOperativo;
-      }
-      if (repuestosToUse) {
-        const maxRepuestos = Math.min(repuestosToUse.length, 5);
-        let yPosition = 587;
-        for (let i = 0; i < maxRepuestos; i++) {
-          const repuesto = repuestosToUse[i];
-          pdf.text(repuesto.nombre, 75, yPosition);
-          pdf.text(repuesto.numeroParte, 215, yPosition);
-          pdf.text(repuesto.estado, 360, yPosition);
-          yPosition += 10;
-        }
-      }
       pdf.setFontSize(11);
-      pdf.text(marcabackup, 367, 470);
-      pdf.text(modelobackup, 367, 485);
-      pdf.text(nseriebackup, 367, 500);
-      pdf.text(ipbackup, 367, 514);
-      pdf.text(contadorbackup, 367, 528);
       if (solicitaBackup === 'si') {
         pdf.circle(217, 466, 7, "F");
         pdf.circle(257, 482, 7, "F");
@@ -1019,6 +1124,20 @@ export class IngresarformPage {
       console.error('Error al guardar el archivo:', error);
     }
   }
+  ejPDF() {
+    const doc = new jsPDF();
+    const content = document.getElementById('content');
+    if (content) {
+      content.style.fontSize = '12px';
+      doc.html(content, {
+        callback: (doc) => {
+          doc.save('archivo.pdf');
+        },
+        width: 500
+      });
+    }
+  }
+  
 
 }
 
