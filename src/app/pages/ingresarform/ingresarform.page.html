@@ -64,7 +64,7 @@
       <ion-list  >
         <ion-item lines="full">
           <ion-label position="stacked">Cliente</ion-label>
-          <ion-input id="cliente" formControlName="cliente" readonly></ion-input>
+          <ion-input id="cliente" formControlName="cliente" ></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('cliente')?.invalid && (ingresarform.get('cliente')?.dirty || ingresarform.get('cliente')?.touched)">
@@ -74,7 +74,7 @@
 
         <ion-item lines="full">
           <ion-label position="stacked">Dirección</ion-label>
-          <ion-input id="direccion" formControlName="direccion" readonly></ion-input>
+          <ion-input id="direccion" formControlName="direccion"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('direccion')?.invalid && (ingresarform.get('direccion')?.dirty || ingresarform.get('direccion')?.touched)">
@@ -85,7 +85,7 @@
 
         <ion-item lines="full">
           <ion-label position="stacked">Región</ion-label>
-          <ion-input id="region" formControlName="region" readonly></ion-input>
+          <ion-input id="region" formControlName="region"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('region')?.invalid && (ingresarform.get('region')?.dirty || ingresarform.get('region')?.touched)">
@@ -650,4 +650,115 @@
       <br>
     </ion-card>
   </form>
+
+  <div id="contenidoHTML" style="font-family: Arial; margin-inline: 10px; ">
+    <img style="width: 25%; margin-bottom: 5px;" src="/assets/logo.png">
+    <div >
+      <div class="row">
+        <div class="col-sm-8">
+          <div><strong style="font-size: 22px;">Orden de Trabajo N° </strong></div>
+          <div><strong style="font-size: 18px;">Tipo de Servicio  </strong></div>
+        </div>
+        <div class="col-sm-4">
+          <div><strong style="font-size: 15px;">Fecha </strong></div>
+          <div><strong style="font-size: 15px;">Hora Inicio </strong></div>
+          <div><strong style="font-size: 15px;">Hora Termino </strong></div>
+        </div>
+      </div>     
+      <hr>
+      <!-- Información de cliente -->
+      <div class="row">
+        <div class="col-12 text-center">
+          <div><strong style="font-size: 22px;">Información del Cliente</strong></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-8">
+          <div><strong style="font-size: 15px;">Cliente </strong></div>
+          <div><strong style="font-size: 15px;">Dirección </strong></div>
+          <div><strong style="font-size: 15px;">Ciudad </strong></div>
+        </div>
+        <div class="col-4">
+          <div><strong style="font-size: 15px;">Contacto </strong></div>
+          <div><strong style="font-size: 15px;">Teléfono </strong></div>
+          <div><strong style="font-size: 15px;">Correo </strong></div>
+        </div>
+      </div>
+      <hr>
+      <!-- Información de Hardware Reportado -->
+      <div class="row">
+        <div class="col-12 text-center">
+          <div style="margin-bottom: 20px;"><strong style="font-size: 22px;">Información del Hardware Reportado</strong></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div><strong style="font-size: 15px;">Tipo de Equipo </strong></div>
+          <div><strong style="font-size: 15px;">Marca </strong></div>
+          <div><strong style="font-size: 15px;">Modelo </strong></div>
+          <div><strong style="font-size: 15px;">N° Serie </strong></div>
+          <div><strong style="font-size: 15px;">Tipos de Conexión </strong></div>
+          <div><strong style="font-size: 15px;">Accesorios </strong></div>
+        </div>
+        <div class="col-6">
+          <div style="display: flex; align-items: center; margin-top: -20px;"><strong style="font-size: 15px;">Impresion </strong><span style="font-size: 35px; margin-left: 10px;">◻</span><strong style="font-size: 15px; margin-left: 10px;">PC </strong><span style="font-size: 35px; margin-left: 10px;">◻</span></div>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-6">
+          <div><strong style="font-size: 15px;">Problema Reportado </strong></div>
+          <div><strong style="font-size: 15px;">Solución </strong></div>
+        </div>
+      </div>
+      <hr>
+      <!-- Estatus de Servicio -->
+      <div class="row">
+        <div class="col-12 text-center">
+          <div style="margin-bottom: 20px;"><strong style="font-size: 22px;">Estatus del Servicio</strong></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div><strong style="font-size: 15px;">Equipo Espera de Partes   <a style="margin-left: 20px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
+          <div><strong style="font-size: 15px;">En Espera de Backup       <a style="margin-left: 43px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
+          <div><strong style="font-size: 15px;">Equipo Operativo          <a style="margin-left: 71px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
+          <div><strong style="font-size: 15px;">Equipo Backup Instalado   <a style="margin-left: 17px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
+        </div>
+        <div class="col-6" style="border: 1px solid black">
+          <div style="text-align: center;"><strong style="font-size: 16px;">Información Equipo Backup Instalado</strong></div>
+          <div><strong style="font-size: 15px;">Marca </strong></div>
+          <div><strong style="font-size: 15px;">Modelo </strong></div>
+          <div><strong style="font-size: 15px;">N° Serie </strong></div>
+          <div><strong style="font-size: 15px;">Conexión </strong></div>
+          <div><strong style="font-size: 15px;">Contador </strong></div>
+        </div>
+      </div>
+      <hr>
+      <div style="text-align: left;"><strong style="font-size: 16px;">Repuestos</strong></div>
+      <table style="width: 100%;">
+        <thead style="width: 100%;">
+          <tr style="background-color: rgb(168, 190, 255); color: black; text-align: center;">
+            <th>Nombre</th>
+            <th>N° de Parte</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody style="width: 100%;">
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <hr>
+      <div style="text-align: left;"><strong style="font-size: 16px;">Repuestos: </strong><a>Con la firma de usted está aceptando confirme la ejecución de los trbaajos que se indican. Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos.</a></div>
+    </div>
+  </div>
+
+  <div style="text-align: center;">
+    <ion-button (click)="ejPDF()">Generar PDF</ion-button>
+  </div>
+  
 </ion-content>

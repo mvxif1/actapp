@@ -31,6 +31,7 @@
             </ion-row>
             
             <ion-card-subtitle style="margin-bottom: 10px;"><ion-text [innerHTML]="decodeHtml(i.title)"></ion-text></ion-card-subtitle>
+            <ion-card-subtitle style="margin-bottom: 10px; background-color: rgba(0, 0, 0, 0.100); border-radius: 10px; padding: 5px;">Dirección: {{ i.direccion.split(' > ').slice(-2).reverse().join(', ') }}</ion-card-subtitle>
             <ion-text><i class="bi bi-calendar-date" style="margin-bottom: 5px;"></i> {{ formatDate(i.begin) }}</ion-text>
           </ion-card-header>
         

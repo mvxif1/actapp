@@ -11,6 +11,7 @@ interface Incidencia {
   content: any;
   id: any;
   itilcategories_id: any;
+  direccion: any;
   movimiento:  Movimiento[];
   state: any;
   title: any;
@@ -134,6 +135,7 @@ export class IncidenciasPage implements OnInit {
     this.apiv4.getTicketTecnico(this.username, this.password, this.tipo).subscribe(
       (response: any) => {
         this.displayIncidencia = response.data || [];
+        console.log(this.displayIncidencia)
         this.filtroIncidenciaArray = [...this.displayIncidencia];
         this.displayIncidencia.forEach((i: Incidencia) => {
           const movimientos = Array.isArray(i.movimiento) ? i.movimiento : [i.movimiento];
@@ -210,8 +212,10 @@ export class IncidenciasPage implements OnInit {
           queryParams: { 
             id: i.id,
             itilcategories: i.itilcategories_id,
+            direccion: i.direccion,
             fecha: i.movimiento[0].fecha, 
-            contrato: detalle.contrato, 
+            contrato: this.contrato,
+            conexionEquipo: detalle,
             problemaReport: i.title 
           },
           fragment: 'info',
@@ -313,6 +317,7 @@ export class IncidenciasPage implements OnInit {
       this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
         (response) => {
           this.contrato = response.contrato;
+          console.log("Check contrato: ", response)
           resolve(response);
         },
         (error) => {

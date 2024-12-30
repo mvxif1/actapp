@@ -43,8 +43,8 @@ import { EmailComposer } from '@awesome-cordova-plugins/email-composer/ngx';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apiv4Service } from 'src/app/services/apiv4.service';
 import { Subscription } from 'rxjs';
+import html2pdf from 'html2pdf.js';
 import { jsPDF } from 'jspdf';
-
 
 interface Cliente{
   region: any;
@@ -79,6 +79,7 @@ interface DetalleM{
 interface ItemTicket{
   detalle: DetalleItemTicket[];
   id: any;
+  direccion: any;
   itemtype: any;
   items_id: any;
   tickets_id: any;
@@ -90,6 +91,7 @@ interface ItemTicket{
 interface DetalleItemTicket{
   name: any;
   serial: any;
+  networks_id: any;
 }
 
 interface ModeloItemTicket{
@@ -117,6 +119,8 @@ export class IngresarformPage {
   @ViewChild('utilizoRepuestos') utilizoRepuestos!: IonRadioGroup;
   @ViewChild('validaCoordinadoraRespuesto') validaCoordinadoraRespuesto!: IonRadioGroup;
   @ViewChild('validaCoordinadoraBackup') validaCoordinadoraBackup!: IonRadioGroup;
+
+  @ViewChild('contenidoHTML', { static: false }) contenidoHTML!: ElementRef;
 
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
@@ -319,6 +323,18 @@ export class IngresarformPage {
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
       const itilcategories = params['itilcategories'];
+
+      const direccionCompleta = params['direccion'];
+      const partes = direccionCompleta.split(' > ');
+      const direccion = partes.pop();
+      const comuna = partes.pop();
+      const region = partes.slice(-1).join(' ');
+
+      this.ingresarform.patchValue({ direccion: direccion });
+      this.ingresarform.patchValue({ comuna: comuna });
+      this.ingresarform.patchValue({ region: region });
+
+
       const fechaCompleta= params['fecha'];
       const contrato = params['contrato'];
       const problemaReport = params['problemaReport'];
@@ -381,8 +397,6 @@ export class IngresarformPage {
         this.detalle = [response.detalle];
         console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
-        this.ingresarform.patchValue({ direccion: (this.cliente[0].direccion) });
-        this.ingresarform.patchValue({ region: (this.cliente[0].region)});
       },
       (error) => {
         console.error('Error al obtener datos del contrato:', error);
@@ -406,6 +420,9 @@ export class IngresarformPage {
         this.ingresarform.patchValue({marca: this.detalleHardwareReport[0].modelo[0].comment});
         this.ingresarform.patchValue({modelo: this.detalleHardwareReport[0].modelo[0].name});
         this.ingresarform.patchValue({nserie: this.detalleHardwareReport[0].detalle[0].serial});
+        if(this.detalleHardwareReport[0].detalle[0].networks_id = 1){
+          this.ingresarform.patchValue({tipoconexion: 'IP'});
+        }
 
       })
   }
@@ -933,6 +950,7 @@ export class IngresarformPage {
       if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestos && this.repuestos.length > 0){
         this.apiv4.uploadDocumentTecnico
         this.apiv4.cierraTarea
+        
         //recorre repuestos
         let repuestosToUse;
         if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
@@ -981,10 +999,12 @@ export class IngresarformPage {
         this.apiv4.uploadDocumentTecnico
         this.apiv4.cierraTarea
         this.apiv4.setTareaCoordinadora
+        //ticket de despacho backup
+        this.apiv4.setTicket
+        //ticket de retiro backup
         this.apiv4.setTicket
         return;
       }
-
       //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
       if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
         this.apiv4.uploadDocumentTecnico
@@ -1125,18 +1145,22 @@ export class IngresarformPage {
     }
   }
   ejPDF() {
-    const doc = new jsPDF();
-    const content = document.getElementById('content');
-    if (content) {
-      content.style.fontSize = '12px';
-      doc.html(content, {
-        callback: (doc) => {
-          doc.save('archivo.pdf');
-        },
-        width: 500
-      });
+    const element = document.getElementById('contenidoHTML');
+    if (element) {
+
+      const elementWidth = element.offsetWidth; // O usa getBoundingClientRect().width
+    
+      console.log("El ancho del elemento es: " + elementWidth + "px");
+      const options = {
+        margin: [10, 10, 10, 10], 
+        filename: 'documento.pdf', 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(element).set(options).save();
     }
   }
+  
   
 
 }

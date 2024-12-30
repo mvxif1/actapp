@@ -40,6 +40,7 @@
     "@ionic-native/network": "^5.36.0",
     "@ionic-native/sqlite": "^5.36.0",
     "@ionic/angular": "^6.5.0",
+    "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "browser-image-compression": "^2.0.2",
     "canvas": "^2.11.2",

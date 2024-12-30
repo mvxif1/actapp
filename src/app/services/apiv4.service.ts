@@ -113,7 +113,7 @@ export class Apiv4Service {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  //Genera tarea asignado a coordinadora para retiro de maquina a laboratorio
+  //Genera tarea asignado a coordinadora para retiro de maquina a laboratorio o despacho de maquina
   setTareaCoordinadora(username: string, password: string, idticket: any, idcategoria: any, texto: any): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
@@ -134,7 +134,7 @@ export class Apiv4Service {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
-  //Genera ticket de despacho asignado a coordinadora como subticket
+  //Genera ticket de despacho o retiro asignado a coordinadora como subticket
   setTicket(username: string, password: string, idticket: any, titulo: any, contenido: any, itilcategories_id: any): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
