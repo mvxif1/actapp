@@ -393,7 +393,7 @@ export class IngresarformPage {
   getDatosContrato(idcontrato: any) {
     this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(
       (response) => {
-        this.cliente = [response.cliente];
+        this.cliente = [response];
         this.detalle = [response.detalle];
         console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});

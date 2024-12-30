@@ -655,11 +655,11 @@
     <img style="width: 25%; margin-bottom: 5px;" src="/assets/logo.png">
     <div >
       <div class="row">
-        <div class="col-sm-8">
-          <div><strong style="font-size: 22px;">Orden de Trabajo N° </strong></div>
+        <div class="col-8">
+          <div><strong style="font-size: 22px;">Orden de Trabajo N°  {{ ingresarform.get('eventocliente')?.value }}</strong></div>
           <div><strong style="font-size: 18px;">Tipo de Servicio  </strong></div>
         </div>
-        <div class="col-sm-4">
+        <div class="col-4">
           <div><strong style="font-size: 15px;">Fecha </strong></div>
           <div><strong style="font-size: 15px;">Hora Inicio </strong></div>
           <div><strong style="font-size: 15px;">Hora Termino </strong></div>
@@ -718,7 +718,7 @@
           <div style="margin-bottom: 20px;"><strong style="font-size: 22px;">Estatus del Servicio</strong></div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="margin-inline: 5px;">
         <div class="col-6">
           <div><strong style="font-size: 15px;">Equipo Espera de Partes   <a style="margin-left: 20px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
           <div><strong style="font-size: 15px;">En Espera de Backup       <a style="margin-left: 43px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
