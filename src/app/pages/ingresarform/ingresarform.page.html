@@ -366,7 +366,7 @@
               </ion-item>
               <table style="width: 100%;">
                 <thead style="width: 100%;">
-                  <tr style="background-color: #000e76; color: white; font-weight: 200;">
+                  <tr style="background-color: #000e76; color: white; font-weight: 200; text-align: center;">
                     <th>Nombre</th>
                     <th>N° Parte</th>
                     <th>Estado</th>
@@ -405,10 +405,10 @@
           </ion-list>
           </div>
 
-          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup && ingresarform.get('tipoequipobackup')?.value">
+          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup">
             <ion-card-title style="font-size: 13px;">MODELOS BACKUP DISPONIBLE</ion-card-title>
             <div style="overflow-x: auto; white-space: nowrap;">
-              <ion-radio-group formControlName="modeloBackup">
+              <ion-radio-group formControlName="modeloBackup" (ionChange)="onBackupSelect($event)">
                 <table style="border-collapse: collapse; width: 100%; min-width: 600px;">
                   <thead class="ion-text-center">
                     <tr>
@@ -416,7 +416,7 @@
                       <th style="border: 1px solid #ddd; padding: 8px;">Modelo</th>
                       <th style="border: 1px solid #ddd; padding: 8px;">Serie</th>
                       <th style="border: 1px solid #ddd; padding: 8px;">Tipo de equipo</th>
-                      <th style="border: 1px solid #ddd; padding: 8px;">Ubicación</th>                      
+                      <th style="border: 1px solid #ddd; padding: 8px;">Ubicación</th>                    
                       <th style="border: 1px solid #ddd; padding: 8px;">Seleccionar</th>
                     </tr>
                   </thead>
@@ -426,7 +426,7 @@
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.name }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.serial }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.itemtype }}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px;">{{ getUbicacion(printer.direccion) }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.direccion.split('>').pop().trim() }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">
                         <ion-radio [value]="printer.id"></ion-radio>
                       </td>
@@ -436,10 +436,45 @@
               </ion-radio-group>
             </div>
           </div>
+          <form [formGroup]="backupform">
+            <!-- Mostrar Backup Seleccionado -->
+            <div *ngIf="selectedBackup && backupActivo" style="margin-top: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+              <h3 style="text-align: center;">Backup Seleccionado</h3>
+              <div>
+                <strong>ID:</strong> {{ selectedBackup!.id }}
+              </div>
+              <div>
+                <strong>Modelo:</strong> {{ selectedBackup!.detalle[0]?.name }}
+              </div>
+              <div>
+                <strong>Serie:</strong> {{ selectedBackup!.detalle[0]?.serial }}
+              </div>
+              <div>
+                <strong>Tipo de Equipo:</strong> {{ selectedBackup!.itemtype }}
+              </div>
+              <div>
+                <strong>Ubicación:</strong> {{ selectedBackup!.direccion.split('>').pop().trim() }}
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong>Tipo de Conexión:</strong> {{conexionBackups}}
+                <ion-input formControlName="ipbackup" *ngIf="conexionBackups == 'IP'" placeholder="Ingresa la IP" style="border: 1px solid rgba(0, 0, 0, 0.300);"></ion-input>
+              </div>
+              <div style="color: red; margin-top: 3px; margin-left: 10px;"
+              *ngIf="backupform.get('ipbackup')?.invalid">
+              <div *ngIf="backupform.get('ipbackup')?.hasError('required')">Este campo es obligatorio.</div>
+              <div *ngIf="backupform.get('ipbackup')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+                <strong>Contador:</strong>
+                <ion-input formControlName="contadorbackup" placeholder="Ingresa el contador" style="border: 1px solid rgba(0, 0, 0, 0.300);"></ion-input>
+              </div>
+            </div>
+          </form>
 
         <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si'">
           <ion-card-title style="font-size: 13px;">SELECCIONE</ion-card-title>
-          <ion-list>
             <form [formGroup]="utilizoRepuestosform">
               <ion-radio-group id="utilizoRepuestos" #utilizoRepuestos
                 (ionChange)="seleccionarutilizarepuestos(utilizoRepuestos, utilizoRepuestos.value)">
@@ -452,7 +487,6 @@
                 </ion-item>
               </ion-radio-group>
             </form>
-          </ion-list>
           <div *ngIf="utilizaRepuestosActivo">
             <form [formGroup]="repuestosOperativoform">
               <ion-card-title style="font-size: 13px;">REPUESTOS</ion-card-title>
@@ -497,7 +531,7 @@
               </ion-item>
               <table style="width: 100%;">
                 <thead style="width: 100%;">
-                  <tr style="background-color: #000e76; color: white; font-weight: 200;">
+                  <tr style="background-color: #000e76; color: white; font-weight: 200; text-align: center;">
                     <th>Nombre</th>
                     <th>N° Parte</th>
                     <th>Estado</th>
@@ -520,7 +554,6 @@
           </div>
         </div>
 
-        <ion-button expand="full" (click)="generarPDF()">Generar PDF</ion-button>
         <ion-card-title style="font-size: 13px; background-color: dodgerblue;">DATOS CLIENTE (RECEPTOR)</ion-card-title>
         <ion-item lines="full">
           <ion-label position="stacked">Rut</ion-label>
@@ -561,7 +594,7 @@
           <ion-col size="12">
             <canvas #canvas
               [ngClass]="{ 'firma-incompleta': isCanvasBlank() || !mostrarErrorFirma }"
-              style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px; margin-top: 5px;"></canvas>
+              style="border: 2px solid rgba(0, 0, 0, 0.200); border-radius: 8px;" ></canvas>
           </ion-col>
         </ion-item>
         <div *ngIf="!mostrarErrorFirma" class="error-message" style="text-align: center;">
@@ -623,27 +656,37 @@
           <li *ngIf="!isDescripcionCasoCompleta()">Descripción del caso</li>
           <li *ngIf="!isStatusServicioCompleta()">Selecciona un Status de servicio</li>
           <li *ngIf="isStatusServicioEquipoOperativo()">Selecciona si utilizó repuestos</li>
+          <li *ngIf="isStatusServicioSolicitaRepuesto()">Selecciona si validó con coordinadora</li>
           <li *ngIf="!isDatosClienteCompleta()">Datos cliente</li>
           <li *ngIf="!firmaIngresada">Ingresa la firma del cliente</li>
         </ul>
-        <div *ngIf="mostrarErrorRepuestos()" style="color: red; margin-top: 10px; text-align: center;">
-           Completa el formulario para Repuestos en equipo espera.
-        </div>
         
         <div *ngIf="mostrarErrorRepuestosOperativo()" style="color: red; margin-top: 10px; text-align: center;">
-           Completa el formulario para Repuestos en equipo operativo.
+          Completa el formulario para Repuestos en equipo operativo.
         </div>
 
         <div *ngIf="mostrarErrorRepuestosOperativoNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
           Agrega al menos 1 repuesto.
         </div>
         
-        <div *ngIf="mostrarErrorRepuestosNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
+        <div *ngIf="mostrarErrorSolicitaRepuestos()" style="color: red; margin-top: 10px; text-align: center;">
+          Completa el formulario para solicitar repuestos.
+        </div>
+
+        <div *ngIf="mostrarErrorSolicitaRepuestosNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
           Agrega al menos 1 repuesto.
         </div>
 
-        <div *ngIf="mostrarErrorBackup()" style="color: red; margin-top: 10px; text-align: center;">
-           Completa el formulario para Backup instalado.
+        <div *ngIf="isStatusServicioSolicitaBackup()" style="color: red; margin-top: 10px; text-align: center;">
+          Completa el formulario para solicitar un backup.
+        </div>
+
+        <div *ngIf="mostrarErrorSolicitaBackup()" style="color: red; margin-top: 10px; text-align: center;">
+          Selecciona al menos 1 backup.
+        </div>
+
+        <div *ngIf="mostrarErrorSolicitaBackupFormulario()" style="color: red; margin-top: 10px; text-align: center;">
+          Completa el formulario para solicitar backup.
         </div>
       </div>
       <ion-button expand="full" [disabled]="!isFormularioCompleto() || !firmaIngresada || tipoconexion() || marca()" (click)="generarPDF()">Generar PDF</ion-button>
@@ -651,114 +694,249 @@
     </ion-card>
   </form>
 
-  <div id="contenidoHTML" style="font-family: Arial; margin-inline: 10px; ">
-    <img style="width: 25%; margin-bottom: 5px;" src="/assets/logo.png">
-    <div >
-      <div class="row">
-        <div class="col-8">
-          <div><strong style="font-size: 22px;">Orden de Trabajo N°  {{ ingresarform.get('eventocliente')?.value }}</strong></div>
-          <div><strong style="font-size: 18px;">Tipo de Servicio  </strong></div>
-        </div>
-        <div class="col-4">
-          <div><strong style="font-size: 15px;">Fecha </strong></div>
-          <div><strong style="font-size: 15px;">Hora Inicio </strong></div>
-          <div><strong style="font-size: 15px;">Hora Termino </strong></div>
-        </div>
-      </div>     
-      <hr>
-      <!-- Información de cliente -->
-      <div class="row">
-        <div class="col-12 text-center">
-          <div><strong style="font-size: 22px;">Información del Cliente</strong></div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-8">
-          <div><strong style="font-size: 15px;">Cliente </strong></div>
-          <div><strong style="font-size: 15px;">Dirección </strong></div>
-          <div><strong style="font-size: 15px;">Ciudad </strong></div>
-        </div>
-        <div class="col-4">
-          <div><strong style="font-size: 15px;">Contacto </strong></div>
-          <div><strong style="font-size: 15px;">Teléfono </strong></div>
-          <div><strong style="font-size: 15px;">Correo </strong></div>
-        </div>
-      </div>
-      <hr>
-      <!-- Información de Hardware Reportado -->
-      <div class="row">
-        <div class="col-12 text-center">
-          <div style="margin-bottom: 20px;"><strong style="font-size: 22px;">Información del Hardware Reportado</strong></div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-6">
-          <div><strong style="font-size: 15px;">Tipo de Equipo </strong></div>
-          <div><strong style="font-size: 15px;">Marca </strong></div>
-          <div><strong style="font-size: 15px;">Modelo </strong></div>
-          <div><strong style="font-size: 15px;">N° Serie </strong></div>
-          <div><strong style="font-size: 15px;">Tipos de Conexión </strong></div>
-          <div><strong style="font-size: 15px;">Accesorios </strong></div>
-        </div>
-        <div class="col-6">
-          <div style="display: flex; align-items: center; margin-top: -20px;"><strong style="font-size: 15px;">Impresion </strong><span style="font-size: 35px; margin-left: 10px;">◻</span><strong style="font-size: 15px; margin-left: 10px;">PC </strong><span style="font-size: 35px; margin-left: 10px;">◻</span></div>
-        </div>
-      </div>
-      <hr>
-      <div class="row">
-        <div class="col-6">
-          <div><strong style="font-size: 15px;">Problema Reportado </strong></div>
-          <div><strong style="font-size: 15px;">Solución </strong></div>
-        </div>
-      </div>
-      <hr>
-      <!-- Estatus de Servicio -->
-      <div class="row">
-        <div class="col-12 text-center">
-          <div style="margin-bottom: 20px;"><strong style="font-size: 22px;">Estatus del Servicio</strong></div>
-        </div>
-      </div>
-      <div class="row" style="margin-inline: 5px;">
-        <div class="col-6">
-          <div><strong style="font-size: 15px;">Equipo Espera de Partes   <a style="margin-left: 20px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
-          <div><strong style="font-size: 15px;">En Espera de Backup       <a style="margin-left: 43px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
-          <div><strong style="font-size: 15px;">Equipo Operativo          <a style="margin-left: 71px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
-          <div><strong style="font-size: 15px;">Equipo Backup Instalado   <a style="margin-left: 17px;">SI <span style="font-size: 25px">◻</span>  NO <span style="font-size: 25px">◻</span></a></strong></div>
-        </div>
-        <div class="col-6" style="border: 1px solid black">
-          <div style="text-align: center;"><strong style="font-size: 16px;">Información Equipo Backup Instalado</strong></div>
-          <div><strong style="font-size: 15px;">Marca </strong></div>
-          <div><strong style="font-size: 15px;">Modelo </strong></div>
-          <div><strong style="font-size: 15px;">N° Serie </strong></div>
-          <div><strong style="font-size: 15px;">Conexión </strong></div>
-          <div><strong style="font-size: 15px;">Contador </strong></div>
-        </div>
-      </div>
-      <hr>
-      <div style="text-align: left;"><strong style="font-size: 16px;">Repuestos</strong></div>
-      <table style="width: 100%;">
-        <thead style="width: 100%;">
-          <tr style="background-color: rgb(168, 190, 255); color: black; text-align: center;">
-            <th>Nombre</th>
-            <th>N° de Parte</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody style="width: 100%;">
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-      <hr>
-      <div style="text-align: left;"><strong style="font-size: 16px;">Repuestos: </strong><a>Con la firma de usted está aceptando confirme la ejecución de los trbaajos que se indican. Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos.</a></div>
-    </div>
+  <div style="text-align: center;">
+    <ion-button (click)="abrirModalPrevisualizacion()">Previsualizar</ion-button>
   </div>
 
-  <div style="text-align: center;">
-    <ion-button (click)="ejPDF()">Generar PDF</ion-button>
-  </div>
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="cerrarModal()">
+    <ng-template>
+      <div style="padding: 20px; margin: 10px;">
+        <h3 style="text-align: center;">Previsualización del PDF</h3>
+        
+        <div id="contenidoHTMLPreview" style="border: 2px solid #000000; padding: 10px; max-height: 65%; overflow-y: scroll; zoom: 0.5;">
+            <div id="contenidoHTML" style="font-family: Arial; margin-inline: 30px; margin-block: 30px;">
+            <img style="width: 15%; margin-bottom: 5px; " src="/assets/logo.png">
+            <div>
+              <div class="row">
+                <div class="col-7">
+                  <div><strong style="font-size: 18px;">Orden de Trabajo N°  {{ ingresarform.get('eventocliente')?.value }}</strong></div>
+                  <div><strong style="font-size: 15px;">Tipo de Servicio: {{ ingresarform.get('tiposervicio')?.value }}</strong></div>
+                </div>
+                <div class="col-2">
+                  <div><strong style="font-size: 12px;">Fecha</strong></div>
+                  <div><strong style="font-size: 12px;">Hora Inicio</strong></div>
+                  <div><strong style="font-size: 12px;">Hora Termino</strong></div>
+                </div>
+                <div class="col-3" style="padding: 0;">
+                  <div><strong style="font-size: 12px;">: {{ ingresarform.get('fecha')?.value }}</strong></div>
+                  <div><strong style="font-size: 12px;">: {{ ingresarform.get('horainicio')?.value }}</strong></div>
+                  <div><strong style="font-size: 12px;">: {{ horaActual() }}</strong></div>
+                </div>
+              </div>     
+              <hr>
+              <!-- Información de cliente -->
+              <div class="row">
+                <div class="col-12 text-center">
+                  <div><strong style="font-size: 18px;">Información del Cliente</strong></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col-4">
+                      <div><strong style="font-size: 12px;">Cliente </strong></div>
+                      <div><strong style="font-size: 12px;">Dirección </strong></div>
+                      <div><strong style="font-size: 12px;">Ciudad </strong></div>
+                    </div>
+                    <div class="col-8" style="padding: 0;">
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('cliente')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('direccion')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('region')?.value }}</strong></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col-3">
+                      <div><strong style="font-size: 12px;">Contacto </strong></div>
+                      <div><strong style="font-size: 12px;">Teléfono </strong></div>
+                      <div><strong style="font-size: 12px;">Correo </strong></div>
+                    </div>
+                    <div class="col-9" style="padding: 0;">
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('contacto')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('telefono')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('correo')?.value }}</strong></div>
+                    </div>
+                  </div>
+
+                </div>
+
+
+              </div>
+              <hr>
+              <!-- Información de Hardware Reportado -->
+              <div class="row">
+                <div class="col-12 text-center">
+                  <div style="margin-bottom: 20px;"><strong style="font-size: 18px;">Información del Hardware Reportado</strong></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col-6">
+                      <div><strong style="font-size: 12px;">Tipo de Equipo </strong></div>
+                      <div><strong style="font-size: 12px;">Marca </strong></div>
+                      <div><strong style="font-size: 12px;">Modelo </strong></div>
+                    </div>
+                    <div class="col-6" style="margin-left: -75px;">
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('tipoequipo')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('marca')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('modelo')?.value }}</strong></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col-6">
+                      <div><strong style="font-size: 12px;">N° Serie </strong></div>
+                      <div><strong style="font-size: 12px;">Tipos de Conexión </strong></div>
+                      <div><strong style="font-size: 12px;">Accesorios </strong></div>
+                    </div>
+                    <div class="col-6" style="margin-left: -50px;">
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('nserie')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('tipoconexion')?.value }} : {{ ipForm.get('ip')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('accesorios')?.value }}</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-12">
+                  <div><strong style="font-size: 12px;">Problema Reportado: {{ ingresarform.get('problemareport')?.value }} </strong></div>
+                  <div><strong style="font-size: 12px;">Solución: {{ ingresarform.get('solucionreport')?.value }}</strong></div>
+                </div>
+              </div>
+              <hr *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si' || ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion != ingresarform.get('direccion')?.value || ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'no' || ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value">
+              <!-- Estatus de Servicio -->
+              <div class="row" *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && 
+              validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si' || 
+              ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion != ingresarform.get('direccion')?.value || 
+              ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || 
+              ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'no' || 
+              ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value">
+                <div class="col-12 text-center">
+                  <div style="margin-bottom: 20px;"><strong style="font-size: 18px;">Estatus del Servicio</strong></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">
+                  <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si'">
+                    <strong style="font-size: 12px;">Equipo Espera de Partes</strong>
+                  </div>
+                  <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si'">
+                    <strong style="font-size: 12px;">En Espera de Backup</strong>
+                  </div>
+                  <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'no' ">
+                    <strong style="font-size: 12px;">Equipo Operativo</strong>
+                  </div>
+                  <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value">
+                    <strong style="font-size: 12px;">Equipo Backup Instalado</strong>
+                  </div>
+                </div>
+                <div class="col-9" style="margin-left: -50px;">
+                  <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si'"><strong style="font-size: 12px;">: SI</strong></div>
+                  <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si'"><strong style="font-size: 12px;">: SI</strong></div>
+                  <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'no' "><strong style="font-size: 12px;">: SI</strong></div>
+                  <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value"><strong style="font-size: 12px;">: SI</strong></div>
+                </div>
+              </div>
+              <br>
+              <div class="row" style="border: 1px solid black" *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value || ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion != ingresarform.get('direccion')?.value">
+                  <div style="text-align: center;">
+                    <strong style="font-size: 15px;">Información Equipo Backup 
+                    <span *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion == ingresarform.get('direccion')?.value">Instalado</span> 
+                    <span *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.modelosImpresoras[0].direccion != ingresarform.get('direccion')?.value">en Espera</span></strong>
+                  </div>
+                  <div class="col-2">
+                    <div><strong style="font-size: 12px;">Marca </strong></div>
+                    <div><strong style="font-size: 12px;">Modelo </strong></div>
+                    <div><strong style="font-size: 12px;">N° Serie </strong></div>
+                    <div><strong style="font-size: 12px;">Conexión </strong></div>
+                    <div><strong style="font-size: 12px;">Contador </strong></div>
+                  </div>
+                  <div class="col-10">
+                    <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.name.split(' ')[0] }}</strong></div>
+                    <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.name.split(' ').slice(1).join(' ') }}</strong></div>
+                    <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.serial}}</strong></div>
+                    <div><strong style="font-size: 12px;">: {{ conexionBackup }} : {{ backupform.get('ipbackup')?.value }}</strong></div>
+                    <div><strong style="font-size: 12px;">: {{ backupform.get('contadorbackup')?.value }}</strong></div>
+                  </div>    
+              </div>
+
+              
+              <hr>
+              <div style="text-align: left;" *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si'">
+                <strong style="font-size: 16px;">Repuestos</strong>
+                <table style="width: 100%;">
+                  <thead style="width: 100%;">
+                    <tr style="background-color: rgb(168, 190, 255); color: black; text-align: center;">
+                      <th>Nombre</th>
+                      <th>N° de Parte</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody style="width: 100%;">
+                    <tr *ngFor="let repuesto of repuestosOperativo; let i = index"
+                      style="text-align: center; color: black; font-size: 16px;">
+                      <td>{{ repuesto.nombre }}</td>
+                      <td>{{ repuesto.numeroParte }}</td>
+                      <td>{{ repuesto.estado }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="text-align: left;" *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si'">
+                <strong style="font-size: 16px;">Repuestos</strong>
+                <table style="width: 100%;">
+                  <thead style="width: 100%;">
+                    <tr style="background-color: rgb(168, 190, 255); color: black; text-align: center;">
+                      <th>Nombre</th>
+                      <th>N° de Parte</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody style="width: 100%;">
+                    <tr *ngFor="let repuesto of repuestos; let i = index"
+                      style="text-align: center; color: black; font-size: 16px;">
+                      <td>{{ repuesto.nombre }}</td>
+                      <td>{{ repuesto.numeroParte }}</td>
+                      <td>{{ repuesto.estado }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <hr>
+              <div style="text-align: left;"><strong style="font-size: 16px;">Recepción: </strong><span>Con la firma de usted está aceptando confirme la ejecución de los trabajos que se indican. Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos.</span></div>
+              
+              <div class="row">
+                <div class="col-6">
+                  <strong>Tecnico: </strong>
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col-6">
+                      <strong>Cliente:</strong><br> 
+                      <span>{{ingresarform.get('nombrecli')?.value}}</span>
+                    </div>
+                    <div class="col-6">
+                      <img *ngIf="signatureImage" [src]="signatureImage" alt="Firma del cliente" style="max-width: 80%; padding: 5px; " />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div style="text-align: center; margin-top: 20px;">
+          <ion-button (click)="ejPDF()">Generar PDF</ion-button>
+          <ion-button color="light" (click)="cerrarModal()">Cancelar</ion-button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+  
   
 </ion-content>

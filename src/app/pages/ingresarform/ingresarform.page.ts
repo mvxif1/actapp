@@ -67,13 +67,15 @@ interface Modelo{
   direccion: any;
   id: any;
   items_id: any;
-  itemtype: any
+  itemtype: any;
+  
 }
 
 interface DetalleM{
   contact_num: any;
   serial: any;
   name: any;
+  networks_id: any;
 }
 
 interface ItemTicket{
@@ -125,6 +127,7 @@ export class IngresarformPage {
   @ViewChild('canvas', { static: true }) signaturePadElement!: ElementRef;
   repuestos: { nombre: any, numeroParte: any, estado: any }[] = [];
   repuestosOperativo: { nombre: any, numeroParte: any, estado: any }[] = [];
+
   //Firma
   signaturePad: any;
   signatureImage: any;
@@ -177,9 +180,12 @@ export class IngresarformPage {
     letrasynum: /^[a-zA-ZñÑ0-9]+$/,
 
   };
-  
-  
 
+  selectedBackup: Modelo | null = null;
+  backupActivo: boolean = false;
+  isModalOpen = false;
+  conexionBackup: string = 'DESCONOCIDO';
+  conexionBackups: string = 'DESCONOCIDO'; 
   constructor(private formBuilder: FormBuilder, private db: DbService, private elementRef: ElementRef, private camera: Camera, private emailComposer: EmailComposer, private route: ActivatedRoute, private router: Router, private apiv4: Apiv4Service, private loadingCtrl: LoadingController) {
     this.ingresarform = this.formBuilder.group({
       //SECCION: Orden de servicio
@@ -315,8 +321,8 @@ export class IngresarformPage {
     this.password = localStorage.getItem('password')!;
 
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 140;
+    canvas.width = canvas.parentElement.offsetWidth - 25;
+    canvas.height = 200;
     if (this.signaturePad) {
       this.signaturePad.clear();
     }
@@ -393,7 +399,7 @@ export class IngresarformPage {
   getDatosContrato(idcontrato: any) {
     this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(
       (response) => {
-        this.cliente = [response];
+        this.cliente = response;
         this.detalle = [response.detalle];
         console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
@@ -412,16 +418,22 @@ export class IngresarformPage {
           }
           return printer;
         });
-        console.log(this.detalleHardwareReport);
+        console.log('Respuesta getItemsTicket: ', this.detalleHardwareReport);
         if(this.detalleHardwareReport[0].itemtype = 'Printer'){
           this.ingresarform.patchValue({ tipoequipo: 'impresion' });
           this.ingresarform.patchValue({ tipoequipobackup: 'Printer' });
         }
-        this.ingresarform.patchValue({marca: this.detalleHardwareReport[0].modelo[0].comment});
+        this.ingresarform.patchValue({marca: this.detalleHardwareReport[0].modelo[0].comment.split('_')[0].split(' ')[0]});
         this.ingresarform.patchValue({modelo: this.detalleHardwareReport[0].modelo[0].name});
         this.ingresarform.patchValue({nserie: this.detalleHardwareReport[0].detalle[0].serial});
         if(this.detalleHardwareReport[0].detalle[0].networks_id = 1){
           this.ingresarform.patchValue({tipoconexion: 'IP'});
+        }else
+        if(this.detalleHardwareReport[0].detalle[0].networks_id = 2){
+          this.ingresarform.patchValue({tipoconexion: 'USB'});
+        }else
+        if(this.detalleHardwareReport[0].detalle[0].networks_id = 3){
+          this.ingresarform.patchValue({tipoconexion: 'SIN'});
         }
 
       })
@@ -437,8 +449,10 @@ export class IngresarformPage {
             }
             return printer;
           });
-          
-          console.log(this.modelosImpresoras);
+        if(this.modelosImpresoras[0].detalle[0]?.networks_id == 1){
+          this.conexionBackups = 'IP'
+        }    
+          console.log('Respuesta getItemsBackUp: ',this.modelosImpresoras);
         } else if (tipoItem === 'Computer') {
           this.modelosComputadoras = response;
         }
@@ -471,19 +485,24 @@ export class IngresarformPage {
     const day = String(today.getDate()).padStart(2, '0');
     return `${day}-${month}-${year}`;
   }
+
   horaActual() {
     const today = new Date();
-    const hora = today.getHours();
+    let hora: string | number = today.getHours();
     const minutos = String(today.getMinutes()).padStart(2, '0');
     let periodo: string;
-    if (hora >= 12) {
-      periodo = '  PM';
+  
+    hora = String(hora).padStart(2, '0'); 
+  
+    if (parseInt(hora) >= 12) {
+      periodo = ' PM';
     } else {
       periodo = ' AM';
     }
+  
     return `${hora}:${minutos}${periodo}`;
   }
-
+  
   validarHoras(control: AbstractControl): { [key: string]: boolean } | null {
     const horaInicioValue = control.value;
     const horaInicio = (horaInicioValue !== null && horaInicioValue !== undefined) ? horaInicioValue.toString().replace(/[^0-9]/g, '') : '';
@@ -595,21 +614,33 @@ export class IngresarformPage {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
         this.validarCoordinadoraBackup = false;
+        this.backupActivo = false;
         this.solicitaRepuesto.value = 'no';
         this.solicitarBackup.value = 'no';
       } else if (radioGroup === this.solicitaRepuesto) {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
         this.validarCoordinadoraBackup = false;
+        this.backupActivo = false;
         this.equipoOperativo.value = 'no';
         this.solicitarBackup.value = 'no';
       } else if (radioGroup === this.solicitarBackup) {
         this.utilizaRepuestosActivo = false;
         this.validarCoordinadoraRepuesto = false;
         this.validarCoordinadoraBackup = false;
+        this.backupActivo = false;
         this.equipoOperativo.value = 'no';
         this.solicitaRepuesto.value = 'no';
       }
+    } else
+    if(value === 'no'){
+      this.backupActivo = false;
+      //AQUI SE DEBE COLOCAR LOGICA PARA DESACTIVAR BOTON
+    } else
+    if(value === ''){
+      this.equipoOperativo.value = 'no';
+      this.solicitaRepuesto.value = 'no';
+      this.solicitarBackup.value = 'no';
     }
   
     // Actualizar los valores del formulario
@@ -620,14 +651,6 @@ export class IngresarformPage {
     });
   
 
-  }
-
-  getUbicacion(printer: any): string {
-    if (this.cliente[0].direccion === printer) {
-      return "En Cliente";
-    } else {
-      return "En Bodega";
-    }
   }
   
   
@@ -676,11 +699,14 @@ export class IngresarformPage {
     });
 
     if (this.validaCoordinadoraBackup.value === 'si') {
+      this.backupActivo = true;
       this.validarCoordinadoraBackup = true;
     } else if(this.validaCoordinadoraBackup.value === 'no'){
+      this.backupActivo = false;
       this.validarCoordinadoraBackup = false;
       this.db.presentAlertN("Debes validar con coordinadora");
     }else{
+      this.backupActivo = false;
       this.validarCoordinadoraBackup = false;
     }
   }
@@ -714,11 +740,11 @@ export class IngresarformPage {
 
   ngAfterViewInit() {
     const canvas: HTMLCanvasElement = this.signaturePadElement.nativeElement;
-    canvas.width = 500;
-    canvas.height = 250;
+    canvas.width = 400;
+    canvas.height = 350;
     this.signaturePad = new SignaturePad(canvas, {
       penColor: 'rgb(0, 0, 0)',
-      backgroundColor: 'rgb(255, 255, 255)',
+      backgroundColor: 'rgba(255, 255, 255, 0)',
     });
   }
 
@@ -838,13 +864,17 @@ export class IngresarformPage {
            this.ingresarform.get('correo')?.valid;
   }
 
-  isInformacionHardwareCompleta(): boolean | undefined{
+  isInformacionHardwareCompleta(): boolean | undefined {
+    const tipoConexion = this.ingresarform.get('tipoconexion')?.value;
+  
     return this.ingresarform.get('tipoequipo')?.valid &&
            this.ingresarform.get('marca')?.valid &&
            this.ingresarform.get('modelo')?.valid &&
            this.ingresarform.get('nserie')?.valid &&
-           this.ingresarform.get('tipoconexion')?.valid 
+           this.ingresarform.get('tipoconexion')?.valid &&
+           (tipoConexion !== 'IP' || this.ipForm.get('ip')?.valid);
   }
+  
 
   isDescripcionCasoCompleta(): boolean | undefined{
     return this.ingresarform.get('problemareport')?.valid &&
@@ -865,21 +895,35 @@ export class IngresarformPage {
     return this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' && !this.repuestosOperativoform.valid;
   }
 
-  mostrarErrorBackup(): boolean {
-    return this.ingresarform.get('solicitaRepuesto')?.value === 'si' && !this.backupform.valid;
-  }
-
-  mostrarErrorRepuestos(): boolean {
-    return this.ingresarform.get('solicitaBackup')?.value === 'si' && !this.repuestosform.valid;
-  }
-
   mostrarErrorRepuestosOperativoNohayrepuestos(): boolean {
     return (this.ingresarform.get('equipoOperativo')?.value === 'si' && this.utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' && (this.repuestosOperativo && this.repuestosOperativo.length === 0));
   }
 
-  mostrarErrorRepuestosNohayrepuestos(): boolean {
-    return this.ingresarform.get('solicitaBackup')?.value === 'si' && (this.repuestos && this.repuestos.length === 0);
+  isStatusServicioSolicitaRepuesto(): boolean{
+    return (this.ingresarform.get('solicitaRepuesto')?.value === 'si' && this.validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === '')
   }
+
+  mostrarErrorSolicitaRepuestos(): boolean {
+    return this.ingresarform.get('solicitaRepuesto')?.value === 'si' && this.validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si' && !this.repuestosform.valid;
+  }
+
+  mostrarErrorSolicitaRepuestosNohayrepuestos(): boolean {
+    return (this.ingresarform.get('solicitaRepuesto')?.value === 'si' && this.validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si' && (this.repuestos && this.repuestos.length === 0));
+  }
+
+  isStatusServicioSolicitaBackup(): boolean{
+    return (this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === '')
+  }
+
+  mostrarErrorSolicitaBackup(): boolean {
+    return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && !this.selectedBackup;
+  }
+
+  mostrarErrorSolicitaBackupFormulario(): boolean {
+    return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && !this.selectedBackup && !this.backupform.valid;
+  }
+  
+
 
   isDatosClienteCompleta(): boolean | undefined{
     return this.ingresarform.get('nombrecli')?.valid &&
@@ -890,218 +934,12 @@ export class IngresarformPage {
 
   async generarPDF() {
     try {
-      const eventoCliente = (document.getElementById('eventoCliente') as HTMLInputElement)?.value || '';
-      const tiposervicio = (document.getElementById('tipoServicio') as HTMLSelectElement)?.value || '';
-      const fecha = (document.getElementById('fecha') as HTMLInputElement)?.value || '';
-      const horaInicio = (document.getElementById('horaInicio') as HTMLInputElement)?.value || '';
-      const ampmElement = document.getElementById('ampm') as HTMLIonTextElement;
-      const ampm = ampmElement ? ampmElement.textContent || '':'';
-      const horaTermino = (document.getElementById('horaTermino') as HTMLInputElement)?.value || '';
-
-      const cliente = (document.getElementById('cliente') as HTMLInputElement)?.value || '';
-      const direccion = (document.getElementById('direccion') as HTMLInputElement)?.value || '';
-      const contacto = (document.getElementById('contacto') as HTMLInputElement)?.value || '';
-      const telefono = (document.getElementById('telefono') as HTMLInputElement)?.value || '';
-      const correo = (document.getElementById('correo') as HTMLInputElement)?.value || '';
-      const region = (document.getElementById('region') as HTMLInputElement)?.value || '';
-
-      const tipoequipo = (document.getElementById('tipoequipo') as HTMLSelectElement)?.value || '';
-
-      const marca = (document.getElementById('marca') as HTMLSelectElement)?.value || '';
-      
-      const modelo = (document.getElementById('modelo') as HTMLInputElement)?.value || '';
-      const nserie = (document.getElementById('nserie') as HTMLInputElement)?.value || '';
-
-      const tipoconexion = (document.getElementById('tipoconexion') as HTMLSelectElement)?.value || '';
-      const ip = (document.getElementById('ip') as HTMLInputElement)?.value || '';
-
-      const accesorios = (document.getElementById('accesorios') as HTMLInputElement)?.value || '';
-
-      const problemareport = (document.getElementById('problemareport') as HTMLTextAreaElement)?.value || '';
-      const solucionreport = (document.getElementById('solucionreport') as HTMLTextAreaElement)?.value || '';
-
-      const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
-      const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
-      const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
-      
-      const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
-      const validaCoordinadoraRespuesto = (document.getElementById('validaCoordinadoraRespuesto') as HTMLIonRadioGroupElement)?.value || '';
-      const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
-      const validaCoordinadoraBackup = (document.getElementById('validaCoordinadoraBackup') as HTMLIonRadioGroupElement)?.value || '';
-
-
-      const nombreRepuesto = (document.getElementById('nombreRepuesto') as HTMLInputElement)?.value || '';
-      const nparteRepuesto = (document.getElementById('nparteRepuesto') as HTMLInputElement)?.value || '';
-      const estadoRepuesto = (document.getElementById('estadoRepuesto') as HTMLInputElement)?.value || '';
-
-      const nombrecli = (document.getElementById('nombrecli') as HTMLInputElement)?.value || '';
-      const rutcli = (document.getElementById('rutcli') as HTMLInputElement)?.value || '';
-
-      //Generacion de PDF con GLPI
-
-      //*********************Operativo sin problemas*********************
-      if(equipoOperativo == 'si' &&  utilizoRepuestos == 'no'){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        console.log(" cierre ticket estado 5, cierre tarea original");
-        return;
-      }else
-      //*********************Operativo con utilizacion de repuestos*********************
-      if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestos && this.repuestos.length > 0){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        
-        //recorre repuestos
-        let repuestosToUse;
-        if (this.repuestosOperativo && this.repuestosOperativo.length > 0) {
-          repuestosToUse = this.repuestosOperativo;
-        }
-        if (repuestosToUse) {
-          const maxRepuestos = Math.min(repuestosToUse.length, 5);
-          let yPosition = 587;
-          for (let i = 0; i < maxRepuestos; i++) {
-            const repuesto = repuestosToUse[i];
-            //pdf.text(repuesto.nombre, 75, yPosition);
-            //pdf.text(repuesto.numeroParte, 215, yPosition);
-            //pdf.text(repuesto.estado, 360, yPosition);
-            yPosition += 10;
-          }
-        }
-        return;
-      };
-
-      //****************Solicita repuesto del equipo*********************
-      if(solicitaRepuesto == 'si' && validaCoordinadoraRespuesto == 'si'){
-        //recorre repuestos
-        let repuestosToUse;
-        if (this.repuestos && this.repuestos.length > 0) {
-          repuestosToUse = this.repuestos;
-        }
-        if (repuestosToUse) {
-          const maxRepuestos = Math.min(repuestosToUse.length, 5);
-          let yPosition = 587;
-          for (let i = 0; i < maxRepuestos; i++) {
-            const repuesto = repuestosToUse[i];
-            //pdf.text(repuesto.nombre, 75, yPosition);
-            //pdf.text(repuesto.numeroParte, 215, yPosition);
-            //pdf.text(repuesto.estado, 360, yPosition);
-            yPosition += 10;
-          }
-        }
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        this.apiv4.setTareaCoordinadora
-        this.apiv4.setTicket
-        return;
-      }
-      //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
-      if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        this.apiv4.setTareaCoordinadora
-        //ticket de despacho backup
-        this.apiv4.setTicket
-        //ticket de retiro backup
-        this.apiv4.setTicket
-        return;
-      }
-      //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
-      if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        this.apiv4.setTareaCoordinadora
-        //ticket de despacho backup
-        this.apiv4.setTicket
-        //ticket de retiro backup
-        this.apiv4.setTicket
-        return;
-      }
-
       // Crear el documento PDF
       const pdf = new jsPDF('p', 'pt', 'letter');
-
-      // Añadir página de orden de servicio
-      const image = await this.fotoPdf('assets/otservicio.jpg');
-      pdf.addImage(image, 'JPEG', 0, 0, 565, 731);
-      pdf.setFontSize(16);
-      pdf.text(eventoCliente, 190, 74);
-      pdf.setFontSize(11);
-      pdf.setFont('Times');
-      if (tiposervicio === 'Incidente') {
-        pdf.text(tiposervicio, 127, 87);
-      } else if (tiposervicio === 'Solicitud') {
-        pdf.text(tiposervicio, 127, 87);
-      }
-      pdf.text(fecha, 475, 59);
-      pdf.text(horaInicio, 475, 72);
-      pdf.text(ampm, 505, 72);
-      pdf.text(horaTermino, 475, 86);
-
-      pdf.text(cliente, 110, 126);
-      pdf.text(direccion, 110, 140);
-      pdf.text(region, 110, 156);
-      pdf.text(contacto, 372, 122);
-      pdf.text(telefono, 372, 138);
-      pdf.text(correo, 372, 152);
-      if (tipoequipo === 'impresion') {
-        pdf.circle(218, 208, 7, "F");
-      } else if (tipoequipo === 'pc') {
-        pdf.circle(255, 208, 7, "F");
-      }
-      pdf.getFontList;
-      
-      const otraMarca = (document.getElementById('otraMarca') as HTMLInputElement)?.value || '';
-      if (marca === 'OTRO') {
-        pdf.text(otraMarca, 145, 228);
-      } else {
-        pdf.text(marca, 145, 228);
-      }
-      pdf.text(modelo, 145, 243);
-      pdf.text(nserie, 145, 257);
-      if (tipoconexion === 'IP') {
-        pdf.text(tipoconexion + ': ' + ip, 145, 272);
-      } else {
-        pdf.text(tipoconexion, 145, 272)
-      }
-      pdf.text(accesorios, 145, 286);
-      const problemareportLines = pdf.splitTextToSize(problemareport, 400);
-      const solucionreportLines = pdf.splitTextToSize(solucionreport, 430);
-      pdf.text(problemareportLines, 145, 316);
-      pdf.text(solucionreportLines, 90, 352);
-      pdf.setFontSize(8);
-      pdf.setFontSize(11);
-      if (solicitaBackup === 'si') {
-        pdf.circle(217, 466, 7, "F");
-        pdf.circle(257, 482, 7, "F");
-        pdf.circle(257, 498, 7, "F");
-        pdf.circle(257, 514, 7, "F");
-      }
-      if (solicitarBackup === 'si') {
-        pdf.circle(257, 466, 7, "F");
-        pdf.circle(217, 482, 7, "F");
-        pdf.circle(257, 498, 7, "F");
-        pdf.circle(257, 514, 7, "F");
-      }
-      if (equipoOperativo === 'si') {
-        pdf.circle(257, 466, 7, "F");
-        pdf.circle(257, 482, 7, "F");
-        pdf.circle(217, 498, 7, "F");
-        pdf.circle(257, 514, 7, "F");
-      }
-      if (solicitaRepuesto === 'si') {
-        pdf.circle(257, 466, 7, "F");
-        pdf.circle(257, 482, 7, "F");
-        pdf.circle(257, 498, 7, "F");
-        pdf.circle(217, 514, 7, "F");
-      }
-      pdf.text(nombrecli, 310, 690);
-      pdf.text(rutcli, 310, 700);
 
       if (this.signatureImage) {
         pdf.addImage(this.signatureImage, 'PNG', 300, 705, 100, 50);
       }
-      console.log(pdf.getFontList());
-      pdf.save();
       const imgWidth = 565;
       const imgHeight = 731;
 
@@ -1120,7 +958,7 @@ export class IngresarformPage {
       const pdfBase64 = pdf.output('datauristring'); 
       const pdfData = pdfBase64.split(',')[1]; 
 
-      const fileName = eventoCliente + ".pdf";
+      const fileName = ".pdf";
       const path = `${fileName}`;
       const downloadDir = '/TK_Descargas';
 
@@ -1144,22 +982,122 @@ export class IngresarformPage {
       console.error('Error al guardar el archivo:', error);
     }
   }
-  ejPDF() {
-    const element = document.getElementById('contenidoHTML');
-    if (element) {
+  // Función para cerrar el modal
+  cerrarModal() {
+    this.isModalOpen = false;
+  }
 
-      const elementWidth = element.offsetWidth; // O usa getBoundingClientRect().width
+  abrirModalPrevisualizacion() {
+    this.isModalOpen = true;
+  }
+  
+  onBackupSelect(event: any) {
+    const selectedId = event.detail.value; // ID del modelo seleccionado
+    this.selectedBackup = this.modelosImpresoras.find(printer => printer.id === selectedId) || null;
+  
+    if (this.selectedBackup) {
+      if (this.selectedBackup.detalle[0]?.networks_id == 1) {
+        this.conexionBackup = 'IP';
+      } else if (this.selectedBackup.detalle[0]?.networks_id == 2) {
+        this.conexionBackup = 'USB';
+      } else if (this.selectedBackup.detalle[0]?.networks_id == 3) {
+        this.conexionBackup = 'SIN';
+      }
+    }
+
+    this.backupActivo = this.selectedBackup !== null;
+  
+    console.log(this.conexionBackup);
+  }
+  
+
+  
+
+  // Función para generar el PDF
+  ejPDF() {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [565, 731],
+      orientation: 'portrait'
+    });
+
+    const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
+    const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
+    const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
     
-      console.log("El ancho del elemento es: " + elementWidth + "px");
-      const options = {
-        margin: [10, 10, 10, 10], 
-        filename: 'documento.pdf', 
-        html2canvas: { scale: 2 }, 
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
+    const validaCoordinadoraRespuesto = (document.getElementById('validaCoordinadoraRespuesto') as HTMLIonRadioGroupElement)?.value || '';
+    const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
+    const validaCoordinadoraBackup = (document.getElementById('validaCoordinadoraBackup') as HTMLIonRadioGroupElement)?.value || '';
+
+      //Generacion de PDF con GLPI
+      //*********************Operativo sin problemas*********************
+      if(equipoOperativo == 'si' &&  utilizoRepuestos == 'no'){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        return;
+      }else
+      //*********************Operativo con utilizacion de repuestos*********************
+      if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestos && this.repuestos.length > 0){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        return;
       };
-      html2pdf().from(element).set(options).save();
+
+      //****************Solicita repuesto del equipo*********************
+      if(solicitaRepuesto == 'si' && validaCoordinadoraRespuesto == 'si'){
+        this.apiv4.uploadDocumentTecnico
+        this.apiv4.cierraTarea
+        this.apiv4.setTareaCoordinadora
+        this.apiv4.setTicket
+      return;
+    }
+    //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
+    if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+      this.apiv4.uploadDocumentTecnico
+      this.apiv4.cierraTarea
+      this.apiv4.setTareaCoordinadora
+      //ticket de despacho backup
+      this.apiv4.setTicket
+      //ticket de retiro backup
+      this.apiv4.setTicket
+      return;
+    }
+    //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
+    if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+      this.apiv4.uploadDocumentTecnico
+      this.apiv4.cierraTarea
+      this.apiv4.setTareaCoordinadora
+      //ticket de despacho backup
+      this.apiv4.setTicket
+        //ticket de retiro backup
+      this.apiv4.setTicket
+      return;
+    }
+  
+    const element = document.getElementById('contenidoHTML');
+  
+    if (element) {
+      const scale = 560 / element.offsetWidth;  
+  
+      doc.html(element, {
+        callback: (doc) => {
+          // Guardar el archivo PDF generado
+          doc.save('documento.pdf');
+        },
+        html2canvas: {
+          logging: false, 
+          letterRendering: true,  // Mejora la representación de texto
+          scale: scale,  // Ajusta la escala para que el contenido se ajuste al PDF
+          width: element.offsetWidth,  // Especifica el ancho del contenido HTML
+          height: element.offsetHeight  // Especifica la altura del contenido HTML
+        },
+      });
+  
+      this.cerrarModal();
     }
   }
+  
   
   
 
