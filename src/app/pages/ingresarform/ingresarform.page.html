@@ -865,7 +865,7 @@
               </div>
 
               
-              <hr>
+              <hr *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si'">
               <div style="text-align: left;" *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si'">
                 <strong style="font-size: 16px;">Repuestos</strong>
                 <table style="width: 100%;">

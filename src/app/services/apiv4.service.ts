@@ -98,8 +98,8 @@ export class Apiv4Service {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
+    console.log(idtarea);
     const body = `ACCION=CierraTarea&token=${token}&idtarea=${idtarea}`;
-    
     return this.http.post(this.baseUrl, body, { headers });
   }
 
@@ -119,7 +119,7 @@ export class Apiv4Service {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&idcategoria=${idcategoria}&texto=${texto}`;
+    const body = `ACCION=setTareaCoordinadora&token=${token}&idticket=${idticket}&idcategoria=${idcategoria}&texto=${texto}`;
     
     return this.http.post(this.baseUrl, body, { headers });
   }
@@ -129,7 +129,7 @@ export class Apiv4Service {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&nota=${nota}&notaid=${notaid}`;
+    const body = `ACCION=setTicketNota&token=${token}&idticket=${idticket}&nota=${nota}&notaid=${notaid}`;
     
     return this.http.post(this.baseUrl, body, { headers });
   }
@@ -140,7 +140,7 @@ export class Apiv4Service {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&titulo=${titulo}&contenido=${contenido}&itilcategories_id=${itilcategories_id}`;
+    const body = `ACCION=setTicket&token=${token}&idticket=${idticket}&titulo=${titulo}&contenido=${contenido}&itilcategories_id=${itilcategories_id}`;
     
     return this.http.post(this.baseUrl, body, { headers });
   }
@@ -151,8 +151,8 @@ export class Apiv4Service {
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTareaRetiro&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${archivoBase64}&tipoDocumento=${tipoDocumento}&cierra=${cierra}`;
-    
+  
+    const body = `ACCION=uploadDocumentTecnico&token=${token}&idticket=${idticket}&nombreArchivo=${nombreArchivo}&archivoBase64=${encodeURIComponent(archivoBase64)}&tipoDocumento=${tipoDocumento}&cierra=${cierra}`;
     return this.http.post(this.baseUrl, body, { headers });
   }
   

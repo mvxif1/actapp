@@ -151,8 +151,10 @@ export class IngresarformPage {
   validarCoordinadoraRepuesto: boolean = false;
   validarCoordinadoraBackup: boolean = false;
 
+  idTarea: any;
   contrato: string = '';
   tipoitem: string = '';
+  itilcategories: any;
   locations_id: any;
   subscriptions: Subscription = new Subscription();
   modelosImpresoras: Modelo[] = [];
@@ -290,17 +292,22 @@ export class IngresarformPage {
     }
   }
   
-    //carga
-    async Cargando() {
-      const loading = await this.loadingCtrl.create({
-        message: 'Espere un momento...',
-        spinner: 'crescent',
-        backdropDismiss: false // Para evitar que el loading se cierre cuando toquen fuera
-      });
-  
-      await loading.present();
-      return loading;
-    }
+  //carga
+  async Cargando() {
+    const loading = await this.loadingCtrl.create({
+      message: 'Espere un momento...',
+      spinner: 'crescent',
+      backdropDismiss: false // Para evitar que el loading se cierre cuando toquen fuera
+    });
+
+    await loading.present();
+    return loading;
+  }
+
+  // Método para ocultar el loading
+  async ocultarCarga(loading: any) {
+    await loading.dismiss();
+  }
   
   
   ionViewWillEnter() {
@@ -328,8 +335,9 @@ export class IngresarformPage {
     }
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
-      const itilcategories = params['itilcategories'];
-
+      this.itilcategories = params['itilcategories'];
+      this.idTarea = params['idTarea'];
+      console.log(this.idTarea);
       const direccionCompleta = params['direccion'];
       const partes = direccionCompleta.split(' > ');
       const direccion = partes.pop();
@@ -349,13 +357,12 @@ export class IngresarformPage {
       
       const [fecha, horaInicio] = fechaCompleta.split(' ');
       const horaFormateada = this.formatearhoraDirecto(horaInicio);
-      this.getItemsTicket(idTicket, itilcategories);
+      this.getItemsTicket(idTicket, this.itilcategories);
       this.getDatosContrato(contrato);
       this.ingresarform.patchValue({ eventocliente: idTicket });
       this.ingresarform.patchValue({ fecha });
       this.ingresarform.patchValue({ horainicio: horaFormateada });
       this.ingresarform.patchValue({ problemareport: sanitizedProblemaReport });
-
       this.subscriptions.add(
         this.ingresarform.get('tipoequipobackup')?.valueChanges.subscribe((tipoItem) => {
           if (tipoItem === 'Printer') {
@@ -385,7 +392,7 @@ export class IngresarformPage {
     tempDiv.innerHTML = html;
     return tempDiv.textContent || tempDiv.innerText || '';
   }
-
+  
   variablesVacios(){
     this.repuestosactivado = false;
     this.utilizaRepuestosActivo = false;
@@ -1006,97 +1013,316 @@ export class IngresarformPage {
     }
 
     this.backupActivo = this.selectedBackup !== null;
+  }
   
-    console.log(this.conexionBackup);
+  // Convertir PDF a base64
+  convertPDFToBase64(doc: jsPDF): Promise<string> {
+    return new Promise((resolve) => {
+      const blob = doc.output('blob');
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]); // Devuelve solo el contenido base64
+      reader.readAsDataURL(blob);
+    });
   }
   
 
-  
+// Función para generar el PDF y enviarlo
+async ejPDF() {
+  const doc = new jsPDF({
+    unit: 'mm',
+    format: [565, 731],
+    orientation: 'portrait',
+  });
 
-  // Función para generar el PDF
-  ejPDF() {
-    const doc = new jsPDF({
-      unit: 'mm',
-      format: [565, 731],
-      orientation: 'portrait'
+  const loading = await this.Cargando();
+
+  const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
+  const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
+  const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
+
+  const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
+  const validaCoordinadoraRespuesto = (document.getElementById('validaCoordinadoraRespuesto') as HTMLIonRadioGroupElement)?.value || '';
+  const validaCoordinadoraBackup = (document.getElementById('validaCoordinadoraBackup') as HTMLIonRadioGroupElement)?.value || '';
+  
+  const idTicket = this.ingresarform.get('eventocliente')?.value;
+  const nombreArchivo = 'TICKET_' + idTicket + '.pdf';
+  const tipoDocumento = 'OT_';
+
+  const element = document.getElementById('contenidoHTML');
+
+  if (element) {
+    const scale = 560 / element.offsetWidth;
+
+    // Generar el PDF y convertirlo a base64
+    doc.html(element, {
+      callback: async (doc) => {
+        for (let i = 0; i < this.photos.length; i++) {
+          const photo = this.photos[i];
+
+          // Decodificar la imagen base64 para jsPDF
+          const imgWidth = 190; // Ajusta el ancho de la imagen según el formato del PDF
+          const imgHeight = 190; // Ajusta la altura de la imagen según el formato del PDF
+          if (i > 0) {
+            doc.addPage(); // Agregar una nueva página después de la primera
+          }
+          doc.addImage(photo, 'JPEG', 10, 10, imgWidth, imgHeight);
+        }
+
+        // Convertir el PDF a base64
+        const pdfBase64 = await this.convertPDFToBase64(doc);
+        //*********************Operativo sin problemas*********************
+        if (equipoOperativo == 'si' && utilizoRepuestos == 'no') {
+          const cierre = 1;
+          this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
+            async (response) => {
+              this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
+                (response) => {
+                  navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                      const latitud = position.coords.latitude;
+                      const longitud = position.coords.longitude;
+                      const enviarMovimiento = "Trabajo realizado"
+                      this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
+                        (response: any) => {
+                          this.ocultarCarga(loading);
+                          this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                        },
+                        (error) => {
+                          console.error('Error al actualizar la ubicación:', error);
+                        }
+                      );
+                    },
+                    (error) => {
+                      console.error('Error al obtener la geolocalización:', error);
+                      alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+                    }
+                  );
+                },
+                (error) => {
+                  console.error("Error al cerrar la tarea (cierraTarea OPERATIVO SIN PROBLEMAS)", error);
+                  this.db.presentAlertN("Error al cerrar la tarea.");
+                  this.ocultarCarga(loading);
+                }
+              );
+            },
+            (error) => {
+              console.error("Error al subir el documento (uploadDocumentTecnico)", error);
+              this.db.presentAlertN("Error al subir el documento. Intente nuevamente.");
+              this.ocultarCarga(loading);
+              return;
+            }
+          );
+        }else
+        //*********************Operativo con utilizacion de repuestos*********************
+        if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestosOperativo && this.repuestosOperativo.length > 0){
+          const cierre = 1;
+          this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
+            async (response) => {
+              console.log("Documento subido correctamente (uploadDocumentTecnico OPERATIVO CON UTILIZACION DE REPUESTOS)", response);
+              this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
+                (response) => {
+                  navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                      const latitud = position.coords.latitude;
+                      const longitud = position.coords.longitude;
+                      const enviarMovimiento = "Trabajo realizado"
+                      this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
+                        (response: any) => {
+                          this.ocultarCarga(loading);
+                          this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                        },
+                        (error) => {
+                          console.error('Error al actualizar la ubicación:', error);
+                        }
+                      );
+                    },
+                    (error) => {
+                      console.error('Error al obtener la geolocalización:', error);
+                      alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+                    }
+                  );
+                },
+                (error) => {
+                  console.error("Error al cerrar la tarea (cierraTarea OPERATIVO CON UTILIZACION DE REPUESTOS)", error);
+                  this.db.presentAlertN("Error al cerrar la tarea.");
+                  this.ocultarCarga(loading);
+                }
+              );
+            },
+            (error) => {
+              console.error("Error al subir el documento (uploadDocumentTecnico)", error);
+              this.db.presentAlertN("Error al subir el documento. Intente nuevamente.");
+              this.ocultarCarga(loading);
+              return;
+            }
+          );
+        };
+  
+        //****************Solicita repuesto del equipo*********************
+        if (solicitaRepuesto === 'si' && validaCoordinadoraRespuesto === 'si' && this.repuestos && this.repuestos.length > 0) {
+          const cierre = 0;
+          this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
+            async (response) => {
+              this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
+                (response) => {
+                  const idCategoria = 29;
+                  const texto = "Se solicita repuestos";
+                  this.apiv4.setTareaCoordinadora(this.username, this.password, idTicket, idCategoria, texto).subscribe(
+                    (response) => {
+                      const titulo = "Se solicita repuestos";
+                      const contenido = "Se solicitan repuestos" + this.itilcategories;
+                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories).subscribe(
+                        (response) => {
+                          navigator.geolocation.getCurrentPosition(
+                            async (position) => {
+                              const latitud = position.coords.latitude;
+                              const longitud = position.coords.longitude;
+                              const enviarMovimiento = "Trabajo realizado"
+                              this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
+                                (response: any) => {
+                                  this.ocultarCarga(loading);
+                                  this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                                },
+                                (error) => {
+                                  console.error('Error al actualizar la ubicación:', error);
+                                }
+                              );
+                            },
+                            (error) => {
+                              console.error('Error al obtener la geolocalización:', error);
+                              alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+                            }
+                          );
+                        },
+                        (error) => {
+                          console.error("Error al crear el ticket (setTicket OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                          this.db.presentAlertN("Error al crear el ticket. Intente nuevamente.");
+                          this.ocultarCarga(loading);
+                        }
+                      );
+                    },
+                    (error) => {
+                      console.error("Error al asignar la tarea coordinadora (setTareaCoordinadora OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                      this.db.presentAlertN("Error al asignar la tarea coordinadora. Intente nuevamente.");
+                      this.ocultarCarga(loading);
+                    }
+                  );
+                },
+                (error) => {
+                  console.error("Error al cerrar la tarea (cierraTarea OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                  this.db.presentAlertN("Error al cerrar la tarea. Intente nuevamente.");
+                  this.ocultarCarga(loading);
+                }
+              );
+            },
+            (error) => {
+              console.error("Error al subir el documento (uploadDocumentTecnico)", error);
+              this.db.presentAlertN("Error al subir el documento. Intente nuevamente.");
+              this.ocultarCarga(loading);
+            }
+          );
+        }
+        
+        //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
+        if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+          const cierre = 0;
+          this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
+            async (response) => {
+              this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
+                (response) => {
+                  const idCategoria = 30;
+                  const texto = "Se solicita backup";
+                  this.apiv4.setTareaCoordinadora(this.username, this.password, idTicket, idCategoria, texto).subscribe(
+                    (response) => {
+                      const titulo = "Se solicita despacho de backup";
+                      const contenido = "Se solicita despacho de backup" + this.itilcategories;
+                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories).subscribe(
+                        (response) => {
+                          const titulo2 = "Se solicita retiro de backup";
+                          const contenido2 = "Se solicita retiro de backup" + this.itilcategories;
+                          this.apiv4.setTicket(this.username, this.password, idTicket, titulo2, contenido2, this.itilcategories).subscribe(
+                            (response) => {
+                              navigator.geolocation.getCurrentPosition(
+                                async (position) => {
+                                  const latitud = position.coords.latitude;
+                                  const longitud = position.coords.longitude;
+                                  const enviarMovimiento = "Trabajo realizado"
+                                  this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
+                                    (response: any) => {
+                                      this.ocultarCarga(loading);
+                                      this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                                    },
+                                    (error) => {
+                                      console.error('Error al actualizar la ubicación:', error);
+                                    }
+                                  );
+                                },
+                                (error) => {
+                                  console.error('Error al obtener la geolocalización:', error);
+                                  alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+                                }
+                              );
+                            },
+                            (error) => {
+                              console.error("Error al crear el ticket (setTicket OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                              this.db.presentAlertN("Error al crear el ticket. Intente nuevamente.");
+                              this.ocultarCarga(loading);
+                            }
+                          );
+                        },
+                        (error) => {
+                          console.error("Error al crear el ticket (setTicket OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                          this.db.presentAlertN("Error al crear el ticket. Intente nuevamente.");
+                          this.ocultarCarga(loading);
+                        }
+                      );
+                    },
+                    (error) => {
+                      console.error("Error al asignar la tarea coordinadora (setTareaCoordinadora OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                      this.db.presentAlertN("Error al asignar la tarea coordinadora. Intente nuevamente.");
+                      this.ocultarCarga(loading);
+                    }
+                  );
+                },
+                (error) => {
+                  console.error("Error al cerrar la tarea (cierraTarea OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                  this.db.presentAlertN("Error al cerrar la tarea. Intente nuevamente.");
+                  this.ocultarCarga(loading);
+                }
+              );
+            },
+            (error) => {
+              console.error("Error al subir el documento (uploadDocumentTecnico)", error);
+              this.db.presentAlertN("Error al subir el documento. Intente nuevamente.");
+              this.ocultarCarga(loading);
+            }
+          );
+        }
+        //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
+        if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+          this.apiv4.uploadDocumentTecnico
+          this.apiv4.cierraTarea
+          this.apiv4.setTareaCoordinadora
+          //ticket de despacho backup
+          this.apiv4.setTicket
+          //ticket de retiro backup
+          this.apiv4.setTicket
+          return;
+        }
+
+      },
+      html2canvas: {
+        logging: false,
+        letterRendering: true,
+        scale: scale,
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+      },
     });
 
-    const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
-    const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
-    const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
-    
-    const solicitaRepuesto = (document.getElementById('solicitaRepuesto') as HTMLIonRadioGroupElement)?.value || '';
-    const validaCoordinadoraRespuesto = (document.getElementById('validaCoordinadoraRespuesto') as HTMLIonRadioGroupElement)?.value || '';
-    const solicitarBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
-    const validaCoordinadoraBackup = (document.getElementById('validaCoordinadoraBackup') as HTMLIonRadioGroupElement)?.value || '';
-
-      //Generacion de PDF con GLPI
-      //*********************Operativo sin problemas*********************
-      if(equipoOperativo == 'si' &&  utilizoRepuestos == 'no'){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        return;
-      }else
-      //*********************Operativo con utilizacion de repuestos*********************
-      if(equipoOperativo == 'si' && utilizoRepuestos == 'si' && this.repuestos && this.repuestos.length > 0){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        return;
-      };
-
-      //****************Solicita repuesto del equipo*********************
-      if(solicitaRepuesto == 'si' && validaCoordinadoraRespuesto == 'si'){
-        this.apiv4.uploadDocumentTecnico
-        this.apiv4.cierraTarea
-        this.apiv4.setTareaCoordinadora
-        this.apiv4.setTicket
-      return;
-    }
-    //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
-    if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
-      this.apiv4.uploadDocumentTecnico
-      this.apiv4.cierraTarea
-      this.apiv4.setTareaCoordinadora
-      //ticket de despacho backup
-      this.apiv4.setTicket
-      //ticket de retiro backup
-      this.apiv4.setTicket
-      return;
-    }
-    //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
-    if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
-      this.apiv4.uploadDocumentTecnico
-      this.apiv4.cierraTarea
-      this.apiv4.setTareaCoordinadora
-      //ticket de despacho backup
-      this.apiv4.setTicket
-        //ticket de retiro backup
-      this.apiv4.setTicket
-      return;
-    }
-  
-    const element = document.getElementById('contenidoHTML');
-  
-    if (element) {
-      const scale = 560 / element.offsetWidth;  
-  
-      doc.html(element, {
-        callback: (doc) => {
-          // Guardar el archivo PDF generado
-          doc.save('documento.pdf');
-        },
-        html2canvas: {
-          logging: false, 
-          letterRendering: true,  // Mejora la representación de texto
-          scale: scale,  // Ajusta la escala para que el contenido se ajuste al PDF
-          width: element.offsetWidth,  // Especifica el ancho del contenido HTML
-          height: element.offsetHeight  // Especifica la altura del contenido HTML
-        },
-      });
-  
-      this.cerrarModal();
-    }
+    this.cerrarModal();
   }
+}
   
   
   

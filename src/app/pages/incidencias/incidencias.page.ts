@@ -33,7 +33,7 @@ interface Actividad {
   content: any;
   date: any;
   end: any;
-  id: any;
+  idTarea: any;
   name: any;
   state: any;
   tipo: any;
@@ -61,7 +61,7 @@ export class IncidenciasPage implements OnInit {
   idticketSelect: string | null = null; 
   detalleTicket: Actividad[]= [];
   fecha: any;
- 
+  idTarea: any;
   contrato: any;
   constructor(private loadingCtrl: LoadingController, private apiv4: Apiv4Service, private datePipe: DatePipe, private router: Router, private db: DbService) { }
 
@@ -216,7 +216,8 @@ export class IncidenciasPage implements OnInit {
             fecha: i.movimiento[0].fecha, 
             contrato: this.contrato,
             conexionEquipo: detalle,
-            problemaReport: i.title 
+            problemaReport: i.title,
+            idTarea: this.idTarea,
           },
           fragment: 'info',
           replaceUrl: true,
@@ -293,11 +294,11 @@ export class IncidenciasPage implements OnInit {
     this.idticketSelect = idticket;
     this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
       (response) => {
-        console.log(response);
         this.contrato = response.contrato;
         this.detalleTicket = response.actividad || [];
         this.detalleTicket.forEach(ticket => {
           ticket.tipo = ticket.tipo;
+          
         });
   
         if (this.detalleTicket.length > 0) {
@@ -317,6 +318,7 @@ export class IncidenciasPage implements OnInit {
       this.apiv4.getDetalleTicket(this.username, this.password, idticket).subscribe(
         (response) => {
           this.contrato = response.contrato;
+          this.idTarea = response.actividad[0].id;
           console.log("Check contrato: ", response)
           resolve(response);
         },
