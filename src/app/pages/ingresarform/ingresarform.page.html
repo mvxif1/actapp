@@ -29,7 +29,7 @@
 
         <ion-item lines="full">
           <ion-label position="stacked">Tipo de servicio</ion-label>
-          <ion-input id="tipoServicio" formControlName="tiposervicio" placeholder="Selecciona el tipo de servicio" readonly></ion-input>
+          <ion-input id="tipoServicio" formControlName="tipoServicio" placeholder="Selecciona el tipo de servicio" readonly></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('tiposervicio')?.invalid && (ingresarform.get('tiposervicio')?.dirty || ingresarform.get('tiposervicio')?.touched)">
@@ -50,8 +50,6 @@
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('horainicio')?.invalid && (ingresarform.get('horainicio')?.dirty || ingresarform.get('horainicio')?.touched)">
           <div *ngIf="ingresarform.get('horainicio')?.hasError('required')">Este campo es obligatorio.</div>
-          <div *ngIf="ingresarform.get('horainicio')?.hasError('horaInvalida')">La hora de inicio no puede ser mayor que
-            la hora de término.</div>
         </div>
 
         <ion-item lines="full">
@@ -144,7 +142,7 @@
 
         <ion-item lines="full">
           <ion-label position="stacked">Marca</ion-label>
-          <ion-input id="marca" formControlName="marca" placeholder="Primero selecciona el tipo de equipo" readonly></ion-input>
+          <ion-input id="marca" formControlName="marca" placeholder="Primero selecciona el tipo de equipo"></ion-input>
         </ion-item>
         <div *ngIf="ingresarform.get('tipoequipo')!.value === ''">
           <ion-text style="color: red; margin-left: 10px; margin-top: 3px;">Primero selecciona el tipo de equipo.</ion-text>
@@ -168,7 +166,7 @@
         </div>
         <ion-item lines="full">
           <ion-label position="stacked">Modelo</ion-label>
-          <ion-input id="modelo" formControlName="modelo" readonly></ion-input>
+          <ion-input id="modelo" formControlName="modelo"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('modelo')?.invalid && (ingresarform.get('modelo')?.dirty || ingresarform.get('modelo')?.touched)">
@@ -177,7 +175,7 @@
 
         <ion-item lines="full">
           <ion-label position="stacked">N° Serie</ion-label>
-          <ion-input id="nserie" formControlName="nserie" (input)="transformarAMayusculas($event)" readonly></ion-input>
+          <ion-input id="nserie" formControlName="nserie" (input)="transformarAMayusculas($event)"></ion-input>
         </ion-item>
         <div style="color: red; margin-top: 3px; margin-left: 10px;"
           *ngIf="ingresarform.get('nserie')?.invalid && (ingresarform.get('nserie')?.dirty || ingresarform.get('nserie')?.touched)">
@@ -191,12 +189,12 @@
           <ion-select id="tipoconexion" formControlName="tipoconexion" placeholder="Primero selecciona el tipo de equipo">
             <div *ngIf="ingresarform.get('tipoequipo')!.value === 'pc'">
               <ion-select-option value="IP">IP</ion-select-option>
-              <ion-select-option value="SIN">SIN CONEXIÓN</ion-select-option>
+              <ion-select-option value="SIN CONEXIÓN">SIN CONEXIÓN</ion-select-option>
             </div>
             <div *ngIf="ingresarform.get('tipoequipo')!.value === 'impresion'">
               <ion-select-option value="USB">USB</ion-select-option>
               <ion-select-option value="IP">IP</ion-select-option>
-              <ion-select-option value="SIN">SIN CONEXIÓN</ion-select-option>
+              <ion-select-option value="SIN CONEXIÓN">SIN CONEXIÓN</ion-select-option>
             </div>
           </ion-select>
         </ion-item>
@@ -320,13 +318,17 @@
             </ion-radio-group>
           </form>
         </div>
-        <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validarCoordinadoraRepuesto">
-          <ion-item lines="full">
-            <ion-label position="stacked">Comentarios:</ion-label>
-            <ion-textarea></ion-textarea>
-          </ion-item>
-        </div>
-
+          <form [formGroup]="comentarioRepuestoForm">
+            <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validarCoordinadoraRepuesto">
+              <ion-item lines="full">
+                <ion-label position="stacked">Comentarios:</ion-label>
+                <ion-textarea formControlName="comentario" id="comentario"></ion-textarea>
+              </ion-item>
+              <div style="color: red; margin-top: 3px; margin-block: 5px;" *ngIf="comentarioRepuestoForm.get('comentario')?.invalid && (comentarioRepuestoForm.get('comentario')?.dirty || comentarioRepuestoForm.get('comentario')?.touched)">
+                <div *ngIf="comentarioRepuestoForm.get('comentario')?.hasError('required')">Este campo es obligatorio.</div>
+              </div>
+            </div>
+          </form>
           <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validarCoordinadoraRepuesto">
             <form [formGroup]="repuestosform">
               <ion-card-title style="font-size: 13px;">SOLICITAR REPUESTOS</ion-card-title>
@@ -387,12 +389,18 @@
               <br><br><br>
             </form>
           </div>
-          <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup">
-            <ion-item>
-              <ion-label position="stacked">Comentarios: </ion-label>
-              <ion-textarea></ion-textarea>
-            </ion-item>
-          </div>
+          <form [formGroup]="comentarioBackupForm">
+            <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup">
+              <ion-item>
+                <ion-label position="stacked">Comentarios: </ion-label>
+                <ion-textarea id="comentario" formControlName="comentario"></ion-textarea>
+              </ion-item>
+              <div style="color: red; margin-top: 3px; margin-block: 5px;" *ngIf="comentarioRepuestoForm.get('comentario')?.invalid && (comentarioRepuestoForm.get('comentario')?.dirty || comentarioRepuestoForm.get('comentario')?.touched)">
+                <div *ngIf="comentarioRepuestoForm.get('comentario')?.hasError('required')">Este campo es obligatorio.</div>
+              </div>
+            </div>
+          </form>
+
           <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validarCoordinadoraBackup">
           <ion-card-title style="font-size: 13px;">SELECCIONA MODELO</ion-card-title>
           <ion-list>
@@ -426,7 +434,7 @@
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.name }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.detalle[0]?.serial }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.itemtype }}</td>
-                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.direccion.split('>').pop().trim() }}</td>
+                      <td style="border: 1px solid #ddd; padding: 8px;">{{ printer.ubicacion }}</td>
                       <td style="border: 1px solid #ddd; padding: 8px;">
                         <ion-radio [value]="printer.id"></ion-radio>
                       </td>
@@ -438,7 +446,8 @@
           </div>
           <form [formGroup]="backupform">
             <!-- Mostrar Backup Seleccionado -->
-            <div *ngIf="selectedBackup && backupActivo" style="margin-top: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+            <div *ngIf="selectedBackup && backupActivo"
+              style="margin-top: 20px; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
               <h3 style="text-align: center;">Backup Seleccionado</h3>
               <div>
                 <strong>ID:</strong> {{ selectedBackup!.id }}
@@ -455,21 +464,43 @@
               <div>
                 <strong>Ubicación:</strong> {{ selectedBackup!.direccion.split('>').pop().trim() }}
               </div>
+              <div *ngIf="this.selectedBackup?.ubicacion === 'En Cliente'">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong>Tipo de Conexión:</strong>
+                  <ion-select id="tipoconexionbackup" formControlName="tipoconexionbackup" placeholder="Primero selecciona el tipo de equipo">
+                    <div>
+                      <ion-select-option value="USB">USB</ion-select-option>
+                      <ion-select-option value="IP">IP</ion-select-option>
+                      <ion-select-option value="SIN CONEXIÓN">SIN CONEXIÓN</ion-select-option>
+                    </div>
+                  </ion-select>
+                </div>
 
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <strong>Tipo de Conexión:</strong> {{conexionBackups}}
-                <ion-input formControlName="ipbackup" *ngIf="conexionBackups == 'IP'" placeholder="Ingresa la IP" style="border: 1px solid rgba(0, 0, 0, 0.300);"></ion-input>
+                <ion-input 
+                  formControlName="ipbackup" *ngIf="backupform.get('tipoconexionbackup')?.value === 'IP'" placeholder="Ingresa la IP" 
+                  [ngClass]="{'input-error': backupform.get('ipbackup')?.invalid && (backupform.get('ipbackup')?.dirty || backupform.get('ipbackup')?.touched)}"
+                  style="border: 1px solid rgba(0, 0, 0, 0.300);">
+                </ion-input>
+              
+                <div style="color: red; margin-top: 3px; margin-block: 5px;" *ngIf="backupform.get('ipbackup')?.invalid && (backupform.get('ipbackup')?.dirty || backupform.get('ipbackup')?.touched)">
+                  <div *ngIf="backupform.get('ipbackup')?.hasError('required')">Este campo es obligatorio.</div>
+                  <div *ngIf="backupform.get('ipbackup')?.hasError('pattern')">Solamente se permiten puntos y números.</div>
+                </div>
+          
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+                  <strong>Contador:</strong>
+                  <!-- Input con borde dinámico -->
+                  <ion-input formControlName="contadorbackup" placeholder="Ingresa el contador" 
+                    [ngClass]="{'input-error': backupform.get('contadorbackup')?.invalid && (backupform.get('contadorbackup')?.dirty || backupform.get('contadorbackup')?.touched)}" 
+                    style="border: 1px solid rgba(0, 0, 0, 0.300);">
+                  </ion-input>
+                </div>
+                
+                <div style="color: red; margin-top: 3px; margin-block: 5px;" *ngIf="backupform.get('contadorbackup')?.invalid && (backupform.get('contadorbackup')?.dirty || backupform.get('contadorbackup')?.touched)">
+                  <div *ngIf="backupform.get('contadorbackup')?.hasError('required')">Este campo es obligatorio.</div>
+                </div>
               </div>
-              <div style="color: red; margin-top: 3px; margin-left: 10px;"
-              *ngIf="backupform.get('ipbackup')?.invalid">
-              <div *ngIf="backupform.get('ipbackup')?.hasError('required')">Este campo es obligatorio.</div>
-              <div *ngIf="backupform.get('ipbackup')?.hasError('pattern')">La IP solo puede contener números y puntos.</div>
-              </div>
-
-              <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-                <strong>Contador:</strong>
-                <ion-input formControlName="contadorbackup" placeholder="Ingresa el contador" style="border: 1px solid rgba(0, 0, 0, 0.300);"></ion-input>
-              </div>
+              
             </div>
           </form>
 
@@ -657,37 +688,23 @@
           <li *ngIf="!isStatusServicioCompleta()">Selecciona un Status de servicio</li>
           <li *ngIf="isStatusServicioEquipoOperativo()">Selecciona si utilizó repuestos</li>
           <li *ngIf="isStatusServicioSolicitaRepuesto()">Selecciona si validó con coordinadora</li>
+          <li *ngIf="mostrarErrorValidaCoordinadora()">Debes validar con coordinadora</li>
           <li *ngIf="!isDatosClienteCompleta()">Datos cliente</li>
           <li *ngIf="!firmaIngresada">Ingresa la firma del cliente</li>
+          
+          <li *ngIf="mostrarErrorRepuestosOperativo()">Completa el formulario para Repuestos en equipo operativo.</li>
+          <li *ngIf="mostrarErrorRepuestosOperativoNohayrepuestos()">Agrega al menos 1 repuesto.</li>
+
+          <li *ngIf="isValidaCoordinadoraRepuestos()">Debes ingresar un comentario de la validación de coordinadora.</li>
+          <li *ngIf="mostrarErrorSolicitaRepuestos()">Completa el formulario para solicitar repuestos.</li>
+          <li *ngIf="mostrarErrorSolicitaRepuestosNohayrepuestos()">Agrega al menos 1 repuesto.</li>
+
+          <li *ngIf="isValidaCoordinadoraBackup()">Debes ingresar un comentario de la validación de coordinadora.</li>
+          <li *ngIf="isStatusServicioSolicitaBackup()">Selecciona si validó con coordinadora.</li>
+          <li *ngIf="mostrarErrorSolicitaBackup()">Selecciona al menos 1 backup.</li>
+
+          <li *ngIf="mostrarErrorSolicitaBackupFormularioCliente()">Completa el formulario del backup seleccionado.</li>
         </ul>
-        
-        <div *ngIf="mostrarErrorRepuestosOperativo()" style="color: red; margin-top: 10px; text-align: center;">
-          Completa el formulario para Repuestos en equipo operativo.
-        </div>
-
-        <div *ngIf="mostrarErrorRepuestosOperativoNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
-          Agrega al menos 1 repuesto.
-        </div>
-        
-        <div *ngIf="mostrarErrorSolicitaRepuestos()" style="color: red; margin-top: 10px; text-align: center;">
-          Completa el formulario para solicitar repuestos.
-        </div>
-
-        <div *ngIf="mostrarErrorSolicitaRepuestosNohayrepuestos()" style="color: red; margin-top: 10px; text-align: center;">
-          Agrega al menos 1 repuesto.
-        </div>
-
-        <div *ngIf="isStatusServicioSolicitaBackup()" style="color: red; margin-top: 10px; text-align: center;">
-          Completa el formulario para solicitar un backup.
-        </div>
-
-        <div *ngIf="mostrarErrorSolicitaBackup()" style="color: red; margin-top: 10px; text-align: center;">
-          Selecciona al menos 1 backup.
-        </div>
-
-        <div *ngIf="mostrarErrorSolicitaBackupFormulario()" style="color: red; margin-top: 10px; text-align: center;">
-          Completa el formulario para solicitar backup.
-        </div>
       </div>
       <ion-button expand="full" [disabled]="!isFormularioCompleto() || !firmaIngresada || tipoconexion() || marca()" (click)="generarPDF()">Generar PDF</ion-button>
       <br>
@@ -778,7 +795,7 @@
                       <div><strong style="font-size: 12px;">Marca </strong></div>
                       <div><strong style="font-size: 12px;">Modelo </strong></div>
                     </div>
-                    <div class="col-6" style="margin-left: -75px;">
+                    <div class="col-6" style="margin-left: -70px;">
                       <div><strong style="font-size: 12px;">: {{ ingresarform.get('tipoequipo')?.value }}</strong></div>
                       <div><strong style="font-size: 12px;">: {{ ingresarform.get('marca')?.value }}</strong></div>
                       <div><strong style="font-size: 12px;">: {{ ingresarform.get('modelo')?.value }}</strong></div>
@@ -794,7 +811,7 @@
                     </div>
                     <div class="col-6" style="margin-left: -50px;">
                       <div><strong style="font-size: 12px;">: {{ ingresarform.get('nserie')?.value }}</strong></div>
-                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('tipoconexion')?.value }} : {{ ipForm.get('ip')?.value }}</strong></div>
+                      <div><strong style="font-size: 12px;">: {{ ingresarform.get('tipoconexion')?.value }} <span *ngIf="ingresarform.get('tipoconexion')?.value === 'IP'">: {{ ipForm.get('ip')?.value }}</span> </strong></div>
                       <div><strong style="font-size: 12px;">: {{ ingresarform.get('accesorios')?.value }}</strong></div>
                     </div>
                   </div>
@@ -834,7 +851,7 @@
                     <strong style="font-size: 12px;">Equipo Backup Instalado</strong>
                   </div>
                 </div>
-                <div class="col-9" style="margin-left: -50px;">
+                <div class="col-9" style="margin-left: -32px;">
                   <div *ngIf="ingresarform.get('solicitaRepuesto')?.value === 'si' && validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si'"><strong style="font-size: 12px;">: SI</strong></div>
                   <div *ngIf="ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si'"><strong style="font-size: 12px;">: SI</strong></div>
                   <div *ngIf="ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'si' || ingresarform.get('equipoOperativo')?.value === 'si' && utilizoRepuestosform.get('utilizoRepuestos')?.value === 'no' "><strong style="font-size: 12px;">: SI</strong></div>
@@ -859,8 +876,8 @@
                     <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.name.split(' ')[0] }}</strong></div>
                     <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.name.split(' ').slice(1).join(' ') }}</strong></div>
                     <div><strong style="font-size: 12px;">: {{ selectedBackup!.detalle[0]?.serial}}</strong></div>
-                    <div><strong style="font-size: 12px;">: {{ conexionBackup }} : {{ backupform.get('ipbackup')?.value }}</strong></div>
-                    <div><strong style="font-size: 12px;">: {{ backupform.get('contadorbackup')?.value }}</strong></div>
+                    <div *ngIf="this.ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.selectedBackup?.ubicacion === 'En Cliente'"><strong style="font-size: 12px;">: {{ backupform.get('tipoconexionbackup')?.value }} <span *ngIf="backupform.get('tipoconexionbackup')?.value === 'IP'" >: {{ backupform.get('ipbackup')?.value }}</span></strong></div>
+                    <div *ngIf="this.ingresarform.get('solicitarBackup')?.value === 'si' && validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.selectedBackup?.ubicacion === 'En Cliente'"><strong style="font-size: 12px;">: {{ backupform.get('contadorbackup')?.value }}</strong></div>
                   </div>    
               </div>
 
@@ -908,7 +925,7 @@
                 </table>
               </div>
               <hr>
-              <div style="text-align: left;"><strong style="font-size: 16px;">Recepción: </strong><span>Con la firma de usted está aceptando confirme la ejecución de los trabajos que se indican. Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos.</span></div>
+              <div style="text-align: left;"><strong style="font-size: 12px;">Recepción: </strong><span style="font-size: 12px">Con la firma de usted está aceptando confirme la ejecución de los trabajos que se indican. Además, declara estar presente durante el tiempo que el personal técnico realizó los trabajos.</span></div>
               
               <div class="row">
                 <div class="col-6">

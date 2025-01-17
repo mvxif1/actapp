@@ -218,13 +218,10 @@ export class IncidenciasPage implements OnInit {
             conexionEquipo: detalle,
             problemaReport: i.title,
             idTarea: this.idTarea,
+            tipoServicio: this.tipo
           },
           fragment: 'info',
           replaceUrl: true,
-          state: { 
-            itilcategories_id: i.itilcategories_id, 
-            tipoServicio: this.tipo 
-          }
         });
       } else {
         this.db.presentAlertN("Este ticket no tiene contrato asociado. Comuniquelo a la coordinadora");

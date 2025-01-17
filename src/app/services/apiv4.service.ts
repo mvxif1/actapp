@@ -45,6 +45,15 @@ export class Apiv4Service {
     return this.http.post(this.baseUrl, body, { headers });
   }
 
+  getDatosTecnico(username: string, password: string): Observable<any> {
+    const token = btoa(`${username}:${password}`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/x-www-form-urlencoded',
+    });
+    const body = `ACCION=getDatosTecnico&token=${token}`;
+    return this.http.post(this.baseUrl, body, { headers });
+  }
+
   getDetalleTicket(username: string, password: string, idticket: string): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
@@ -135,12 +144,12 @@ export class Apiv4Service {
   }
 
   //Genera ticket de despacho o retiro asignado a coordinadora como subticket
-  setTicket(username: string, password: string, idticket: any, titulo: any, contenido: any, itilcategories_id: any): Observable<any> {
+  setTicket(username: string, password: string, idticket: any, titulo: any, contenido: any, itilcategories_id: any, idcontrato: any): Observable<any> {
     const token = btoa(`${username}:${password}`);
     const headers = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
-    const body = `ACCION=setTicket&token=${token}&idticket=${idticket}&titulo=${titulo}&contenido=${contenido}&itilcategories_id=${itilcategories_id}`;
+    const body = `ACCION=setTicket&token=${token}&idticket=${idticket}&titulo=${titulo}&contenido=${contenido}&itilcategories_id=${itilcategories_id}&idcontrato=${idcontrato}`;
     
     return this.http.post(this.baseUrl, body, { headers });
   }

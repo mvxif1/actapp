@@ -30,7 +30,7 @@ const RutValidator = {
 
 
 
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, model } from '@angular/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import SignaturePad from 'signature_pad';
 import { DbService } from 'src/app/services/db.service';
@@ -68,6 +68,7 @@ interface Modelo{
   id: any;
   items_id: any;
   itemtype: any;
+  ubicacion: any;
   
 }
 
@@ -144,6 +145,8 @@ export class IngresarformPage {
   repuestosOperativoform!: FormGroup;
   validaCoordinadoraRepuestoForm!: FormGroup;
   validaCoordinadoraBackupForm!: FormGroup;
+  comentarioRepuestoForm!: FormGroup;
+  comentarioBackupForm!: FormGroup;
 
   repuestosactivado: boolean = false;
   utilizaRepuestosActivo: boolean = false;
@@ -192,9 +195,9 @@ export class IngresarformPage {
     this.ingresarform = this.formBuilder.group({
       //SECCION: Orden de servicio
       eventocliente: ['', [Validators.required]],
-      tiposervicio: ['', [Validators.required]],
+      tipoServicio: ['', [Validators.required]],
       fecha: [''],
-      horainicio: ['', [Validators.required, this.validarHoras]],
+      horainicio: ['', [Validators.required]],
       //SECCION: Información de cliente
       cliente: ['', [Validators.required]],
       direccion: ['', [Validators.required]],
@@ -230,19 +233,25 @@ export class IngresarformPage {
 
     this.otramarcaForm = this.formBuilder.group({
       otraMarca: ['', [Validators.required]]
-    })
+    });
     this.ipForm = this.formBuilder.group({
       ip : ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
-    })
+    });
 
     this.backupform = this.formBuilder.group({
       //SECCION: Backup instalado
-      marcabackup: ['', [Validators.required]],
-      modelobackup: ['', [Validators.required]],
-      nseriebackup: ['', [Validators.required]],
-      ipbackup: ['', [Validators.pattern(this.pattern.ptsynum)]],
+      tipoconexionbackup: ['', [Validators.required]],
+      ipbackup: ['', [Validators.required, Validators.pattern(this.pattern.ptsynum)]],
       contadorbackup: ['', [Validators.required]]
-    })
+    });
+
+    this.comentarioRepuestoForm = this.formBuilder.group({
+      comentario: ['', [Validators.required]]
+    });
+
+    this.comentarioBackupForm = this.formBuilder.group({
+      comentario: ['', [Validators.required]]
+    });
     //SECCION: Utiliza repuestos
     this.utilizoRepuestosform = this.formBuilder.group({
       utilizoRepuestos: ['', [Validators.required]]
@@ -326,7 +335,14 @@ export class IngresarformPage {
 
     this.username = localStorage.getItem('email')!;
     this.password = localStorage.getItem('password')!;
-
+    this.apiv4.getDatosTecnico(this.username, this.password).subscribe(
+      (response) => {
+        console.log('Respuesta completa getDatosTecnico:', response);
+      },
+      (error) => {
+        console.error('Error al obtener datos del getDatosTecnico:', error);
+      }
+    );
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
     canvas.width = canvas.parentElement.offsetWidth - 25;
     canvas.height = 200;
@@ -335,6 +351,12 @@ export class IngresarformPage {
     }
     this.route.queryParams.subscribe(params => {
       const idTicket = params['id'];
+      const tipoServicio = params['tipoServicio'];
+      if(tipoServicio == 1){
+        this.ingresarform.patchValue({ tipoServicio : 'Incidencia'});
+      } else {
+        this.ingresarform.patchValue({ tipoServicio : 'Solicitud'});
+      }
       this.itilcategories = params['itilcategories'];
       this.idTarea = params['idTarea'];
       console.log(this.idTarea);
@@ -351,6 +373,7 @@ export class IngresarformPage {
 
       const fechaCompleta= params['fecha'];
       const contrato = params['contrato'];
+      console.log(contrato);
       const problemaReport = params['problemaReport'];
       this.contrato = contrato;
       const sanitizedProblemaReport = this.stripHTML(problemaReport);
@@ -359,6 +382,7 @@ export class IngresarformPage {
       const horaFormateada = this.formatearhoraDirecto(horaInicio);
       this.getItemsTicket(idTicket, this.itilcategories);
       this.getDatosContrato(contrato);
+      
       this.ingresarform.patchValue({ eventocliente: idTicket });
       this.ingresarform.patchValue({ fecha });
       this.ingresarform.patchValue({ horainicio: horaFormateada });
@@ -374,17 +398,6 @@ export class IngresarformPage {
         })
       );
     });
-    
-    // datos enviados de incidencias o solicitudes
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { itilcategories_id: string, tipoServicio: any, contrato: any } ;
-    
-    if(state?.tipoServicio === 1){
-      this.ingresarform.patchValue({tiposervicio : 'Incidente'})
-    } else{
-      this.ingresarform.patchValue({tiposervicio : 'Solicitud'})
-    }
-
   }
 
   private stripHTML(html: string): string {
@@ -406,9 +419,9 @@ export class IngresarformPage {
   getDatosContrato(idcontrato: any) {
     this.apiv4.getDatosContrato(this.username, this.password, idcontrato).subscribe(
       (response) => {
-        this.cliente = response;
+        this.cliente = [response];
         this.detalle = [response.detalle];
-        console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle);
+        console.log('Respuesta completa getDatosContrato:', this.cliente, this.detalle[0].num);
         this.ingresarform.patchValue({ cliente: (this.detalle[0].name || 'Sin valor')});
       },
       (error) => {
@@ -454,24 +467,33 @@ export class IngresarformPage {
             if (!Array.isArray(printer.detalle)) {
               printer.detalle = [printer.detalle]; // Convertir a array
             }
+            // Obtener la dirección del ticket desde el formulario
+            const direccionTicket = this.ingresarform.get('direccion')?.value;
+  
+            // Determinar la ubicación según la dirección
+            const direccionImpresora = printer.direccion.split('>').pop().trim();
+            printer.ubicacion = direccionImpresora === direccionTicket ? "En Cliente" : "En Bodega";
+  
             return printer;
           });
-        if(this.modelosImpresoras[0].detalle[0]?.networks_id == 1){
-          this.conexionBackups = 'IP'
-        }    
-          console.log('Respuesta getItemsBackUp: ',this.modelosImpresoras);
+          if(this.modelosImpresoras[0].detalle[0]?.networks_id == 1){
+            this.conexionBackups = 'IP'
+          } else if(this.modelosImpresoras[0].detalle[0]?.networks_id == 2){
+            this.conexionBackups = 'USB'
+          } else if(this.modelosImpresoras[0].detalle[0]?.networks_id == 3){
+            this.conexionBackups = 'SIN CONEXION'
+          }
+          console.log('Respuesta getItemsBackUp: ', this.modelosImpresoras);
         } else if (tipoItem === 'Computer') {
           this.modelosComputadoras = response;
         }
-        
-      }
-      ,
-
+      },
       (error) => {
         console.error('Error al obtener datos del contrato:', error);
       }
     );
   }
+  
   
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
@@ -509,26 +531,6 @@ export class IngresarformPage {
   
     return `${hora}:${minutos}${periodo}`;
   }
-  
-  validarHoras(control: AbstractControl): { [key: string]: boolean } | null {
-    const horaInicioValue = control.value;
-    const horaInicio = (horaInicioValue !== null && horaInicioValue !== undefined) ? horaInicioValue.toString().replace(/[^0-9]/g, '') : '';
-
-    const horaTerminoElement = document.getElementById('horaTermino') as HTMLIonInputElement | null;
-
-    if (horaTerminoElement) {
-      const horaTerminoValue = horaTerminoElement.value;
-      const horaTermino = (horaTerminoValue !== null && horaTerminoValue !== undefined) ? horaTerminoValue.toString().replace(/[^0-9]/g, '') : '';
-
-      if (parseInt(horaInicio, 10) > parseInt(horaTermino, 10)) {
-        return { 'horaInvalida': true }; // Retorna un error si la hora de inicio es mayor que la de término
-      }
-    }
-
-    return null; // Si la validación pasa o no hay un elemento 'horaTermino', retorna null
-  }
-
-
 
   formatearhoraDirecto(hora: string): string {
     let [horas, minutos] = hora.split(':').map(Number);
@@ -717,7 +719,7 @@ export class IngresarformPage {
       this.validarCoordinadoraBackup = false;
     }
   }
-  
+
   //Solicitar repuesto y validado por coordinadora
   agregarRepuesto(nombre: any, numeroParte: any, estado: any) {
     this.repuestos.push({ nombre: nombre, numeroParte: numeroParte, estado: estado });
@@ -853,12 +855,12 @@ export class IngresarformPage {
            this.isInformacionHardwareCompleta() &&
            this.isDescripcionCasoCompleta() &&
            this.isStatusServicioCompleta() &&
-           this.isDatosClienteCompleta();
+           this.isDatosClienteCompleta()
   }
 
   isOrdenServicioCompleta(): boolean | undefined {
     return this.ingresarform.get('eventocliente')?.valid &&
-           this.ingresarform.get('tiposervicio')?.valid &&
+           this.ingresarform.get('tipoServicio')?.valid &&
            this.ingresarform.get('horainicio')?.valid;
   }
 
@@ -889,9 +891,8 @@ export class IngresarformPage {
   }
 
   isStatusServicioCompleta(): boolean | undefined{
-    return (this.ingresarform.get('solicitaBackup')?.value === 'si') ||
+    return (this.ingresarform.get('equipoOperativo')?.value === 'si') ||
            (this.ingresarform.get('solicitaRepuesto')?.value === 'si') ||
-           (this.ingresarform.get('equipoOperativo')?.value === 'si') ||
            (this.ingresarform.get('solicitarBackup')?.value === 'si');
   }
   isStatusServicioEquipoOperativo(): boolean | undefined{
@@ -926,12 +927,22 @@ export class IngresarformPage {
     return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && !this.selectedBackup;
   }
 
-  mostrarErrorSolicitaBackupFormulario(): boolean {
-    return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && !this.selectedBackup && !this.backupform.valid;
+  mostrarErrorSolicitaBackupFormularioCliente(): boolean {
+    return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && this.selectedBackup?.ubicacion === 'En Cliente' && !this.backupform.valid;
+  }
+
+  mostrarErrorValidaCoordinadora(): boolean {
+    return this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'no' || this.validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'no';
+  }
+
+  isValidaCoordinadoraRepuestos(): boolean | undefined {
+    return this.ingresarform.get('solicitaRepuesto')?.value === 'si' && this.validaCoordinadoraRepuestoForm.get('validaCoordinadoraRespuesto')?.value === 'si' && !this.comentarioRepuestoForm.valid;
   }
   
-
-
+  isValidaCoordinadoraBackup(): boolean | undefined {
+    return this.ingresarform.get('solicitarBackup')?.value === 'si' && this.validaCoordinadoraBackupForm.get('validaCoordinadoraBackup')?.value === 'si' && !this.comentarioBackupForm.valid;
+  }
+  
   isDatosClienteCompleta(): boolean | undefined{
     return this.ingresarform.get('nombrecli')?.valid &&
            this.ingresarform.get('correocli')?.valid &&
@@ -1036,7 +1047,7 @@ async ejPDF() {
 
   const loading = await this.Cargando();
 
-  const solicitaBackup = (document.getElementById('solicitaBackup') as HTMLIonRadioGroupElement)?.value || '';
+  const solicitaBackup = (document.getElementById('solicitarBackup') as HTMLIonRadioGroupElement)?.value || '';
   const equipoOperativo = (document.getElementById('equipoOperativo') as HTMLIonRadioGroupElement)?.value || '';
   const utilizoRepuestos = (document.getElementById('utilizoRepuestos') as HTMLIonRadioGroupElement)?.value || '';
 
@@ -1049,6 +1060,7 @@ async ejPDF() {
   const tipoDocumento = 'OT_';
 
   const element = document.getElementById('contenidoHTML');
+  const elementRecepcion = document.getElementById('recepcionHTML');
 
   if (element) {
     const scale = 560 / element.offsetWidth;
@@ -1058,12 +1070,10 @@ async ejPDF() {
       callback: async (doc) => {
         for (let i = 0; i < this.photos.length; i++) {
           const photo = this.photos[i];
-
-          // Decodificar la imagen base64 para jsPDF
           const imgWidth = 190; // Ajusta el ancho de la imagen según el formato del PDF
           const imgHeight = 190; // Ajusta la altura de la imagen según el formato del PDF
           if (i > 0) {
-            doc.addPage(); // Agregar una nueva página después de la primera
+            doc.addPage(); 
           }
           doc.addImage(photo, 'JPEG', 10, 10, imgWidth, imgHeight);
         }
@@ -1118,7 +1128,6 @@ async ejPDF() {
           const cierre = 1;
           this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
             async (response) => {
-              console.log("Documento subido correctamente (uploadDocumentTecnico OPERATIVO CON UTILIZACION DE REPUESTOS)", response);
               this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
                 (response) => {
                   navigator.geolocation.getCurrentPosition(
@@ -1156,7 +1165,7 @@ async ejPDF() {
               return;
             }
           );
-        };
+        }else
   
         //****************Solicita repuesto del equipo*********************
         if (solicitaRepuesto === 'si' && validaCoordinadoraRespuesto === 'si' && this.repuestos && this.repuestos.length > 0) {
@@ -1169,19 +1178,50 @@ async ejPDF() {
                   const texto = "Se solicita repuestos";
                   this.apiv4.setTareaCoordinadora(this.username, this.password, idTicket, idCategoria, texto).subscribe(
                     (response) => {
-                      const titulo = "Se solicita repuestos";
-                      const contenido = "Se solicitan repuestos" + this.itilcategories;
-                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories).subscribe(
-                        (response) => {
+                      // Construcción del contenido como tabla
+                      let tablaRepuestos = "<table border='1' style='border-collapse: collapse; width: 100%; text-align: center;'>";
+                      tablaRepuestos += "<thead><tr><th>Nombre</th><th>Número de Parte</th><th>Estado</th></tr></thead><tbody>";
+                      for (const repuesto of this.repuestos) {
+                        tablaRepuestos += `<tr>
+                        <td>${repuesto.nombre}</td>
+                        <td>${repuesto.numeroParte}</td>
+                        <td>${repuesto.estado}</td>
+                        </tr>`;
+                      }
+                      tablaRepuestos += "</tbody></table>";
+                      let tipoequipo : string;
+                      if(this.ingresarform.get('tipoequipo')?.value === 'impresion'){
+                        tipoequipo = '[IMPRESORA]';
+                      }else{
+                        tipoequipo = '[ORDENADOR]'
+                      }
+
+                      const marca = this.ingresarform.get('marca')?.value;
+                      const modelo = this.ingresarform.get('modelo')?.value;
+                      const nserie = this.ingresarform.get('nserie')?.value;
+                      const direccion = this.ingresarform.get('direccion')?.value;
+                      const region = this.ingresarform.get('region')?.value;
+                      const problemareport = this.ingresarform.get('problemareport')?.value;
+                      const titulo = `Solicitud Repuestos > ${tipoequipo} - Modelo: ${marca} ${modelo} - Serie: ${nserie} `;
+                      const contenido = `<strong>Se solicitan repuestos del ticket padre: </strong>${idTicket}
+                       <br><br>
+                       <strong>Modelo: </strong><span>${marca}, ${modelo}</span><br>
+                       <strong>N° Serie: </strong><span>${nserie}</span><br>
+                       <strong>Dirección: </strong><span>${direccion}, ${region}</span><br>
+                       <strong>Problema Reportado: </strong><span>${problemareport}</span>
+                       <br><br>
+                       Los repuestos solicitados son los siguientes: <br><br> <h3 style="text-align:center;">REPUESTOS</h3> ${tablaRepuestos}`;
+                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories, this.contrato).subscribe(
+                        (response : any) => {
                           navigator.geolocation.getCurrentPosition(
                             async (position) => {
                               const latitud = position.coords.latitude;
                               const longitud = position.coords.longitude;
-                              const enviarMovimiento = "Trabajo realizado"
+                              const enviarMovimiento = "Trabajo realizado";
                               this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
                                 (response: any) => {
                                   this.ocultarCarga(loading);
-                                  this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                                  this.db.presentAlertP("Documento subido correctamente y tarea cerrada con éxito!");
                                 },
                                 (error) => {
                                   console.error('Error al actualizar la ubicación:', error);
@@ -1221,26 +1261,73 @@ async ejPDF() {
               this.ocultarCarga(loading);
             }
           );
-        }
+        }else
         
         //*********************Solicita backup para cliente (NO ESTA EN CLIENTE)*********************
-        if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
+        if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si' && this.selectedBackup?.ubicacion === 'En Bodega'){
+          console.log("Entró condicion: Solicita backup para cliente (NO ESTA EN CLIENTE)");
           const cierre = 0;
           this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
             async (response) => {
               this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
                 (response) => {
-                  const idCategoria = 30;
-                  const texto = "Se solicita backup";
+                  const idCategoria = 31;
+                  const texto = "Retiro de maquina de producción para reparación en laboratorio";
                   this.apiv4.setTareaCoordinadora(this.username, this.password, idTicket, idCategoria, texto).subscribe(
                     (response) => {
-                      const titulo = "Se solicita despacho de backup";
-                      const contenido = "Se solicita despacho de backup" + this.itilcategories;
-                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories).subscribe(
+                      const idTicket = this.ingresarform.get('eventocliente')?.value;
+                      const direccion = this.ingresarform.get('direccion')?.value;
+                      const region = this.ingresarform.get('region')?.value;
+                      const problemareport = this.ingresarform.get('problemareport')?.value;
+                      let tipoequipo: string;
+                      if(this.selectedBackup!.itemtype === 'Printer'){
+                        tipoequipo = 'Impresora';
+                      }else{
+                        tipoequipo = 'Ordenador';
+                      }
+
+                      const titulo = `[Despacho - Equipo Backup] - ${this.selectedBackup!.detalle[0]?.name} - Serie: ${this.selectedBackup!.detalle[0]?.serial}`;
+                      const contenido = `
+                        <h2>Datos principales</h2><br>
+                        <strong>Ticket padre:</strong> ${idTicket}
+                        <strong>Problema reportado:</strong> ${problemareport} 
+                        <br>
+                        <h2>Backup solicitado</h2><br>
+                        <strong>Modelo:</strong> ${this.selectedBackup!.detalle[0]?.name}
+                        <strong>Serie:</strong> ${this.selectedBackup!.detalle[0]?.serial}
+                        <strong>Tipo de Equipo:</strong> ${tipoequipo}
+                        <br>
+                        <strong>Dirección del despacho: </strong> ${direccion}, ${region}
+                    `;
+                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo, contenido, this.itilcategories, this.contrato).subscribe(
                         (response) => {
-                          const titulo2 = "Se solicita retiro de backup";
-                          const contenido2 = "Se solicita retiro de backup" + this.itilcategories;
-                          this.apiv4.setTicket(this.username, this.password, idTicket, titulo2, contenido2, this.itilcategories).subscribe(
+                          const modelo = this.ingresarform.get('modelo')?.value;
+                          const nserie = this.ingresarform.get('nserie')?.value;
+                          const tipoequipo = this.ingresarform.get('tipoequipo')?.value;
+                          const tipoconexion = this.ingresarform.get('tipoconexion')?.value;
+                          const ip = this.ipForm.get('ip')?.value;
+                          const titulo2 = "Se solicita retiro de maquina de producción";
+                          const contenido2 = ` <h2 style="text-align: center;">Se solicita retiro de la siguiente maquina de producción: </h2>
+                          <div>
+                            <strong>ID:</strong> ${this.detalleHardwareReport[0].items_id}
+                          </div>
+                          <div>
+                            <strong>Modelo:</strong> ${modelo}
+                          </div>
+                          <div>
+                            <strong>Serie:</strong> ${nserie}
+                          </div>
+                          <div>
+                            <strong>Tipo de Equipo:</strong> ${tipoequipo}
+                          </div>
+                          <div>
+                            <strong>Tipo de Conexión:</strong> ${tipoconexion}
+                          </div>
+                          <div>
+                            <strong>IP:</strong> ${ip}
+                          </div>
+                        `;
+                          this.apiv4.setTicket(this.username, this.password, idTicket, titulo2, contenido2, this.itilcategories, this.contrato).subscribe(
                             (response) => {
                               navigator.geolocation.getCurrentPosition(
                                 async (position) => {
@@ -1297,17 +1384,95 @@ async ejPDF() {
               this.ocultarCarga(loading);
             }
           );
-        }
+        }else
         //*********************Solicita backup para cliente (ESTÁ EN CLIENTE)*********************
-        if(solicitaBackup == 'si' && validaCoordinadoraBackup == 'si'){
-          this.apiv4.uploadDocumentTecnico
-          this.apiv4.cierraTarea
-          this.apiv4.setTareaCoordinadora
-          //ticket de despacho backup
-          this.apiv4.setTicket
-          //ticket de retiro backup
-          this.apiv4.setTicket
-          return;
+        if (solicitaBackup == 'si' && validaCoordinadoraBackup == 'si' && this.selectedBackup?.ubicacion === 'En Cliente') {
+          console.log("Entró condicion: Solicita backup para cliente (ESTÁ EN CLIENTE)");
+          const cierre = 1;
+          this.apiv4.uploadDocumentTecnico(this.username, this.password, idTicket, nombreArchivo, pdfBase64, tipoDocumento, cierre).subscribe(
+            async (response) => {
+              this.apiv4.cierraTarea(this.username, this.password, this.idTarea).subscribe(
+                (response) => {
+                  const idCategoria = 31;
+                  const texto = "Se asigna tarea, para retiro de maquina de producción hacia laboratorio";
+                  this.apiv4.setTareaCoordinadora(this.username, this.password, idTicket, idCategoria, texto).subscribe(
+                    (response) => {
+                      const modelo = this.ingresarform.get('modelo')?.value;
+                      const nserie = this.ingresarform.get('nserie')?.value;
+                      const tipoequipo = this.ingresarform.get('tipoequipo')?.value;
+                      const tipoconexion = this.ingresarform.get('tipoconexion')?.value;
+                      const ip = this.ipForm.get('ip')?.value;
+                      const titulo2 = "Se solicita retiro de maquina de producción";
+                      const contenido2 = ` <h2 style="text-align: center;">Se solicita retiro de la siguiente maquina de producción: </h2>
+                        <div>
+                          <strong>ID:</strong> ${this.detalleHardwareReport[0].items_id}
+                        </div>
+                        <div>
+                          <strong>Modelo:</strong> ${modelo}
+                        </div>
+                        <div>
+                          <strong>Serie:</strong> ${nserie}
+                        </div>
+                        <div>
+                          <strong>Tipo de Equipo:</strong> ${tipoequipo}
+                        </div>
+                        <div>
+                          <strong>Tipo de Conexión:</strong> ${tipoconexion}
+                        </div>
+                        <div>
+                          <strong>IP:</strong> ${ip}
+                        </div>
+                      `;
+                      this.apiv4.setTicket(this.username, this.password, idTicket, titulo2, contenido2, this.itilcategories, this.contrato).subscribe(
+                        (response) => {
+                          navigator.geolocation.getCurrentPosition(
+                            async (position) => {
+                              const latitud = position.coords.latitude;
+                              const longitud = position.coords.longitude;
+                              const enviarMovimiento = "Trabajo realizado"
+                              this.apiv4.setUbicacionGps(this.username, this.password, enviarMovimiento, longitud, latitud, idTicket).subscribe(
+                                (response: any) => {
+                                  this.ocultarCarga(loading);
+                                  this.db.presentAlertP("Documento subido correctamente y tarea cerrada con exito!");
+                                },
+                                (error) => {
+                                  console.error('Error al actualizar la ubicación:', error);
+                                }
+                              );
+                            },
+                            (error) => {
+                              console.error('Error al obtener la geolocalización:', error);
+                              alert('No se pudo obtener la ubicación. Asegúrate de tener el GPS activado.');
+                            }
+                          );
+                        },
+                        (error) => {
+                          console.error("Error al crear el ticket (setTicket OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                          this.db.presentAlertN("Error al crear el ticket. Intente nuevamente.");
+                          this.ocultarCarga(loading);
+                        }
+                      );
+                    },
+                    (error) => {
+                      console.error("Error al asignar la tarea coordinadora (setTareaCoordinadora OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                      this.db.presentAlertN("Error al asignar la tarea coordinadora. Intente nuevamente.");
+                      this.ocultarCarga(loading);
+                    }
+                  );
+                },
+                (error) => {
+                  console.error("Error al cerrar la tarea (cierraTarea OPERATIVO CON SOLICITA REPUESTO DEL EQUIPO)", error);
+                  this.db.presentAlertN("Error al cerrar la tarea. Intente nuevamente.");
+                  this.ocultarCarga(loading);
+                }
+              );
+            },
+            (error) => {
+              console.error("Error al subir el documento (uploadDocumentTecnico)", error);
+              this.db.presentAlertN("Error al subir el documento. Intente nuevamente.");
+              this.ocultarCarga(loading);
+            }
+          );
         }
 
       },

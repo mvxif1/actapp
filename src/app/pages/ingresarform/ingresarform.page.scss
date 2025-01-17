@@ -76,4 +76,11 @@ tr {
     margin-top: 10px;
   }
 
+.page-break {
+  page-break-before: always; /* Fuerza un salto de página antes del elemento */
+}
+
+.input-error {
+    border: 1px solid red !important;
+}
   
